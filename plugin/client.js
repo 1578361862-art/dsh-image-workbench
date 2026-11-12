@@ -1825,7 +1825,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 生成 ————— */
   function cloudError(message, code) {
-    return { code: code || 'cloud_error', message: message || '云端生成失败' };
+    var friendly = message || '云端生成失败';
+    if (code === 'insufficient_balance' || /1008|insufficient balance/i.test(friendly)) {
+      friendly = 'MiniMax 开放平台余额不足（1008）。请充值按量余额，或改用 M Plan Key。';
+    } else if (code === 'auth') {
+      friendly = 'API Key 无效或已过期（401）。请在设置里更新 Key。';
+    } else if (code === 'content_safety') {
+      friendly = '内容安全未通过。换一张图或调整风格后再试。';
+    } else if (code === 'rate_limited') {
+      friendly = '请求太频繁或额度受限。稍后再试。';
+    } else if (code === 'unknown') {
+      friendly = '请求已发出，可能已生成并计费，暂未收到结果；不要自动重试。';
+    }
+    return { code: code || 'cloud_error', message: friendly };
   }
 
   async function ensureAssetId() {
