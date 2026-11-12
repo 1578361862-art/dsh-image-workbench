@@ -2168,7 +2168,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       text: entry.text || null,
       frame: entry.frame || '3:2',
       results: (entry.results || []).map(function (r) {
-        return { id: r.styleId, url: r.url, w: r.w, h: r.h, cost: 0 };
+        var st = styleById(r.styleId);
+        return { id: r.styleId, url: r.url, w: r.w, h: r.h, cost: 0, cloud: !!(st && st.renderer === 'model') };
       }),
       hostId: entry.id
     };
@@ -2280,7 +2281,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (e.text) state.text = Object.assign({}, state.text, e.text);
       state.frame = e.frame || '3:2';
       state.results = (e.results || []).map(function (r) {
-        return { id: r.id, url: r.url, w: r.w, h: r.h, cost: 0 };
+        return { id: r.id, url: r.url, w: r.w, h: r.h, cost: 0, cloud: !!r.cloud };
       });
       buildThumbs(SRC);
       renderGrid();
