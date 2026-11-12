@@ -1,0 +1,37 @@
+{
+  "name": "dsh-image-workbench",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "图像风格工作台：本机印刷/胶片风格，一张图多版本并出；设置里保存 MiniMax Key、预算与隐私。",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "README.md",
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "assets/sample.jpg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": []
+    }
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.5"
+  }
+}
