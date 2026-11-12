@@ -1,27 +1,39 @@
-# dsh-image-workbench · P1
+# dsh-image-workbench · P1 / P2
 
-DSH 面板插件：左栏「图像风格」打开一个 1120 宽的工作台。P1 只做本机 Canvas 渲染，不联网、不上传图片。
+DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本机风格与工作流，P2 加模板文字、单版参数、原图导出、ZIP 打包与持久历史；P3 云端 H3 的 Host 基础能力已落地（默认关闭，无 UI 入口）。
+
+源码：`~/Code/dsh-image-workbench`（git）。安装：`plugin_manager install_bundle` 指向本目录；已安装时对 `include:image-workbench` 禁用再启用可重载 Host。
 
 ## 结构
 
-- `index.js`：Host 半侧。注册 `/image-workbench/settings`、`/sample`、`/test`、`/health`；配置写 `~/Data/dsh-image-workbench/config.json`（0600），API Key 写 DSH credentials 记录 `dsh-image-workbench/minimax`。
-- `client.js`：浏览器半侧。React 外壳 + 单页控制器；本机 6 个风格（半调、双色、Riso、蓝染、胶片、海报排版），多选生成、试印、A/B、下载、最近 3 次历史、设置抽屉。
-- `assets/sample.jpg`：首次打开用的示例静物，Host 通过 `/image-workbench/sample` 提供。
-- `docs/DETAIL.md`：插件详情页。
-- `locale/*.json`：插件管理器里的标题/描述。
+- `index.js`：Host 路由与设置；P2 资产/批次/历史/导出；P3 云端路由（`config.cloudEnabled` 才开启）。
+- `lib/storage.js`：`~/Data/dsh-image-workbench/{library,outputs}`、sha256 去重、`index.jsonl`、历史/删除。
+- `lib/zip.js`：无依赖 store-mode ZIP；`lib/minimax.js` / `jobs.js` / `budget.js` / `ledger.js` / `cloud.js`：P3 provider/队列/预算/账本。
+- `client.js`：React 外壳 + 单页控制器；6 个本机风格，印刷海报支持「海报 / 卡片」两种模板版式；参数支持「共用 / 当前风格」；原图导出；ZIP；历史。
+- `assets/sample.jpg`：示例静物；`docs/DETAIL.md`：插件详情；`tests/`：Host 测试。
 
-## 安装
+## Host 路由（全部经过 `connection.requestRejection`）
 
-在 DSH 里用 `plugin_manager` 的 `install_bundle` 指向这个目录；已安装时禁用再启用可重载 Host 半侧。
+- P1：`GET/POST /settings`、`GET /sample`、`POST /test`、`GET /health`
+- P2：`POST /assets`、`GET /asset/:id`、`POST /batches`、`GET /history?limit=20`、`DELETE /batch/:id`、`GET /result/:batch/:style.jpg`、`POST /export`、`GET /storage`
+- P3（默认关）：`POST /cloud/jobs`、`GET /cloud/jobs/:id`、`POST /cloud/key-test`（如实 501，不伪造）、`GET /usage`
 
-## 设置与数据
+## 数据与隐私
 
-- 预算 / 默认尺寸 / 并发 / 隐私 / 接口地址 / 模型 / 计费：`~/Data/dsh-image-workbench/config.json`。
-- API Key：`ctx.credentials` 记录，只显示尾号；P1 不发云端请求。
-- 历史：浏览器 `localStorage`，键 `dsh-image-workbench/history/v1`，最多 3 批。
+- 配置：`~/Data/dsh-image-workbench/config.json`（0600）：尺寸、预算、隐私、P3 云端参数。
+- 原图/结果：`~/Data/dsh-image-workbench/library/<sha16>/`、`outputs/<batchId>/`；`index.jsonl` 追加索引。
+- API Key：DSH credentials 记录 `dsh-image-workbench/minimax`，只显示尾号；P1/P2 不发云端请求。
+- 历史：Host 优先；Host 不可用时回落浏览器 `localStorage`（最多 3 批）。
 
 ## 验证
 
-- Host：fake ctx + 临时 HOME 跑过 GET/POST settings、sample、test、400 校验、0600 文件。
-- Client：用 1120×860 的独立 harness（同一份 client.js + React 18 + mock API）验证了默认态、设置、存 Key、生成、历史恢复、A/B、夜版。
-- DSH 内：`sidebar.panellist` 与 `main` 两个槽位均注册为 `image-workbench`；`/image-workbench/health` 在 51012 上返回插件的 401 JSON（路由已生效，未带页面会话的 curl 被拒）。
+- `node --test tests/`：12 pass / 0 fail（设置与 401、资产去重/路径穿越、批次 text 对象 + frame、历史/删除/损坏索引、ZIP + unzip、P3 开关、key-test 诚实、jobs unknown 不重试、预算/账本、mock MiniMax provider）。
+- 客户端：1120×860、1000、900 宽 harness 验证空态、模板、参数作用域、原图下载、ZIP、Host 历史、A/B、夜版。
+- DSH 内：路由 `/image-workbench/{health,storage,history,assets}` 均返回插件的 401 JSON，说明 Host 已加载；带页面会话的真实点击仍需刷新页面验收。
+
+## 已知限制
+
+- 真实 DSH 页面视觉/下载落盘尚未在本 shell 验收（桌面端 auth token 拿不到）。
+- P3 只有 Host 基础能力；云端卡片仍显示 P3，默认关闭；没有 live MiniMax 调用。
+- 云端 job 在内存，重启丢失状态；账本只记成功；没有取消/清理路由（P3 UI 时补）。
+- 结果只接受 JPEG；原图 JPEG/PNG/WebP ≤20 MB；ZIP ≤80 MB。
