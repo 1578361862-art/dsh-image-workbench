@@ -115,7 +115,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .rail{ padding-right: 18px; border-right: 1px solid var(--p-hair); }
 .iw-root .stage-col{ min-width: 0; padding: 0 18px; }
-.iw-root .inspector{ padding-left: 18px; border-left: 1px solid var(--p-hair); }
+.iw-root .inspector{display:flex;flex-direction:column; padding-left: 18px; border-left: 1px solid var(--p-hair); }
 .iw-root .seg{ display: flex; gap: 2px; padding: 3px; background: var(--p-sunken); border-radius: 7px; }
 .iw-root .seg button{
   flex: 1; height: 24px; border: 0; border-radius: 5px; background: transparent;
@@ -516,8 +516,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
 .iw-root .p3-field .mini-seg,.iw-root .p3-field .num{pointer-events:none}
 @media (min-width: 1021px) {
-.iw-root .inspector{max-height:calc(100vh - 150px);overflow-y:auto;padding-bottom:58px}
-.iw-root .inspector .go{position:sticky;bottom:0;z-index:3}
+.iw-root .inspector{max-height:calc(100vh - 150px);overflow:hidden;padding-bottom:10px}
+.iw-root .ins-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:2px}
+.iw-root .inspector .go{flex:none;margin-top:8px}
+}
+@media (max-width: 1020px) {
+.iw-root .ins-scroll{overflow:visible}
 }
 .iw-root .p3-details{margin-top:8px;border-top:1px solid var(--p-hair);padding-top:6px}
 .iw-root .p3-details summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:6px;font-family:var(--p-mono);font-size:8.5px;letter-spacing:.04em;color:var(--p-ink-3)}
@@ -551,6 +555,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .pcard-wrap{position:relative;min-width:0}
 .iw-root .pcard{width:100%;display:block}
 .iw-root .pcard-dl{position:absolute;top:4px;right:4px;z-index:2;width:34px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid var(--p-hair);background:var(--p-paper-2);color:var(--p-ink-3);font-family:var(--p-mono);font-size:8px;letter-spacing:.02em;line-height:1;padding:0}
+.iw-root .pcard.err{display:flex;flex-direction:column;justify-content:flex-end;min-height:120px;background:var(--p-signal-plate);border-color:var(--p-signal)}
+.iw-root .pcard.err .err-msg{flex:1;display:flex;align-items:center;padding:10px;font-family:var(--p-mono);font-size:8px;line-height:1.45;color:var(--p-signal);text-align:left;overflow:hidden}
 .iw-root .pcard-dl:hover{color:var(--p-signal);border-color:var(--p-signal)}
 .iw-root .pcard-dl:focus-visible{outline:2px solid var(--p-focus);outline-offset:1px}
 
@@ -575,7 +581,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <span class="mark"></span> Image Studio · 图像风格 <span class="fill"></span><span class="no">NO. 01</span>
       </div>
       <h1 class="title">图像风格工作台</h1>
-      <p class="deck">挑一种或几种风格，把同一张图做成不同版本。本机即出，云端 P3 接入。</p>
+      <p class="deck">挑一种或几种风格，把同一张图做成不同版本。本机即出，云端按量接入。</p>
     </div>
     <div class="mast-right">
       <div class="mast-tools">
@@ -599,7 +605,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </label>
       <div class="sec-head"><h2>风格库</h2><span class="count" id="styleCount">08</span></div>
       <div class="styles" id="styleGrid"></div>
-      <div class="rail-note">6 个本机风格来自 print-poster 等配方；云端 2 个在 P3 接入。</div>
+      <div class="rail-note">6 个本机风格 + 2 个云端风格（按量 · 国内站）。</div>
       <div class="history" id="historyBox" hidden>
         <div class="history-head"><b>最近</b><span class="count" id="historyCount">00</span></div>
         <div class="history-list" id="historyList"></div>
@@ -649,6 +655,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </section>
 
     <aside class="inspector">
+      <div class="ins-scroll">
       <div class="ins-head"><h2>已选风格</h2><span class="count" id="selCount">3 版</span></div>
       <div class="chips" id="chips"></div>
       <div class="params-note">参数可共用，也可以只改当前这一版。</div>
@@ -689,6 +696,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         </div>
       </div>
 
+      <div class="field" id="cloudQualityField" hidden>
+        <div class="lab"><span>云端画质</span><span class="val" id="cloudQualityVal">2K</span></div>
+        <div class="size" id="cloudQualityGroup" role="group" aria-label="云端画质">
+          <button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button>
+        </div>
+      </div>
+
       <details class="field text-field" id="textFields" hidden>
         <summary>模板文字 <span id="textSummary">海报 · 静物研究</span></summary>
         <div class="lab"><span>模板版式</span><span class="val">印刷海报</span></div>
@@ -709,14 +723,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
       <div class="cloud-note" id="cloudNote"><span class="dot"></span><span id="cloudNoteText">含 1 版云端 · 调用 H3-Image，约 ¥0.17</span><button class="note-link" id="cloudSettings">设置</button></div>
 
+      </div>
+
       <button class="go" id="go">生成 3 版</button>
-      <div class="ins-note">P1/P2 只跑本机风格；云端在 P3 接入，设置里可先保存 Key。</div>
+      <div class="ins-note">本机 + 云端；云端按量、国内站，第一次生成前会确认上传与费用。</div>
     </aside>
   </main>
 
   <footer class="wrap foot">
-    <span>P1 / P2 · 本机 Canvas + 模板；云端风格 P3 接入，不调用 MiniMax。</span>
-    <span>DSH · IMAGE STUDIO / P1</span>
+    <span>P1 / P2 / P3 · 本机 Canvas + 模板；云端 H3 按量 · 国内站。</span>
+    <span>DSH · IMAGE STUDIO / P1–P3</span>
   </footer>
 </div>
 
@@ -732,35 +748,35 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </header>
 
     <div class="drawer-body">
-      <div class="p3-banner"><b>P1/P2 只做本机。</b> Key、地址、模型、计费、预算、并发是 P3 云端设置，现在只保存，不生效。</div>
+      <div class="p3-banner"><span id="cloudBanner"><b>云端未启用。</b> 保存 API Key 后启用云端（按量 · 国内站）；第一次生成会确认上传与费用。</span></div>
       <section class="set-sec">
-        <div class="set-title"><span>云端服务</span><span class="mono">P3 接入</span></div>
-        <div class="set-row"><span>API Key（P3 使用）</span><b id="keyState" class="key-state">P3 前无需配置</b></div>
+        <div class="set-title"><span>云端服务</span><span class="mono">MINIMAX</span></div>
+        <div class="set-row"><span>API Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
         <div class="key-edit" id="keyEdit" hidden>
           <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off">
           <button class="ghost-btn" id="keySave">保存</button>
         </div>
         <div class="set-links">
           <button class="ghost-btn" id="keyChange">更换 Key</button>
-          <button class="ghost-btn" id="keyTest">检查已保存的 Key</button>
+          <button class="ghost-btn" id="keyTest">检查 Key（需一次生成）</button>
         </div>
         <details class="p3-details">
-          <summary>P3 云端配置 <span>地址 / 模型 / 计费 / 预算 / 并发</span></summary>
+          <summary>云端配置 <span>国内站 / 按量 / 预算</span></summary>
           <div class="set-field p3-field">
-            <span class="lab">接口地址（P3）</span>
+            <span class="lab">接口地址</span>
             <div class="mini-seg" data-group="base"><button class="on">国内站</button><button>国际站</button></div>
           </div>
           <div class="set-field p3-field">
-            <span class="lab">模型（P3）</span>
+            <span class="lab">模型</span>
             <div class="mini-seg" data-group="model"><button class="on">H3 标准</button><button>H3 极速</button></div>
           </div>
           <div class="set-field p3-field">
-            <span class="lab">计费（P3）</span>
+            <span class="lab">计费</span>
             <div class="mini-seg" data-group="bill"><button class="on">按量</button><button>M Plan</button></div>
           </div>
-          <div class="set-row p3-field"><span>每日预算（P3）</span><b class="num-wrap">¥ <input id="budget" class="num" type="number" value="10" min="0" step="1" aria-label="每日预算"></b></div>
+          <div class="set-row"><span>每日预算（按量）</span><b class="num-wrap">¥ <input id="budget" class="num" type="number" value="10" min="0" step="1" aria-label="每日预算"></b></div>
           <div class="set-field p3-field">
-            <span class="lab">并发生成（P3）</span>
+            <span class="lab">并发生成</span>
             <div class="mini-seg" data-group="conc"><button>1</button><button class="on">2</button><button>3</button><button>4</button></div>
           </div>
         </details>
@@ -779,12 +795,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-title"><span>隐私</span><span class="mono">PRIVACY</span></div>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
         <div class="set-row"><span>本机风格</span><b>不离开浏览器</b></div>
-        <p class="set-note">云端风格会把原图上传到 MiniMax；本机风格只在浏览器里处理，不上传。</p>
+        <p class="set-note">云端风格会把原图上传到 MiniMax（国内站，按量）；本机风格只在浏览器里处理，不上传。</p>
       </section>
 
       <section class="set-sec">
         <div class="set-title"><span>风格包</span><span class="mono">PACKS</span></div>
-        <div class="set-row"><span>已安装</span><b>8 个 · 2 个 P3</b></div>
+        <div class="set-row"><span>已安装</span><b>8 个 · 2 个云端</b></div>
         <div class="set-links">
           <button class="ghost-btn" id="importPack">导入风格包（P2）</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
@@ -800,7 +816,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
     <footer class="drawer-foot">
       <button class="go" id="saveSettings">保存设置</button>
-      <div class="ins-note">Key 存 DSH 凭据；P1/P2 不发云端请求。</div>
+      <div class="ins-note">Key 存 DSH 凭据；只在本机/云端生成时使用。</div>
     </footer>
   </aside>
 </div>
@@ -852,8 +868,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'cyanotype', name: '蓝染 / 氰版', renderer: 'canvas', eta: '0.3s', desc: '普鲁士蓝单色，晒版与手工冲印的质感' },
     { id: 'film', name: '胶片褪色', renderer: 'canvas', eta: '0.2s', desc: '提黑、褪色、轻颗粒，像旧底片' },
     { id: 'poster', name: '印刷海报', renderer: 'html', eta: '2.4s', desc: '模板排版：图 + 标题 + 版式，一键出海报' },
-    { id: 'h3-illus', name: 'H3 插画化', renderer: 'model', eta: '25s', desc: '云端语义重绘，P3 接入', disabled: true },
-    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '云端黑白银盐，P3 接入', disabled: true }
+    { id: 'h3-illus', name: 'H3 插画化', renderer: 'model', eta: '25s', desc: '云端语义重绘，保留构图与主体', prompt: '将图1转为 H3 插画风格：保留主体身份、姿态、构图、文字和背景关系；只改变材质、光线、色彩与笔触；暖色、细颗粒、轻微光晕。' },
+    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '云端黑白银盐，保留构图与主体', prompt: '将图1转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；只改变影调、材质与颗粒；深黑、银灰、高光柔和。' }
   ];
 
   var state = {
@@ -866,6 +882,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     scope: 'shared',
     text: { variant: 'poster', title: '静物研究', subtitle: '光与纸的第二次曝光', date: '2026.11', handle: '@IMAGE STUDIO' },
     assetId: null,
+    cloudQuality: '2K',
     frame: '3:2',
     results: [],
     activeResult: null,
@@ -1405,6 +1422,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function price() {
     return state.params.size === '1200' ? 0.24 : state.params.size === '640' ? 0.14 : 0.17;
   }
+  function cloudReady() {
+    return !!(state.settings && state.settings.hasKey && state.settings.cloud);
+  }
+
+  function cloudUnitPrice() {
+    if (state.cloudQuality === '4K') {
+      var promoEnd = new Date('2026-11-18T00:00:00+08:00').getTime();
+      return Date.now() < promoEnd ? 0.2404 : 0.4809;
+    }
+    return state.cloudQuality === '1K' ? 0.1744 : 0.1747;
+  }
+
   function styleById(id) {
     for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === id) return STYLES[i];
     return null;
@@ -1428,15 +1457,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#styleCount').textContent = ('0' + list.length).slice(-2);
     $('#styleGrid').innerHTML = list.map(function (s) {
       var on = state.selected.indexOf(s.id) >= 0;
-      var disabled = !!s.disabled;
-      var tag = disabled ? '云端 · P3' : s.renderer === 'html' ? '模板' : '本机';
-      var tail = disabled ? '' : '<span>' + tag + ' · ' + s.eta + '</span>';
-      if (!disabled && s.renderer === 'model') tail += '<span class="price">¥' + price().toFixed(2) + '</span>';
-      return '<button class="card' + (on ? ' on' : '') + (disabled ? ' disabled' : '') + '" data-id="' + s.id + '" title="' + s.desc + '"' + (disabled ? ' aria-disabled="true"' : '') + '>' +
+      var tag = s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : '本机';
+      var tail = '<span>' + tag + ' · ' + s.eta + '</span>';
+      if (s.renderer === 'model') tail += '<span class="price">¥' + cloudUnitPrice().toFixed(2) + '</span>';
+      return '<button class="card' + (on ? ' on' : '') + '" data-id="' + s.id + '" title="' + s.desc + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
         '<img src="' + (state.thumbs[s.id] || '') + '" alt="">' +
         '<span class="tick">✓</span>' +
         '<span class="cap"><span class="nm">' + s.name + '</span>' +
-        '<span class="mt">' + (disabled ? '<span class="p3">' + tag + '</span>' : tail) + '</span></span>' +
+        '<span class="mt">' + tail + '</span></span>' +
         '</button>';
     }).join('');
     if (activeId) {
@@ -1453,7 +1481,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#chips').innerHTML = state.selected.map(function (id) {
       var s = styleById(id);
       var on = state.focus === id;
-      var tag = on ? '预览中' : (s.renderer === 'html' ? '模板' : '本机');
+      var tag = on ? '预览中' : (s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : '本机');
       return '<div class="chip' + (on ? ' on' : '') + '">' +
         '<img src="' + (state.thumbs[id] || '') + '" alt="">' +
         '<span class="cname">' + s.name + '</span><span class="ctag">' + tag + '</span>' +
@@ -1463,19 +1491,37 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function renderEstimate() {
-    var n = state.selected.length;
-    $('#estLocal').textContent = n;
-    $('#estLocalTime').textContent = n ? '≈ ' + (n * 0.3).toFixed(1) + ' s' : '—';
-    $('#estCloudRow').style.display = 'none';
-    $('#estEta').textContent = n ? '≈ ' + Math.max(1, Math.round(n * 0.3)) + ' s' : '≈ 0 s';
-    $('#estCost').textContent = '¥0.00';
-    $('#cloudNote').style.display = 'none';
+    var localN = state.selected.filter(function (id) {
+      var s = styleById(id);
+      return s && s.renderer !== 'model';
+    }).length;
+    var cloudN = state.selected.filter(function (id) {
+      var s = styleById(id);
+      return s && s.renderer === 'model';
+    }).length;
+    var cloudCost = cloudN * cloudUnitPrice();
+    $('#estLocal').textContent = localN;
+    $('#estLocalTime').textContent = localN ? '≈ ' + (localN * 0.3).toFixed(1) + ' s' : '—';
+    $('#estCloud').textContent = cloudN;
+    $('#estCloudCost').textContent = cloudN ? '¥' + cloudCost.toFixed(4) : '¥0.00';
+    $('#estCloudRow').style.display = cloudN ? '' : 'none';
+    var eta = localN * 0.3 + cloudN * 25;
+    $('#estEta').textContent = eta > 0 ? '≈ ' + (eta < 1 ? '1' : Math.round(eta)) + ' s' : '≈ 0 s';
+    $('#estCost').textContent = '¥' + cloudCost.toFixed(4);
+    $('#cloudNote').style.display = cloudN ? '' : 'none';
+    if (cloudN) {
+      $('#cloudNoteText').textContent = '含 ' + cloudN + ' 版云端 · 按量 · 国内站 · 约 ¥' + cloudCost.toFixed(2);
+    }
   }
 
   function renderStamp() {
-    $('#stampMain').textContent = '今日 ' + state.results.length + ' 张 · ¥0.00';
-    $('#stampSub').textContent = '本机 6 · 云端 2（P3）';
-    $('#usageText').textContent = state.results.length + ' 张本机 · ¥0.00';
+    var success = state.results.filter(function (r) { return !r.error; }).length;
+    var cost = state.results.filter(function (r) { return r.cloud && !r.error; }).reduce(function (sum, r) {
+      return sum + (Number(r.cost) || 0);
+    }, 0);
+    $('#stampMain').textContent = '今日 ' + success + ' 张 · ¥' + cost.toFixed(2);
+    $('#stampSub').textContent = '本机 6 · 云端 2';
+    $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
 
   function updateUI() {
@@ -1484,12 +1530,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#go').disabled = !n || state.generating || !state.source.url;
     $('#go').textContent = !state.source.url ? '先载入图片' : (state.generating ? '生成中 ' + state.results.length + ' / ' + n : '生成 ' + n + ' 版');
     $('#proofCount').textContent = state.results.length + ' / ' + (state.generating ? n : (state.results.length || n));
-    $('#zipBtn').disabled = !state.results.length || state.dirty || state.generating;
+    var successCount = state.results.filter(function (r) { return !r.error; }).length;
+    var failedCount = state.results.length - successCount;
+    $('#zipBtn').disabled = !successCount || state.dirty || state.generating;
     $('#frameHint').textContent = state.frame === '原图' ? '原图比例' : state.frame + ' 裁切';
     $('#sampleTag').hidden = !state.source.url || !state.isSample;
     var status = $('#proofStatus');
-    status.textContent = state.generating ? '生成中…' : (state.dirty ? '参数已修改 · 重新生成' : (state.results.length ? '已生成' : ''));
-    status.className = 'proof-status' + (state.dirty ? ' dirty' : '');
+    status.textContent = state.generating ? '生成中…' : (state.dirty ? '参数已修改 · 重新生成' : (state.results.length ? (failedCount ? failedCount + ' 版失败' : '已生成') : ''));
+    status.className = 'proof-status' + (state.dirty || failedCount ? ' dirty' : '');
     var focusId = state.focus || state.selected[0] || '';
     var eff = effective(focusId);
     var view = state.scope === 'style' ? eff : state.params;
@@ -1503,6 +1551,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       : (state.scope === 'style' ? '只改当前风格；其他风格不变。' : '');
     $('#sizeVal').textContent = state.params.size + ' px';
     $('#frameVal').textContent = state.frame;
+    var hasCloud = state.selected.some(function (id) {
+      var st = styleById(id);
+      return st && st.renderer === 'model';
+    });
+    $('#cloudQualityField').hidden = !hasCloud;
+    $('#cloudQualityVal').textContent = state.cloudQuality;
+    $$('#cloudQualityGroup button').forEach(function (el) {
+      el.classList.toggle('on', el.dataset.quality === state.cloudQuality);
+    });
     $$('#scopeGroup button').forEach(function (el) { el.classList.toggle('on', el.dataset.scope === state.scope); });
     var isTemplate = focusId === 'poster';
     $('#textFields').hidden = !isTemplate;
@@ -1592,8 +1649,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function showPreview() {
     if (!state.source.url) { showOriginal(); return; }
     if (!state.focus) { showOriginal(); return; }
-    var token = ++previewToken;
     var s = styleById(state.focus);
+    if (s.renderer === 'model') {
+      showOriginal();
+      caption('<b>云端</b> · ' + s.name, '生成后上传并出图');
+      return;
+    }
+    var token = ++previewToken;
     state.activeResult = null;
     caption('<b>预览</b> · ' + s.name, state.frame + ' · sRGB');
     renderProof();
@@ -1609,8 +1671,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var idx = -1;
     for (var i = 0; i < state.results.length; i++) if (state.results[i].id === id) idx = i;
     if (idx < 0) return;
-    var r = state.results[idx], s = styleById(id);
+    var r = state.results[idx], s = styleById(id) || { name: id };
     state.activeResult = id;
+    if (r.error) {
+      $('#print').classList.add('original-only');
+      $('#resultImg').removeAttribute('src');
+      caption('<b>失败</b> · ' + s.name, r.error.message);
+      renderProof();
+      return;
+    }
     $('#print').classList.remove('original-only');
     $('#resultImg').src = r.url;
     caption('<b>结果 ' + ('0' + (idx + 1)).slice(-2) + '</b> · ' + s.name, r.w + ' × ' + r.h + ' · sRGB');
@@ -1641,12 +1710,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function proofCard(r, i) {
-    var s = styleById(r.id);
+    var s = styleById(r.id) || { name: r.id };
     var on = state.activeResult === r.id ? ' on' : '';
+    if (r.error) {
+      return '<div class="pcard-wrap">' +
+        '<button class="pcard err' + on + '" data-result="' + r.id + '" title="' + escapeHTML(r.error.message) + '">' +
+        '<span class="err-msg">' + escapeHTML(r.error.message) + '</span>' +
+        '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>失败</span></span>' +
+        '</button>' +
+        '</div>';
+    }
     return '<div class="pcard-wrap">' +
-      '<button class="pcard' + on + '" data-result="' + r.id + '">' +
+      '<button class="pcard' + on + '" data-result="' + r.id + '" title="' + (r.revisedPrompt ? escapeHTML(r.revisedPrompt) : s.name) + '">' +
       '<img src="' + r.url + '" alt="">' +
-      '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>本机</span></span>' +
+      '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>' + (r.cloud ? '云端' : '本机') + '</span></span>' +
       '</button>' +
       '<button class="pcard-dl" data-download="' + r.id + '" title="下载这一版" aria-label="下载 ' + s.name + '">下载</button>' +
       '</div>';
@@ -1668,6 +1745,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (state.results[i].id === id) { found = state.results[i]; index = i; }
     }
     if (!found) return;
+    if (found.error) { toast('这一版失败了，不能下载'); return; }
+    if (found.cloud) {
+      var cloudA = document.createElement('a');
+      cloudA.href = found.url;
+      cloudA.download = 'cloud-' + ('0' + (index + 1)).slice(-2) + '-' + found.id + '.jpg';
+      cloudA.click();
+      toast('已发起下载 · ' + styleById(id).name + ' · 云端');
+      return;
+    }
     var es = exportSize();
     toast('正在导出原图…');
     renderStyleAsync(id, es.w, es.h, found.params ? Object.assign({}, found.params) : undefined).then(function (c) {
@@ -1687,12 +1773,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var es = exportSize();
     toast('正在打包 ' + state.results.length + ' 张原图…');
     var jobs = state.results.map(function (r, i) {
+      if (r.error) return null;
+      var name = ('0' + (i + 1)).slice(-2) + '-' + r.id + '.jpg';
+      if (r.cloud) {
+        return fetch(r.url).then(function (res) {
+          if (!res.ok) return null;
+          return res.blob();
+        }).then(function (blob) {
+          if (!blob) return null;
+          return blobToDataURL(blob).then(function (dataUrl) { return { name: name, dataUrl: dataUrl }; });
+        }).catch(function () { return null; });
+      }
       return renderStyleAsync(r.id, es.w, es.h, r.params ? Object.assign({}, r.params) : undefined).then(function (c) {
         if (!c) return null;
-        return {
-          name: ('0' + (i + 1)).slice(-2) + '-' + r.id + '.jpg',
-          dataUrl: c.toDataURL('image/jpeg', 0.94)
-        };
+        return { name: name, dataUrl: c.toDataURL('image/jpeg', 0.94) };
       });
     });
     Promise.all(jobs).then(function (files) {
@@ -1700,14 +1794,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.2.0',
+        version: '0.3.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
         text: state.text,
-        items: state.results.map(function (r) {
+        items: state.results.filter(function (r) { return !r.error; }).map(function (r) {
           var st = styleById(r.id) || { name: r.id };
-          return { styleId: r.id, name: st.name, params: r.params || effective(r.id), w: es.w, h: es.h };
+          return { styleId: r.id, name: st.name, params: r.params || effective(r.id), w: r.w || es.w, h: r.h || es.h };
         })
       };
       return fetch(API + '/export', {
@@ -1730,9 +1824,83 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   /* ————— 生成 ————— */
+  function cloudError(message, code) {
+    return { code: code || 'cloud_error', message: message || '云端生成失败' };
+  }
+
+  async function ensureAssetId() {
+    if (state.assetId) return state.assetId;
+    var saved = await saveAsset(state.source.url, state.source.name, state.source.w, state.source.h);
+    if (!saved || !saved.id) throw cloudError('原图上传失败，请检查 Host 存储', 'asset_upload_failed');
+    return saved.id;
+  }
+
+  async function startCloudJob(assetId, id) {
+    var style = styleById(id);
+    var body = {
+      assetId: assetId,
+      styleId: id,
+      prompt: style.prompt,
+      size: state.cloudQuality,
+      params: effective(id)
+    };
+    var opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    var res = await fetch(API + '/cloud/jobs', opts);
+    var data = await res.json().catch(function () { return {}; });
+    if (res.status === 402 && data.code === 'budget_exceeded') {
+      var msg = '今日云端预算不足。\n预计 ¥' + Number(data.estimatedYuan || 0).toFixed(4) +
+        ' · 已用 ¥' + Number(data.spentTodayYuan || 0).toFixed(4) +
+        ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) +
+        '。\n\n仍要生成这一张吗？';
+      if (!window.confirm(msg)) throw cloudError('已取消云端（预算不足）', 'budget_cancelled');
+      body.allowOverBudget = true;
+      res = await fetch(API + '/cloud/jobs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      data = await res.json().catch(function () { return {}; });
+    }
+    if (!res.ok) throw cloudError(data.error || ('云端请求失败 ' + res.status), data.code);
+    return data;
+  }
+
+  async function waitCloudJob(id) {
+    var deadline = Date.now() + 620000;
+    while (Date.now() < deadline) {
+      await sleep(1500);
+      if (disposed) throw cloudError('页面已关闭', 'disposed');
+      var res = await fetch(API + '/cloud/jobs/' + encodeURIComponent(id), { cache: 'no-store' });
+      var job = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw cloudError(job.error || ('云端状态读取失败 ' + res.status), job.code);
+      if (['succeeded', 'failed', 'unknown', 'canceled'].indexOf(job.status) >= 0) return job;
+    }
+    return { status: 'unknown', error: cloudError('等待超时；请求可能已生成并计费', 'unknown') };
+  }
+
   function generate(auto) {
     if (state.generating || !state.selected.length || !state.source.url || disposed) return;
     var ids = state.selected.slice();
+    var localIds = ids.filter(function (id) {
+      var s2 = styleById(id);
+      return s2 && s2.renderer !== 'model';
+    });
+    var cloudIds = ids.filter(function (id) {
+      var s2 = styleById(id);
+      return s2 && s2.renderer === 'model';
+    });
+    if (cloudIds.length) {
+      if (!cloudReady()) {
+        toast('先在设置里保存 API Key 启用云端');
+        openSettings();
+        return;
+      }
+      if (state.settings.privacyConfirm && !state.cloudConfirmed) {
+        var estimate = cloudIds.length * cloudUnitPrice();
+        var ok = window.confirm('云端生成会把原图上传到 MiniMax（国内站，按量）。\n' +
+          cloudIds.length + ' 版 · 预计 ¥' + estimate.toFixed(4) + '。\n\n继续？');
+        if (!ok) { toast('已取消云端生成'); return; }
+        state.cloudConfirmed = true;
+      }
+    }
     var size = outSize();
     state.generating = true;
     state.results = [];
@@ -1742,35 +1910,89 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     updateUI();
 
     (async function () {
-      for (var i = 0; i < ids.length; i++) {
+      var assetId = null;
+      if (cloudIds.length) {
+        try { assetId = await ensureAssetId(); }
+        catch (err) {
+          cloudIds.forEach(function (id) {
+            state.results.push({ id: id, cloud: true, params: effective(id), error: cloudError(err.message, err.code) });
+          });
+        }
+      }
+
+      for (var i = 0; i < localIds.length; i++) {
         await sleep(210);
         if (disposed) return;
-        var s = styleById(ids[i]);
-        var c = await renderStyleAsync(ids[i], size.w, size.h);
+        var c = await renderStyleAsync(localIds[i], size.w, size.h);
         if (!c) continue;
         state.results.push({
-          id: ids[i],
+          id: localIds[i],
           url: c.toDataURL('image/jpeg', 0.92),
           w: size.w,
           h: size.h,
-          params: effective(ids[i]),
+          params: effective(localIds[i]),
           cost: 0
         });
         renderProof();
         updateUI();
-        if (i === 0) showResult(ids[i]);
+        if (i === 0) showResult(localIds[i]);
       }
+
+      if (assetId) {
+        for (var c2 = 0; c2 < cloudIds.length; c2++) {
+          if (disposed) return;
+          var cid = cloudIds[c2];
+          try {
+            var started = await startCloudJob(assetId, cid);
+            var job = await waitCloudJob(started.id);
+            if (job.status === 'succeeded' && job.output) {
+              state.results.push({
+                id: cid,
+                url: job.output.url,
+                w: job.output.w,
+                h: job.output.h,
+                cloud: true,
+                params: effective(cid),
+                cost: cloudUnitPrice(),
+                revisedPrompt: job.revisedPrompt || null
+              });
+            } else {
+              state.results.push({
+                id: cid,
+                cloud: true,
+                params: effective(cid),
+                error: cloudError(
+                  (job.error && job.error.message) || ('云端作业 ' + job.status),
+                  (job.error && job.error.code) || job.status
+                )
+              });
+            }
+          } catch (err) {
+            state.results.push({ id: cid, cloud: true, params: effective(cid), error: cloudError(err.message, err.code) });
+          }
+          renderProof();
+          updateUI();
+          if (state.focus === cid) {
+            var cloudResult = null;
+            for (var k = 0; k < state.results.length; k++) if (state.results[k].id === cid) cloudResult = state.results[k];
+            if (cloudResult && !cloudResult.error) showResult(cid);
+          }
+        }
+      }
+
       if (disposed) return;
       state.generating = false;
       state.dirty = false;
       var focusResult = null;
       for (var j = 0; j < state.results.length; j++) if (state.results[j].id === state.focus) focusResult = state.results[j];
-      var target = focusResult || state.results[0];
+      var target = focusResult || state.results.filter(function (r) { return !r.error; })[0] || state.results[0];
       if (target) showResult(target.id);
       updateUI();
       if (!auto) {
         rememberBatch();
-        toast('试印完成 · ' + state.results.length + ' 版');
+        var okCount = state.results.filter(function (r) { return !r.error; }).length;
+        var failCount = state.results.length - okCount;
+        toast('试印完成 · ' + okCount + ' 版' + (failCount ? ' · ' + failCount + ' 版失败' : ''));
       }
     })();
   }
@@ -1778,7 +2000,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function toggleStyle(id) {
     var s = styleById(id);
     if (!s || state.generating) return;
-    if (s.disabled) { toast('云端接入在 P3；设置里可以先保存 Key'); return; }
+    if (s.renderer === 'model' && !cloudReady()) {
+      toast('先在设置里保存 API Key 启用云端');
+      openSettings();
+      return;
+    }
     if (state.selected.indexOf(id) >= 0) {
       state.focus = id;
       renderChips();
@@ -1924,6 +2150,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       at: new Date(entry.createdAt || Date.now()).getTime(),
       source: entry.source && entry.source.url,
       sourceName: (entry.source && entry.source.name) || 'history',
+      assetId: entry.source && entry.source.id,
       styleIds: (entry.results || []).map(function (r) { return r.styleId; }),
       params: {},
       text: entry.text || null,
@@ -1979,16 +2206,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       at: Date.now(),
       source: state.source.url,
       sourceName: state.source.name,
+      assetId: state.assetId,
       styleIds: state.selected.slice(),
       params: { strength: state.params.strength, ink: state.params.ink, grain: state.params.grain, size: state.params.size },
       frame: state.frame,
-      results: state.results.map(function (r) { return { id: r.id, url: r.url, w: r.w, h: r.h }; })
+      results: state.results.filter(function (r) { return !r.error; }).map(function (r) {
+        return { id: r.id, url: r.url, w: r.w, h: r.h, cloud: !!r.cloud };
+      })
     };
     var list = readHistory();
     list.unshift(entry);
     writeHistory(list.slice(0, 3));
     renderHistory();
-    if (state.assetId) {
+    if (state.assetId && !state.results.some(function (r) { return r.cloud; })) {
       apiFetch('/batches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2027,6 +2257,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!e) return;
     setSource(e.source, e.sourceName || 'history').then(function () {
       if (disposed) return;
+      state.assetId = e.assetId || null;
       state.selected = (e.styleIds || []).filter(function (id) {
         var s = styleById(id);
         return s && !s.disabled;
@@ -2082,12 +2313,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function setKeyState(s) {
     var el = $('#keyState');
     if (!el) return;
-    if (s && s.hasKey) {
+    var banner = $('#cloudBanner');
+    if (s && s.hasKey && s.cloud) {
       el.textContent = '已保存 · 尾号 ' + (s.keyHint || '****');
       el.classList.remove('warn');
+      if (banner) banner.innerHTML = '<b>云端已启用</b> · 按量 · 国内站。每次生成会先确认上传与费用。';
+    } else if (s && s.hasKey) {
+      el.textContent = '已保存 · 云端未启用';
+      el.classList.add('warn');
+      if (banner) banner.textContent = 'Key 已保存；点「保存设置」启用云端。';
     } else {
-      el.textContent = 'P3 前无需配置';
-      el.classList.remove('warn');
+      el.textContent = '未配置 · 云端不可用';
+      el.classList.add('warn');
+      if (banner) banner.textContent = '保存 API Key 后启用云端（按量 · 国内站）；第一次生成会确认上传与费用。';
     }
   }
   function loadSettings() {
@@ -2136,7 +2374,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       concurrency: Number(currentSeg('conc')),
       base: currentSeg('base') === '国际站' ? 'intl' : 'cn',
       model: currentSeg('model') === 'H3 极速' ? 'highspeed' : 'standard',
-      billing: currentSeg('bill') === 'M Plan' ? 'mplan' : 'payg'
+      billing: currentSeg('bill') === 'M Plan' ? 'mplan' : 'payg',
+      enableCloud: !!(state.settings && state.settings.hasKey)
     };
     var key = $('#keyInput').value.trim();
     if (key) body.key = key;
@@ -2162,6 +2401,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!key) { toast('请输入 Key'); return; }
     postSettings({ key: key }).then(function (s) {
       if (disposed) return;
+      state.settings = s;
       setKeyState(s);
       $('#keyInput').value = '';
       $('#keyEdit').hidden = true;
@@ -2169,12 +2409,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function (err) { toast(err.message || 'Key 保存失败'); });
   }
   function testKey() {
-    apiFetch('/test', { method: 'POST' }).then(function (res) {
+    fetch(API + '/cloud/key-test', { method: 'POST' }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok || !data.ok) throw new Error(data.error || '还没有保存 Key');
-        toast(data.message || 'Key 已保存');
+        if (data.supported === false) {
+          toast(data.error || '官方没有免计费的 Key 探测端点；请用一次云端生成验证');
+          return;
+        }
+        if (!res.ok || data.ok !== true) throw new Error(data.error || 'Key 不可用');
+        toast('Key 可用');
       });
-    }).catch(function (err) { toast(err.message || '试连失败'); });
+    }).catch(function (err) { toast(err.message || '检查 Key 失败'); });
   }
 
   /* ————— 提示 ————— */
@@ -2252,6 +2496,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       updateUI();
       renderProof();
       schedulePreview();
+    });
+    $$('#cloudQualityGroup button').forEach(function (el) {
+      el.addEventListener('click', function () {
+        state.cloudQuality = el.dataset.quality;
+        if (state.results.length) state.dirty = true;
+        updateUI();
+        renderGrid();
+        renderProof();
+      });
     });
     $$('#frameGroup button').forEach(function (el) {
       el.addEventListener('click', function () {

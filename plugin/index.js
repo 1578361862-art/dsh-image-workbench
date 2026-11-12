@@ -98,6 +98,7 @@ function sanitizeConfig(body, current) {
     if (!['payg', 'mplan'].includes(body.billing)) fail('计费方式无效')
     next.billing = body.billing
   }
+  if (body.enableCloud === true) next.cloudEnabled = true
   return next
 }
 
@@ -128,13 +129,18 @@ async function keyInfo(ctx) {
 async function publicSettings(ctx) {
   const config = await readConfig()
   const key = await keyInfo(ctx)
-  return { ...config, ...key, cloud: false, phase: 'P2' }
+  return { ...config, ...key, cloud: config.cloudEnabled === true && key.hasKey, phase: 'P2' }
 }
 
 async function applyKey(ctx, body) {
   const store = ctx.get('credentials')
+  const config = await readConfig()
   if (body.clearKey === true) {
     if (store) await store.deleteRecord(CREDENTIAL)
+    if (config.cloudEnabled === true) {
+      config.cloudEnabled = false
+      await writeConfig(config)
+    }
     return
   }
   if (typeof body.key !== 'string') return
@@ -143,6 +149,10 @@ async function applyKey(ctx, body) {
   if (key.length > 4096) fail('API Key 太长')
   if (!store) fail('当前 Harness 没有可用的凭据存储')
   await store.modifyRecord(CREDENTIAL, async () => ({ kind: 'api-key', key }))
+  if (config.cloudEnabled !== true) {
+    config.cloudEnabled = true
+    await writeConfig(config)
+  }
 }
 
 async function serveSample(req, res) {
@@ -227,7 +237,7 @@ export default {
         if (!key.hasKey) return json(res, 400, { ok: false, error: '还没有保存 API Key' })
         return json(res, 200, {
           ok: true,
-          message: 'Key 已保存。P1/P2 只做本机风格，云端联通会在 P3 接入时验证。',
+          message: 'Key 已保存，云端已启用。第一次云端生成会实际校验 Key 并计费。',
         })
       }
 

@@ -154,9 +154,11 @@ test('P2 行为保留：health / settings / sample / test', async () => {
   assert.equal(saved.body.defaultSize, '1200')
   assert.equal(saved.body.hasKey, true)
   assert.equal(saved.body.keyHint, '1234')
+  assert.equal(saved.body.cloud, true, '保存 Key 后应启用云端')
 
   const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
   assert.equal(config.budget, 12)
+  assert.equal(config.cloudEnabled, true, '保存 Key 后 cloudEnabled=true')
   assert.equal(statSync(CONFIG).mode & 0o777, 0o600, 'config 必须是 0600')
 
   const bad = await postJson('/settings', { budget: 999 })
@@ -408,7 +410,10 @@ test('导出 ZIP：results/ + manifest.json、UTF-8 名称、去重与安全化'
   assert.ok(stats.body.bytes > 0)
 })
 
-test('P3 默认关闭：cloud / usage 都是 403', async () => {
+test('P3 未启用：cloud / usage 都是 403', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  config.cloudEnabled = false
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
   const jobs = await postJson('/cloud/jobs', {})
   assert.equal(jobs.status, 403)
   assert.equal(jobs.body.error, '云端功能未启用')

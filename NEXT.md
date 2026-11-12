@@ -1,6 +1,6 @@
 # 图像风格工作台 · 剩余待办
 
-> 2026-11-13 · 当前 0.2.0：P1 + P2 代码完成，P3 Host 基础完成；源码 `~/Code/dsh-image-workbench`。
+> 2026-11-13 · 当前 0.3.0：P1 + P2 + P3 UI 代码完成，真实 Key live 验收待做；源码 `~/Code/dsh-image-workbench`。
 
 ## 已完成
 
@@ -8,8 +8,8 @@
 - P1 修正：`poster` 现在是真正的 HTML 文字层 + Canvas 图像；下载改为每张卡片单张，不再有「下载全部」；去掉「点对比原图」提示。
 - P2：模板文字（海报/卡片）、共用/当前风格参数、原图长边导出、ZIP + manifest、Host 持久历史/资产/批次/删除、localStorage 回落。
 - P2 Host：`assets / batches / history / batch DELETE / result / export / storage`；`tests/host.test.mjs` 12 pass。
-- P3 Host：MiniMax edits provider、jobs、budget、ledger、`cloudEnabled` 默认关；key-test 诚实 501；timeout → unknown 不重试；mock provider 测试通过。
-- 仓库归位：`~/Code/dsh-image-workbench`（git，0.2.0）；插件从该路径安装。
+- P3：云端 UI（H3 插画/银盐）、1K/2K/4K、预估费用、预算/隐私确认、partial failure、unknown 不重试；Host provider/队列/预算/账本；保存 Key 后自动启用云端；key-test 诚实 501。
+- 仓库归位：`~/Code/dsh-image-workbench`（git，0.3.0）；插件从该路径安装。
 
 ## 还没闭环
 
@@ -20,11 +20,11 @@
 - [ ] 设置存 Key、默认尺寸、隐私；夜版；A/B 键盘；控制台无 slot 报错。
 - [ ] 1024/900 宽下检查（harness 已过，真机待看）。
 
-### P3 云端 UI（下一步）
-- [ ] 打开 `cloudEnabled`，启用两张 H3 卡；预估费用、隐私确认、进度、部分失败、unknown 文案、revised_prompt、手动重试二次确认。
-- [ ] `cloud/key-test` 仍是 501（官方无免费鉴权端点）；用一次真实 edits 验证 Key/账本。
-- [ ] 真实 API Key / 按量 vs M Plan / 国内站 vs 国际站 / 2K vs 4K 拍板。
-- [ ] job 持久化、取消、90 天清理；账本按 usage 回填实际费用。
+### P3 真实 Key 验收（下一步）
+- [ ] 在设置里填入真实 MiniMax 开放平台 API Key；确认钥匙串/credentials 保存、刷新后尾号还在。
+- [ ] 选 H3 插画化，2K，生成一张；确认实际请求、结果落盘、费用/usage 记录。
+- [ ] 试 401/余额不足/内容安全/超时 unknown；确认不自动重试、错误卡可读；预算 402 手动放行。
+- [ ] job 持久化、取消、90 天清理；云端结果写 index（当前 cloud 结果只进本地历史）；账本按 usage 回填实际费用。
 
 ### P4 / P5
 - [ ] Agent 工具、矩阵批量、风格包导入、Context-IR 预览。
@@ -32,6 +32,6 @@
 
 ## 拍板
 
-1. 下一步是否直接做 P3 云端 UI？需要 API Key 与图片上传授权。
-2. 按量 API Key 还是 M Plan（扣周额度、不显示金额）？
-3. 是否需要我把「打包下载」改成默认 ZIP（现在单张/打包并存）？
+1. 请把 MiniMax API Key 填进设置（按量 · 国内站已固定），然后点一次 H3 插画化 2K，把结果/报错发我。
+2. 4K 促销到 2026-11-18；之后如果继续用 4K，单价约翻倍，是否保留 4K 选项？
+3. 云端结果目前只进本地历史，是否要写进 Host index（重装/换浏览器也能恢复）？
