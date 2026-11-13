@@ -517,6 +517,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .matrix-dialog .drawer-foot .go{width:auto;flex:none;height:34px;padding:0 18px;margin:0}
 .iw-root .matrix-dialog .drawer-foot .ghost-btn{height:34px;flex:none}
 .iw-root .matrix-dialog .drawer-foot .ins-note{flex:1;margin:0;font-size:9px}
+.iw-root .cloud-price-hint{margin-top:4px;font-family:var(--p-mono);font-size:8px;line-height:1.45;color:var(--p-ink-4)}
 .iw-root .prompt-preview{margin-top:6px;padding:6px 8px;border-left:2px solid var(--p-hair);background:var(--p-sunken);font-family:var(--p-mono);font-size:8px;line-height:1.5;color:var(--p-ink-3);max-height:100px;overflow:auto;white-space:pre-wrap}
 .iw-root .matrix-body{padding:12px 20px;overflow:auto;min-height:120px}
 .iw-root .matrix-note{font-family:var(--p-mono);font-size:9px;line-height:1.5;color:var(--p-ink-3);margin:0 0 8px}
@@ -577,6 +578,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .pcard{width:100%;display:block}
 .iw-root .pcard-dl{position:absolute;top:4px;right:4px;z-index:2;width:34px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid var(--p-hair);background:var(--p-paper-2);color:var(--p-ink-3);font-family:var(--p-mono);font-size:8px;letter-spacing:.02em;line-height:1;padding:0}
 .iw-root .pcard.err{display:flex;flex-direction:column;justify-content:flex-end;min-height:120px;background:var(--p-signal-plate);border-color:var(--p-signal)}
+.iw-root .pcard-retry{position:absolute;right:4px;bottom:4px;z-index:2;height:20px;padding:0 7px;border:1px solid var(--p-signal);background:var(--p-paper-2);font-family:var(--p-mono);font-size:8px;color:var(--p-signal);cursor:pointer}
 .iw-root .pcard.err .err-msg{flex:1;display:flex;align-items:center;padding:10px;font-family:var(--p-mono);font-size:8px;line-height:1.45;color:var(--p-signal);text-align:left;overflow:hidden}
 .iw-root .pcard-dl:hover{color:var(--p-signal);border-color:var(--p-signal)}
 .iw-root .pcard-dl:focus-visible{outline:2px solid var(--p-focus);outline-offset:1px}
@@ -723,6 +725,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button>
         </div>
         <button class="note-link" id="contextPreview">预览模型改写</button>
+        <div class="cloud-price-hint" id="cloudPriceHint"></div>
         <div class="prompt-preview" id="promptPreview" hidden></div>
       </div>
 
@@ -857,7 +860,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
         <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
         <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
-        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button></div>
+        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button><button class="ghost-btn" id="cleanupBtn">清理 90 天前</button></div>
       </section>
     </div>
 
@@ -1640,10 +1643,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function renderStamp() {
     var success = state.results.filter(function (r) { return !r.error; }).length;
-    var cost = state.results.filter(function (r) { return r.cloud && !r.error; }).reduce(function (sum, r) {
-      return sum + (Number(r.cost) || 0);
-    }, 0);
-    $('#stampMain').textContent = '今日 ' + success + ' 张 · ¥' + cost.toFixed(2);
+    var cloudResults = state.results.filter(function (r) { return r.cloud && !r.error; });
+    var unknownCost = cloudResults.some(function (r) { return !(Number(r.cost) > 0); });
+    var cost = cloudResults.reduce(function (sum, r) { return sum + (Number(r.cost) || 0); }, 0);
+    $('#stampMain').textContent = '今日 ' + success + ' 张 · ' + (unknownCost ? '¥—' : '¥' + cost.toFixed(2));
     $('#stampSub').textContent = '本机 6 · 云端 2';
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
@@ -1684,6 +1687,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $$('#cloudQualityGroup button').forEach(function (el) {
       el.classList.toggle('on', el.dataset.quality === state.cloudQuality);
     });
+    var promo = Date.now() < new Date('2026-11-18T00:00:00+08:00').getTime();
+    $('#cloudPriceHint').textContent = promo ? '4K 促销 ¥0.2404/张 · 11/18 后 ¥0.4809' : '4K ¥0.4809/张';
     $$('#scopeGroup button').forEach(function (el) { el.classList.toggle('on', el.dataset.scope === state.scope); });
     var isTemplate = focusId === 'poster';
     $('#textFields').hidden = !isTemplate;
@@ -1837,11 +1842,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var s = styleById(r.id) || { name: r.id };
     var on = state.activeResult === r.id ? ' on' : '';
     if (r.error) {
+      var retry = r.error.code === 'unknown' ? '' : '<button class="pcard-retry" data-retry="' + r.id + '" title="重试可能再次计费">重试</button>';
       return '<div class="pcard-wrap">' +
         '<button class="pcard err' + on + '" data-result="' + r.id + '" title="' + escapeHTML(r.error.message) + '">' +
         '<span class="err-msg">' + escapeHTML(r.error.message) + '</span>' +
-        '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>失败</span></span>' +
-        '</button>' +
+        '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>' + (r.error.code === 'unknown' ? 'unknown' : '失败') + '</span></span>' +
+        '</button>' + retry +
         '</div>';
     }
     return '<div class="pcard-wrap">' +
@@ -1918,7 +1924,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.5.0',
+        version: '0.6.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2010,6 +2016,55 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (['succeeded', 'failed', 'unknown', 'canceled'].indexOf(job.status) >= 0) return job;
     }
     return { status: 'unknown', error: cloudError('等待超时；请求可能已生成并计费', 'unknown') };
+  }
+
+  async function retryCloud(id) {
+    var idx = -1;
+    for (var i = 0; i < state.results.length; i++) if (state.results[i].id === id) idx = i;
+    if (idx < 0) return;
+    var failed = state.results[idx];
+    if (!failed.error) return;
+    if (failed.error.code === 'unknown') { toast('unknown 不允许一键重试；请先核对 MiniMax 账单'); return; }
+    if (!cloudReady()) { toast('先在设置里保存 API Key'); openSettings(); return; }
+    var style = styleById(id);
+    if (!style || style.renderer !== 'model') { toast('这不是云端风格'); return; }
+    if (!window.confirm('重试会再次请求 MiniMax，可能再次计费。\n\n继续重试这一张吗？')) return;
+    state.generating = true;
+    updateUI();
+    try {
+      var assetId = await ensureAssetId();
+      var started = await startCloudJob(assetId, id);
+      var job = await waitCloudJob(started.id);
+      if (job.status === 'succeeded' && job.output) {
+        state.results[idx] = {
+          id: id,
+          url: job.output.url,
+          w: job.output.w,
+          h: job.output.h,
+          cloud: true,
+          params: effective(id),
+          cost: cloudUnitPrice(),
+          revisedPrompt: job.revisedPrompt || null
+        };
+        toast('重试成功 · ' + style.name);
+        showResult(id);
+      } else {
+        state.results[idx].error = cloudError(
+          (job.error && job.error.message) || ('云端作业 ' + job.status),
+          (job.error && job.error.code) || job.status
+        );
+        state.results[idx].cloud = true;
+        state.results[idx].params = effective(id);
+        toast('重试失败 · ' + state.results[idx].error.message);
+      }
+    } catch (err) {
+      state.results[idx].error = cloudError(err.message, err.code);
+      state.results[idx].cloud = true;
+      toast('重试失败 · ' + state.results[idx].error.message);
+    }
+    state.generating = false;
+    renderProof();
+    updateUI();
   }
 
   function generate(auto) {
@@ -2294,7 +2349,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       frame: entry.frame || '3:2',
       results: (entry.results || []).map(function (r) {
         var st = styleById(r.styleId);
-        return { id: r.styleId, url: r.url, w: r.w, h: r.h, cost: 0, cloud: !!(st && st.renderer === 'model') };
+        return { id: r.styleId, url: r.url, w: r.w, h: r.h, cost: Number(r.costYuan) || 0, cloud: !!(st && st.renderer === 'model') };
       }),
       hostId: entry.id
     };
@@ -2735,7 +2790,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.5.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.6.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -2781,6 +2836,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#proofGrid').addEventListener('click', function (e) {
+      var retry = e.target.closest('[data-retry]');
+      if (retry) { retryCloud(retry.dataset.retry); return; }
       var dl = e.target.closest('[data-download]');
       if (dl) { downloadOne(dl.dataset.download); return; }
       var el = e.target.closest('[data-result]');
@@ -3007,6 +3064,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       });
     });
     $('#billingLink').addEventListener('click', function () { loadUsage(); toast('已刷新云端用量'); });
+    $('#cleanupBtn').addEventListener('click', function () {
+      if (!window.confirm('清理 90 天前的原图、结果和作业？样式包与账本保留，此操作不可撤销。')) return;
+      apiFetch('/cleanup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 90 })
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || '清理失败');
+          hostHistory = [];
+          try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+          renderHistory();
+          loadHostHistory();
+          loadUsage();
+          toast('已清理 ' + (data.batches || 0) + ' 批 · ' + (data.assets || 0) + ' 原图');
+        });
+      }).catch(function (err) { toast(err.message || '清理失败'); });
+    });
     $$('.mini-seg').forEach(function (group) {
       group.addEventListener('click', function (e) {
         var b = e.target.closest('button');

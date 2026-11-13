@@ -63,6 +63,7 @@ export function createCloud({
       w: width,
       h: height,
       bytes: result.buffer.length,
+      costYuan: estimated.costYuan,
       url: `/image-workbench/result/${job.id}/${job.styleId}.jpg`,
     }
 
@@ -78,7 +79,7 @@ export function createCloud({
           size: job.size,
           params: job.params,
           createdAt: job.createdAt,
-          results: [{ styleId: job.styleId, params: job.params, w: width, h: height, url: output.url }],
+          results: [{ styleId: job.styleId, params: job.params, w: width, h: height, costYuan: estimated.costYuan, url: output.url }],
         },
         null,
         2,
@@ -91,7 +92,7 @@ export function createCloud({
       createdAt: job.createdAt,
       assetId: job.assetId,
       styleIds: [job.styleId],
-      results: [{ styleId: job.styleId, url: output.url }],
+      results: [{ styleId: job.styleId, costYuan: estimated.costYuan, url: output.url }],
     }).catch(() => {})
 
     await ledger

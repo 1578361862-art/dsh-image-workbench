@@ -329,6 +329,7 @@ export default {
   apply(ctx) {
     const storage = createStorage(ROOT)
     storage.backfillCloudIndex().catch(() => {})
+    storage.cleanupOld({ days: 90 }).catch(() => {})
     const cloud = createCloud({
       root: ROOT,
       storage,
@@ -405,6 +406,11 @@ export default {
       }
       if (method === 'GET' && path === 'storage') {
         return json(res, 200, await storage.stats())
+      }
+      if (method === 'POST' && path === 'cleanup') {
+        const body = await readBody(req, MAX_BODY)
+        const days = body?.days === undefined ? 90 : Number(body.days)
+        return json(res, 200, await storage.cleanupOld({ days }))
       }
       if (method === 'GET' && path === 'styles') {
         return json(res, 200, { styles: await storage.listStyles() })

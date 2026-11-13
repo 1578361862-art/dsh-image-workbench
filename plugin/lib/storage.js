@@ -558,6 +558,57 @@ export function createStorage(root) {
     return { buffer: createZip(entries), count: files.length }
   }
 
+  async function cleanupOld({ days = 90, now = new Date() } = {}) {
+    const keepDays = Number(days)
+    if (!Number.isFinite(keepDays) || keepDays < 1 || keepDays > 3650) fail('清理天数要在 1–3650 之间')
+    const cutoff = now.getTime() - Math.floor(keepDays) * 86_400_000
+    const removed = { batches: 0, assets: 0, jobs: 0, bytes: 0 }
+    await withIndexLock(async () => {
+      const rows = await readIndexRows()
+      const keep = []
+      const referenced = new Set()
+      for (const row of rows) {
+        const at = Date.parse(row.createdAt ?? '')
+        if (Number.isFinite(at) && at < cutoff) {
+          const dir = join(outputsRoot, row.id)
+          removed.bytes += await dirBytes(dir).catch(() => 0)
+          await rm(dir, { recursive: true, force: true })
+          removed.batches += 1
+        } else {
+          keep.push(row)
+          if (typeof row.assetId === 'string') referenced.add(row.assetId)
+        }
+      }
+      await writeIndexRows(keep)
+
+      let assets = []
+      try { assets = await readdir(libraryRoot, { withFileTypes: true }) } catch { assets = [] }
+      for (const entry of assets) {
+        if (!entry.isDirectory() || !ASSET_ID_RE.test(entry.name)) continue
+        const meta = await readJson(join(libraryRoot, entry.name, 'meta.json'))
+        if (!meta || referenced.has(entry.name)) continue
+        const at = Date.parse(meta.createdAt ?? '')
+        if (!Number.isFinite(at) || at >= cutoff) continue
+        removed.bytes += await dirBytes(join(libraryRoot, entry.name)).catch(() => 0)
+        await rm(join(libraryRoot, entry.name), { recursive: true, force: true })
+        removed.assets += 1
+      }
+
+      let jobs = []
+      try { jobs = await readdir(join(root, 'jobs'), { withFileTypes: true }) } catch { jobs = [] }
+      for (const entry of jobs) {
+        if (!entry.isFile() || !entry.name.endsWith('.json')) continue
+        const job = await readJson(join(root, 'jobs', entry.name))
+        if (!job || !['succeeded', 'failed', 'unknown', 'canceled'].includes(job.status)) continue
+        const at = Date.parse(job.updatedAt ?? job.createdAt ?? '')
+        if (!Number.isFinite(at) || at >= cutoff) continue
+        await rm(join(root, 'jobs', entry.name), { force: true })
+        removed.jobs += 1
+      }
+    })
+    return { days: Math.floor(keepDays), cutoff: new Date(cutoff).toISOString(), ...removed }
+  }
+
   async function stats() {
     let entries = []
     try {
@@ -585,6 +636,7 @@ export function createStorage(root) {
     listStyles,
     putStyle,
     listHistory,
+    cleanupOld,
     deleteBatch,
     resultPath,
     exportZip,

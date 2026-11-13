@@ -193,6 +193,39 @@ test('P4 风格包：preset import/list，拒绝内置 id 和非法 base', async
   assert.equal(badBase.status, 400)
 })
 
+test('P5 90 天清理：旧 batch/原图/job 删除，当前与 styles 保留', async () => {
+  const asset = await postJson('/assets', { dataUrl: JPEG_URL, name: 'old.jpg', w: 1, h: 1 })
+  const batch = await postJson('/batches', {
+    assetId: asset.body.id,
+    text: 'old',
+    results: [{ styleId: 'halftone', params: {}, dataUrl: JPEG_URL, w: 1, h: 1 }],
+  })
+  assert.equal(batch.status, 201)
+  const batchId = batch.body.id
+  const oldIso = '2026-01-01T00:00:00.000Z'
+  const rows = readFileSync(INDEX, 'utf8').split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line))
+  for (const row of rows) if (row.id === batchId) row.createdAt = oldIso
+  writeFileSync(INDEX, rows.map((row) => JSON.stringify(row)).join('\n') + '\n')
+  const batchFile = join(DATA, 'outputs', batchId, 'batch.json')
+  const batchJson = JSON.parse(readFileSync(batchFile, 'utf8'))
+  batchJson.createdAt = oldIso
+  writeFileSync(batchFile, JSON.stringify(batchJson, null, 2))
+  const metaFile = join(DATA, 'library', asset.body.id, 'meta.json')
+  const meta = JSON.parse(readFileSync(metaFile, 'utf8'))
+  meta.createdAt = oldIso
+  writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+
+  const result = await postJson('/cleanup', { days: 90 })
+  assert.equal(result.status, 200)
+  assert.ok(result.body.batches >= 1)
+  assert.ok(result.body.assets >= 1)
+  assert.equal(existsSync(join(DATA, 'outputs', batchId)), false)
+  assert.equal(existsSync(join(DATA, 'library', asset.body.id)), false)
+  const history = await api('/history')
+  assert.equal(history.body.entries.some((entry) => entry.id === batchId), false)
+  assert.equal(existsSync(join(DATA, 'styles')), true)
+})
+
 test('认证守卫覆盖所有新旧路由（401 + 未授权）', async () => {
   rejection = 401
   const requests = [

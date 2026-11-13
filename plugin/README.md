@@ -1,6 +1,6 @@
-# dsh-image-workbench · P1–P4
+# dsh-image-workbench · P1–P5
 
-DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本机风格与工作流，P2 加模板文字、单版参数、原图导出、ZIP 打包与持久历史；P3 云端 H3 已验证；P4 增加 Agent 工具、批量矩阵、预设风格包导入、Context-IR 预览。
+DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本机风格与工作流，P2 加模板文字、单版参数、原图导出、ZIP 打包与持久历史；P3 云端 H3 已验证；P4 增加 Agent 工具、批量矩阵、预设风格包导入、Context-IR 预览；P5 增加 90 天清理、云端失败重试、真实页面验收与 4K 价格提示。
 
 源码：`~/Code/dsh-image-workbench`（git）。安装：`plugin_manager install_bundle` 指向本目录；已安装时对 `include:image-workbench` 禁用再启用可重载 Host。
 
@@ -27,7 +27,7 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 
 ## 验证
 
-- `node --test tests/`：14 pass / 0 fail（设置与 401、资产去重/路径穿越、批次 text 对象 + frame、历史/删除/损坏索引、ZIP + unzip、P3 开关、key-test 诚实、jobs unknown 不重试、预算/账本、mock MiniMax provider）。
+- `node --test tests/`：15 pass / 0 fail（设置与 401、资产去重/路径穿越、批次 text 对象 + frame、历史/删除/损坏索引、ZIP + unzip、P3 开关、key-test 诚实、jobs unknown 不重试、预算/账本、mock MiniMax provider）。
 - 客户端：1120×860、1000、900 宽 harness 验证空态、模板、参数作用域、原图下载、ZIP、Host 历史、A/B、夜版。
 - DSH 内：路由 `/image-workbench/{health,storage,history,assets}` 均返回插件的 401 JSON，说明 Host 已加载；带页面会话的真实点击仍需刷新页面验收。
 
