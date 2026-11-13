@@ -1,0 +1,21 @@
+{
+  "title": "Image Workbench — P1–P5 client acceptance",
+  "base": "http://127.0.0.1:4780",
+  "browser": "chromium",
+  "steps": [
+    { "action": "goto", "path": "/" },
+    { "action": "wait", "ms": 2500 },
+    { "action": "expect_text", "selector": "h1", "text": "图像风格工作台" },
+    { "action": "click", "selector": "#useSample" },
+    { "action": "wait", "ms": 2200 },
+    { "action": "click", "selector": "#styleGrid .card[data-id='halftone']" },
+    { "action": "click", "selector": "#go" },
+    { "action": "wait", "ms": 2600 },
+    { "action": "expect_text", "selector": "#proofStatus", "text": "已生成" },
+    { "action": "click", "selector": "#settingsBtn" },
+    { "action": "wait", "ms": 800 },
+    { "action": "expect_text", "selector": "#usageToday", "text": "1 张" },
+    { "action": "expect_text", "selector": "#importPack", "text": "导入风格包" },
+    { "action": "screenshot", "name": "workbench-settings" }
+  ]
+}

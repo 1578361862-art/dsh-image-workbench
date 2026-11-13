@@ -34,7 +34,7 @@
 - [x] P4.4 Context-IR 预览：云端风格「预览模型改写」，只返回 revised_prompt/aspect，不出图。真实调用 200，2258 tokens，aspect 3:4。
 - [x] P5 90 天清理：Host 自动/手动 `/cleanup`，删旧 batch/原图/job；styles/ledger 保留；15 项测试。
 - [x] P5 云端失败重试：失败卡「重试」，二次确认费用；unknown 无重试按钮；harness 已验证失败→成功。
-- [x] P5 真实页面：用已登录会话打开「图像风格」，历史恢复、设置/用量、4K 提示均通过；截图在 shots。
+- [x] P5 真实页面：真实 DSH 会话打开「图像风格」，历史恢复、设置/用量、4K 提示通过（截图在 shots）；客户端 `dsh_verify` **PASS 14/14**（报告 dsh-verify-out/report.html）。
 - [x] P5 4K 价格提示：检查器显示促销 ¥0.2404 / 11-18 后 ¥0.4809。
 - [ ] 剩余：账本按 usage 精确回填实际费用；云端矩阵；任意 HTML/JS 风格包。
 
