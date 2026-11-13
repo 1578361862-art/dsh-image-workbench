@@ -13,6 +13,9 @@ const MAX_EXPORT_FILES = 500
 const ASSET_ID_RE = /^[a-f0-9]{16}$/
 const BATCH_ID_RE = /^[A-Za-z0-9_-]{1,64}$/
 const STYLE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
+const PACK_ID_RE = /^[a-z0-9][a-z0-9-]{1,32}$/
+const PACK_BASES = new Set(['halftone', 'duotone', 'riso', 'cyanotype', 'film', 'poster'])
+const BUILTIN_IDS = new Set(['halftone', 'duotone', 'riso', 'cyanotype', 'film', 'poster', 'h3-illus', 'h3-silver'])
 
 const MIME_EXT = new Map([
   ['image/jpeg', 'jpg'],
@@ -158,6 +161,7 @@ function resultUrl(batchId, styleId) {
 
 export function createStorage(root) {
   const libraryRoot = join(root, 'library')
+  const stylesRoot = join(root, 'styles')
   const outputsRoot = join(root, 'outputs')
   const indexFile = join(root, 'index.jsonl')
   let indexChain = Promise.resolve()
@@ -384,6 +388,62 @@ export function createStorage(root) {
     return added
   }
 
+  function sanitizePack(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) fail('风格包内容无效')
+    const id = String(input.id ?? '').trim()
+    if (!PACK_ID_RE.test(id)) fail('风格包 id 需为 2–33 位小写字母/数字/连字符')
+    if (BUILTIN_IDS.has(id)) fail('不能覆盖内置风格 id')
+    const name = String(input.name ?? '').trim().slice(0, 40)
+    if (!name) fail('风格包 name 不能为空')
+    const base = String(input.base ?? '').trim()
+    if (!PACK_BASES.has(base)) fail('base 必须是内置本机风格')
+    const params = input.params && typeof input.params === 'object' && !Array.isArray(input.params) ? input.params : {}
+    const clean = {}
+    if (Number.isFinite(Number(params.strength))) clean.strength = Math.min(1, Math.max(0, Number(params.strength)))
+    if (Number.isFinite(Number(params.grain))) clean.grain = Math.min(1, Math.max(0, Number(params.grain)))
+    if (['vermilion', 'indigo', 'ink'].includes(params.ink)) clean.ink = params.ink
+    if (['640', '960', '1200'].includes(params.size)) clean.size = params.size
+    let preview = ''
+    if (typeof input.preview === 'string' && input.preview.startsWith('data:image/')) {
+      const parsed = parseDataUrl(input.preview, { maxBytes: 2 * 1024 * 1024, allowedMimes: [...MIME_EXT.keys()] })
+      preview = `data:${parsed.mime};base64,${parsed.buffer.toString('base64')}`
+    }
+    return {
+      schema: 1,
+      id,
+      name,
+      renderer: 'preset',
+      base,
+      params: clean,
+      preview,
+      createdAt: new Date().toISOString(),
+    }
+  }
+
+  async function listStyles() {
+    let entries = []
+    try {
+      entries = await readdir(stylesRoot, { withFileTypes: true })
+    } catch {
+      return []
+    }
+    const styles = []
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !PACK_ID_RE.test(entry.name)) continue
+      const style = await readJson(join(stylesRoot, entry.name, 'style.json'))
+      if (style && style.id === entry.name && style.renderer === 'preset') styles.push(style)
+    }
+    return styles.sort((a, b) => String(a.name).localeCompare(String(b.name), 'zh'))
+  }
+
+  async function putStyle(input) {
+    const style = sanitizePack(input)
+    const dir = join(stylesRoot, style.id)
+    await mkdir(dir, { recursive: true })
+    await writeAtomic(join(dir, 'style.json'), JSON.stringify(style, null, 2), 0o644)
+    return style
+  }
+
   async function getBatch(id) {
     if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) return null
     const batch = await readJson(join(outputsRoot, id, 'batch.json'))
@@ -522,6 +582,8 @@ export function createStorage(root) {
     getBatch,
     indexCloudJob,
     backfillCloudIndex,
+    listStyles,
+    putStyle,
     listHistory,
     deleteBatch,
     resultPath,

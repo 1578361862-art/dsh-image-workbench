@@ -169,6 +169,30 @@ test('P2 行为保留：health / settings / sample / test', async () => {
   assert.equal(legacyTest.body.ok, true)
 })
 
+test('P4 风格包：preset import/list，拒绝内置 id 和非法 base', async () => {
+  const pack = {
+    schema: 1,
+    id: 'my-preset',
+    name: '我的海报预设',
+    base: 'poster',
+    params: { strength: 0.7, grain: 0.4, ink: 'indigo', size: '960' },
+    preview: JPEG_URL,
+  }
+  const created = await postJson('/styles', pack)
+  assert.equal(created.status, 201)
+  assert.equal(created.body.style.id, 'my-preset')
+  assert.equal(created.body.style.renderer, 'preset')
+  assert.equal(created.body.style.base, 'poster')
+  assert.ok(created.body.style.preview.startsWith('data:image/jpeg;base64,'))
+  const listed = await api('/styles')
+  assert.equal(listed.status, 200)
+  assert.ok(listed.body.styles.some((style) => style.id === 'my-preset'))
+  const duplicate = await postJson('/styles', { ...pack, id: 'poster' })
+  assert.equal(duplicate.status, 400)
+  const badBase = await postJson('/styles', { ...pack, id: 'my-bad', base: 'h3-illus' })
+  assert.equal(badBase.status, 400)
+})
+
 test('认证守卫覆盖所有新旧路由（401 + 未授权）', async () => {
   rejection = 401
   const requests = [

@@ -266,3 +266,58 @@ export async function generateEdit({
     },
   }
 }
+
+
+/**
+ * Context-IR 预览：只返回模型改写后的提示词/宽高比，不出图。
+ * 只调用一次；官方端点或字段差异会原样报错，不伪造成功。
+ */
+export async function generateContextIR({
+  prompt,
+  key,
+  baseUrl,
+  timeoutMs = 60_000,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  if (typeof key !== 'string' || !key.trim()) {
+    throw makeError('还没有保存 API Key', { code: 'missing_key', status: 400, beforeRequest: true })
+  }
+  if (typeof prompt !== 'string' || !prompt.trim()) {
+    throw makeError('提示词不能为空', { code: 'invalid_prompt', status: 400, beforeRequest: true })
+  }
+  const endpoint = `${String(baseUrl || BASES.cn).replace(/\/+$/, '')}/v1/h3_image_context_ir`
+  let response
+  try {
+    response = await fetchImpl(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: prompt.trim() }),
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+  } catch (err) {
+    throw makeError(redactKey(err?.name === 'TimeoutError' ? 'Context-IR 请求超时' : 'Context-IR 网络失败', key), {
+      code: err?.name === 'TimeoutError' ? 'timeout' : 'network',
+      unknown: true,
+      cause: err,
+    })
+  }
+  let payload = null
+  try { payload = await response.json() } catch { payload = null }
+  if (!response.ok) {
+    const mapped = classifyStatus(response.status, JSON.stringify(payload ?? {}), payload)
+    throw makeError(redactKey(errorMessageFromPayload(payload, `Context-IR HTTP ${response.status}`), key), {
+      code: mapped.code,
+      status: response.status,
+      unknown: mapped.unknown,
+    })
+  }
+  const revisedPrompt = payload?.revised_prompt ?? payload?.revisedPrompt ?? payload?.data?.revised_prompt ?? null
+  const aspectRatio = payload?.aspect_ratio ?? payload?.aspectRatio ?? payload?.data?.aspect_ratio ?? null
+  if (typeof revisedPrompt !== 'string' || !revisedPrompt.trim()) {
+    throw makeError('Context-IR 没有返回 revised_prompt', { code: 'invalid_response', status: 502, unknown: true })
+  }
+  return { revisedPrompt, aspectRatio, usage: payload?.usage ?? null }
+}

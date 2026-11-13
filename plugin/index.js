@@ -3,9 +3,11 @@
 import { createReadStream } from 'node:fs'
 import { chmod, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
+import { estimate } from './lib/budget.js'
+import { baseUrlFor, generateContextIR, sniffMime } from './lib/minimax.js'
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -17,6 +19,7 @@ const SIZES = ['640', '960', '1200']
 const MAX_BODY = 64 * 1024
 const MAX_ASSET_BODY = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 2 * 1024 * 1024
 const MAX_BATCH_BODY = 64 * 1024 * 1024
+const MAX_STYLE_BODY = 4 * 1024 * 1024
 const MAX_EXPORT_BODY = Math.ceil((MAX_EXPORT_BYTES * 4) / 3) + 8 * 1024 * 1024
 const MAX_CLOUD_BODY = 256 * 1024
 const DEFAULTS = Object.freeze({
@@ -195,10 +198,134 @@ function zipFileName() {
   return `image-workbench-${new Date().toISOString().replace(/[:.]/g, '-')}.zip`
 }
 
+const CLOUD_STYLES = Object.freeze({
+  'h3-illus': {
+    name: 'H3 插画化',
+    prompt: '将图1转为 H3 插画风格：保留主体身份、姿态、构图、文字和背景关系；只改变材质、光线、色彩与笔触；暖色、细颗粒、轻微光晕。',
+  },
+  'h3-silver': {
+    name: 'H3 银盐',
+    prompt: '将图1转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；只改变影调、材质与颗粒；深黑、银灰、高光柔和。',
+  },
+})
+
+async function readToolImage(storage, imagePath) {
+  if (typeof imagePath !== 'string' || !imagePath.trim()) fail('imagePath 不能为空')
+  const abs = resolve(imagePath)
+  let info
+  try {
+    info = await stat(abs)
+  } catch {
+    fail('imagePath 不存在或不可读: ' + abs)
+  }
+  if (!info.isFile()) fail('imagePath 不是文件')
+  if (info.size > MAX_IMAGE_BYTES) fail('图片超过 20 MB')
+  const buffer = await readFile(abs)
+  const mime = sniffMime(buffer)
+  const dataUrl = `data:${mime};base64,${buffer.toString('base64')}`
+  return storage.putAsset({ dataUrl, name: basename(abs), w: 0, h: 0 })
+}
+
+function registerImageTool(ctx, cloud, storage) {
+  const tools = ctx.get('tools') ?? ctx.tools
+  if (!tools || typeof tools.register !== 'function') return
+  ctx.effect(
+    () =>
+      tools.register({
+        name: 'image_workbench',
+        description:
+          '用图像风格工作台的 MiniMax H3 云端出图。只能生成云端 H3 插画/银盐；本机 Canvas 风格只在工作台页面里。先 action=estimate 让用户确认费用，再 action=start 且 confirm=true；start 只创建作业，用 action=status 轮询。',
+        parameters: {
+          type: 'object',
+          properties: {
+            action: { type: 'string', enum: ['estimate', 'start', 'status'], description: 'estimate 估价 / start 创建作业 / status 查询' },
+            imagePath: { type: 'string', description: '本地图片绝对路径（start 必填），≤20 MB' },
+            style: { type: 'string', enum: ['h3-illus', 'h3-silver'], description: '云端风格' },
+            quality: { type: 'string', enum: ['1K', '2K', '4K'], description: '云端画质，默认 2K' },
+            prompt: { type: 'string', description: '可选；覆盖默认风格提示词' },
+            jobId: { type: 'string', description: 'status 必填' },
+            confirm: { type: 'boolean', description: 'start 必须 true，表示用户已确认费用；否则只返回估价' },
+          },
+          required: ['action'],
+          additionalProperties: false,
+        },
+        output: {
+          schema: {
+            type: 'object',
+            properties: {
+              jobId: { type: 'string' },
+              status: { type: 'string' },
+              costYuan: { type: 'number' },
+              file: { type: 'string' },
+              url: { type: 'string' },
+              error: { type: 'object' },
+            },
+          },
+          render: (_args, value) => {
+            if (value?.requiresConfirmation) {
+              return [{ type: 'text', text: `云端 ${value.styleName} ${value.quality} 预计 ¥${Number(value.costYuan).toFixed(4)}；需要用户确认后再用 confirm=true 调用。` }]
+            }
+            const lines = [`云端作业 ${value?.jobId ?? ''} · ${value?.status ?? ''}`]
+            if (value?.file) lines.push(`文件：${value.file}`)
+            if (value?.url) lines.push(`URL：${value.url}`)
+            if (value?.costYuan !== undefined) lines.push(`预估：¥${Number(value.costYuan).toFixed(4)}`)
+            if (value?.error) lines.push(`错误：${value.error.code || ''} ${value.error.message || ''}`)
+            return [{ type: 'text', text: lines.join('\n') }]
+          },
+        },
+        async execute(args = {}) {
+          const action = args.action
+          if (action === 'status') {
+            if (typeof args.jobId !== 'string' || !args.jobId) fail('status 需要 jobId')
+            await cloud.ready
+            const job = cloud.getJob(args.jobId)
+            const out = { jobId: job.id, status: job.status }
+            if (job.output) {
+              out.file = join(ROOT, 'outputs', job.id, `${job.styleId}.jpg`)
+              if (job.output.url) out.url = job.output.url
+              out.costYuan = estimate({ size: job.size, speed: job.model, billing: 'payg', count: 1 }).costYuan
+            }
+            if (job.error) out.error = job.error
+            return out
+          }
+          if (action !== 'estimate' && action !== 'start') fail('action 必须是 estimate / start / status')
+          const style = CLOUD_STYLES[args.style]
+          if (!style) fail('style 只支持 h3-illus / h3-silver；本机风格请在页面工作台使用')
+          const quality = ['1K', '2K', '4K'].includes(args.quality) ? args.quality : '2K'
+          const config = await readConfig()
+          if (config.cloudEnabled !== true) fail('云端未启用；先在工作台设置里保存 API Key')
+          const price = estimate({ size: quality, speed: config.model, billing: config.billing, count: 1 })
+          if (action === 'estimate' || args.confirm !== true) {
+            return {
+              requiresConfirmation: true,
+              styleName: style.name,
+              quality,
+              costYuan: price.costYuan,
+              hint: '询问用户确认费用后，再 action=start + confirm=true。',
+            }
+          }
+          const saved = await readToolImage(storage, args.imagePath)
+          const job = await cloud.createJob(
+            {
+              assetId: saved.meta.id,
+              styleId: args.style,
+              prompt: typeof args.prompt === 'string' && args.prompt.trim() ? args.prompt : style.prompt,
+              size: quality,
+              params: {},
+            },
+            config,
+          )
+          return { jobId: job.id, status: job.status, costYuan: price.costYuan }
+        },
+      }),
+    'dsh-image-workbench: image_workbench tool',
+  )
+}
+
 export const name = 'dsh-image-workbench'
 
 export default {
-  inject: ['webServer', 'connection'],
+  inject: ['webServer', 'connection', 'tools'],
   apply(ctx) {
     const storage = createStorage(ROOT)
     storage.backfillCloudIndex().catch(() => {})
@@ -207,6 +334,7 @@ export default {
       storage,
       readKey: () => readKeyValue(ctx),
     })
+    registerImageTool(ctx, cloud, storage)
 
     const route = async (req, res) => {
       const rejection = ctx.get('connection')?.requestRejection?.({ headers: req.headers })
@@ -278,6 +406,13 @@ export default {
       if (method === 'GET' && path === 'storage') {
         return json(res, 200, await storage.stats())
       }
+      if (method === 'GET' && path === 'styles') {
+        return json(res, 200, { styles: await storage.listStyles() })
+      }
+      if (method === 'POST' && path === 'styles') {
+        const body = await readBody(req, MAX_STYLE_BODY)
+        return json(res, 201, { style: await storage.putStyle(body ?? {}) })
+      }
       if (method === 'POST' && path === 'export') {
         const body = await readBody(req, MAX_EXPORT_BODY)
         const { buffer } = await storage.exportZip(body?.files, body?.manifest)
@@ -301,6 +436,18 @@ export default {
         await cloud.ready
         const config = await readConfig()
         if (config.cloudEnabled !== true) return json(res, 403, { error: '云端功能未启用' })
+        if (method === 'POST' && path === 'cloud/context-ir') {
+          const body = await readBody(req, MAX_CLOUD_BODY)
+          if (typeof body?.prompt !== 'string' || !body.prompt.trim()) fail('prompt 不能为空')
+          if (body.prompt.length > 32000) fail('prompt 太长')
+          const key = await readKeyValue(ctx)
+          if (!key) fail('还没有保存 API Key', 400)
+          return json(res, 200, await generateContextIR({
+            prompt: body.prompt,
+            key,
+            baseUrl: baseUrlFor(config),
+          }))
+        }
         if (method === 'POST' && path === 'cloud/jobs') {
           const body = await readBody(req, MAX_CLOUD_BODY)
           return json(res, 202, await cloud.createJob(body ?? {}, config))

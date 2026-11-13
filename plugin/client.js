@@ -510,6 +510,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .chip.on .ctag{color:var(--p-signal)}
 .iw-root .proof-status{font-family:var(--p-mono);font-size:8px;letter-spacing:.02em;color:var(--p-ink-3);margin-left:4px}
 .iw-root .proof-status.dirty{color:var(--p-signal)}
+.iw-root .matrix-layer{position:fixed;inset:0;z-index:70;display:none}
+.iw-root .matrix-layer.open{display:block}
+.iw-root .matrix-dialog{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,calc(100vw - 40px));max-height:calc(100vh - 60px);display:flex;flex-direction:column;background:var(--p-paper-2);border:1px solid var(--p-hair);box-shadow:0 30px 90px rgba(0,0,0,.2)}
+.iw-root .matrix-dialog .drawer-foot{flex-direction:row;align-items:center;gap:8px;padding:10px 20px 14px;border-top:1px solid var(--p-hair)}
+.iw-root .matrix-dialog .drawer-foot .go{width:auto;flex:none;height:34px;padding:0 18px;margin:0}
+.iw-root .matrix-dialog .drawer-foot .ghost-btn{height:34px;flex:none}
+.iw-root .matrix-dialog .drawer-foot .ins-note{flex:1;margin:0;font-size:9px}
+.iw-root .prompt-preview{margin-top:6px;padding:6px 8px;border-left:2px solid var(--p-hair);background:var(--p-sunken);font-family:var(--p-mono);font-size:8px;line-height:1.5;color:var(--p-ink-3);max-height:100px;overflow:auto;white-space:pre-wrap}
+.iw-root .matrix-body{padding:12px 20px;overflow:auto;min-height:120px}
+.iw-root .matrix-note{font-family:var(--p-mono);font-size:9px;line-height:1.5;color:var(--p-ink-3);margin:0 0 8px}
+.iw-root .matrix-pick-row{display:flex;align-items:center;gap:10px}
+.iw-root .matrix-pick-row span{font-family:var(--p-mono);font-size:8.5px;color:var(--p-ink-3)}
+.iw-root .matrix-sources{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.iw-root .matrix-source{position:relative;border:1px solid var(--p-hair);background:var(--p-paper)}
+.iw-root .matrix-source img{width:100%;aspect-ratio:1.1;object-fit:cover;display:block}
+.iw-root .matrix-source span{display:block;padding:4px 5px;font-family:var(--p-mono);font-size:8px;color:var(--p-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iw-root .matrix-results{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.iw-root .matrix-result{border:1px solid var(--p-hair);background:var(--p-paper);position:relative}
+.iw-root .matrix-result img{width:100%;display:block}
+.iw-root .matrix-result .mlabel{display:block;padding:4px 5px;font-family:var(--p-mono);font-size:8px;color:var(--p-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iw-root .matrix-result .mdl{position:absolute;right:4px;top:4px;height:20px;width:34px;border:1px solid var(--p-hair);background:var(--p-paper-2);font-family:var(--p-mono);font-size:8px;color:var(--p-ink-3);cursor:pointer}
 .iw-root .p3-banner{margin:8px 0 2px;padding:8px 9px;border-left:2px solid var(--p-ink-4);background:var(--p-sunken);font-size:9px;line-height:1.55;color:var(--p-ink-2)}
 .iw-root .p3-banner b{font-weight:600;color:var(--p-ink)}
 .iw-root .p3-field{opacity:.62}
@@ -615,7 +636,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <section class="stage-col">
       <div class="stage-bar">
         <span class="file-meta"><span id="fileMeta">未载入图片</span><span id="sampleTag" class="p3" hidden>示例</span></span>
-        <span class="r"><span id="frameHint">3:2 裁切</span><button class="ghost-btn" id="replaceBtn">换一张</button></span>
+        <span class="r"><span id="frameHint">3:2 裁切</span><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
       </div>
 
       <div class="stage" id="stage">
@@ -701,6 +722,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="size" id="cloudQualityGroup" role="group" aria-label="云端画质">
           <button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button>
         </div>
+        <button class="note-link" id="contextPreview">预览模型改写</button>
+        <div class="prompt-preview" id="promptPreview" hidden></div>
       </div>
 
       <details class="field text-field" id="textFields" hidden>
@@ -734,6 +757,28 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <span>P1 / P2 / P3 · 本机 Canvas + 模板；云端 H3 按量 · 国内站。</span>
     <span>DSH · IMAGE STUDIO / P1–P3</span>
   </footer>
+</div>
+
+<div class="matrix-layer" id="matrixLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-matrix-close></div>
+  <section class="matrix-dialog" role="dialog" aria-modal="true" aria-labelledby="matrixTitle">
+    <header class="drawer-head">
+      <div><div class="eyebrow"><span class="mark"></span> Batch · 矩阵 <span class="fill"></span></div><h2 id="matrixTitle">批量矩阵</h2></div>
+      <button class="icon-btn" data-matrix-close aria-label="关闭批量">×</button>
+    </header>
+    <div class="matrix-body">
+      <p class="matrix-note">最多 4 张图 × 当前已选的本机风格（含预设包）。云端 H3 请回工作台单张生成，避免批量误扣费。</p>
+      <div class="matrix-pick-row"><button class="ghost-btn" id="matrixPick">选择多张图片</button><span id="matrixCount">0 / 4</span></div>
+      <input type="file" id="matrixInput" accept="image/*" multiple hidden>
+      <div class="matrix-sources" id="matrixSources"></div>
+      <div class="matrix-results" id="matrixResults"></div>
+    </div>
+    <footer class="drawer-foot">
+      <button class="go" id="matrixRun">生成本机矩阵</button>
+      <button class="ghost-btn" id="matrixZip" disabled>打包 ZIP</button>
+      <div class="ins-note" id="matrixHint">选择图片后开始；不会上传。</div>
+    </footer>
+  </section>
 </div>
 
 <div class="drawer-layer" id="settingsLayer" aria-hidden="true" inert>
@@ -802,7 +847,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-title"><span>风格包</span><span class="mono">PACKS</span></div>
         <div class="set-row"><span>已安装</span><b>8 个 · 2 个云端</b></div>
         <div class="set-links">
-          <button class="ghost-btn" id="importPack">导入风格包（P2）</button>
+          <button class="ghost-btn" id="importPack">导入风格包…</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
         </div>
       </section>
@@ -824,6 +869,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
+<input type="file" id="packInput" webkitdirectory multiple hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 `;
@@ -861,6 +907,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var toastTimer = null;
   var previewTimer = null;
   var previewToken = 0;
+  var matrix = { sources: [], results: [] };
   var hostHistory = [];
 
   var STYLES = [
@@ -1287,6 +1334,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function renderStyleAsync(id, w, h, override) {
+    var preset = styleById(id);
+    if (preset && preset.renderer === 'preset' && preset.base) {
+      return renderStyleAsync(preset.base, w, h, Object.assign({}, preset.packParams || {}, override || {}));
+    }
     if (id === 'poster') {
       var layout = (state.text && state.text.variant === 'social') ? 'social' : 'poster';
       return renderTemplate(layout, w, h, override).catch(function () { return renderStyle(id, w, h, override); });
@@ -1371,6 +1422,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function renderStyle(id, w, h, override) {
+    var preset = styleById(id);
+    if (preset && preset.renderer === 'preset' && preset.base) {
+      return renderStyle(preset.base, w, h, Object.assign({}, preset.packParams || {}, override || {}));
+    }
     var p = Object.assign({}, effective(id), override || {});
     var base = make(w, h);
     cover(base.getContext('2d'), SRC, w, h, 0.5, 0.62);
@@ -1440,6 +1495,73 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === id) return STYLES[i];
     return null;
   }
+  function addPackStyle(pack) {
+    if (!pack || !pack.id || styleById(pack.id)) return false;
+    STYLES.push({
+      id: pack.id,
+      name: pack.name || pack.id,
+      renderer: 'preset',
+      base: pack.base,
+      packParams: pack.params || {},
+      preview: pack.preview || '',
+      eta: '0.3s',
+      desc: '导入预设 · ' + (pack.base || ''),
+    });
+    return true;
+  }
+
+  function loadStyles() {
+    apiFetch('/styles', { cache: 'no-store' }).then(function (res) {
+      return res.ok ? res.json() : null;
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.styles)) return;
+      var added = false;
+      data.styles.forEach(function (pack) { if (addPackStyle(pack)) added = true; });
+      if (added) { renderGrid(); renderChips(); }
+    }).catch(function () {});
+  }
+
+  function importPack() {
+    var input = $('#packInput');
+    if (input) input.click();
+  }
+
+  function readPackFiles(files) {
+    var list = Array.prototype.slice.call(files || []);
+    var jsonFile = list.find(function (f) { return /(^|\/)style\.json$/i.test(f.webkitRelativePath || f.name); });
+    if (!jsonFile) { toast('文件夹里没有 style.json'); return; }
+    var previewFile = list.find(function (f) { return /^image\//.test(f.type); });
+    var reader = new FileReader();
+    reader.onload = function () {
+      var pack;
+      try { pack = JSON.parse(String(reader.result)); } catch (e) { toast('style.json 不是有效 JSON'); return; }
+      var send = function (preview) {
+        if (preview) pack.preview = preview;
+        apiFetch('/styles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pack),
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (data) {
+            if (!res.ok) throw new Error(data.error || '导入失败');
+            addPackStyle(data.style || pack);
+            renderGrid();
+            renderChips();
+            toast('风格包已导入 · ' + (data.style?.name || pack.name || pack.id));
+          });
+        }).catch(function (err) { toast(err.message || '风格包导入失败'); });
+      };
+      if (previewFile) {
+        var pr = new FileReader();
+        pr.onload = function () { send(String(pr.result)); };
+        pr.onerror = function () { send(''); };
+        pr.readAsDataURL(previewFile);
+      } else send('');
+    };
+    reader.onerror = function () { toast('读取 style.json 失败'); };
+    reader.readAsText(jsonFile);
+  }
+
   function filteredStyles() {
     var q = state.query.trim().toLowerCase();
     return STYLES.filter(function (s) {
@@ -1459,7 +1581,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#styleCount').textContent = ('0' + list.length).slice(-2);
     $('#styleGrid').innerHTML = list.map(function (s) {
       var on = state.selected.indexOf(s.id) >= 0;
-      var tag = s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : '本机';
+      var tag = s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : s.renderer === 'preset' ? '预设' : '本机';
       var tail = '<span>' + tag + ' · ' + s.eta + '</span>';
       if (s.renderer === 'model') tail += '<span class="price">¥' + cloudUnitPrice().toFixed(2) + '</span>';
       return '<button class="card' + (on ? ' on' : '') + '" data-id="' + s.id + '" title="' + s.desc + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
@@ -1483,7 +1605,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#chips').innerHTML = state.selected.map(function (id) {
       var s = styleById(id);
       var on = state.focus === id;
-      var tag = on ? '预览中' : (s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : '本机');
+      var tag = on ? '预览中' : (s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : s.renderer === 'preset' ? '预设' : '本机');
       return '<div class="chip' + (on ? ' on' : '') + '">' +
         '<img src="' + (state.thumbs[id] || '') + '" alt="">' +
         '<span class="cname">' + s.name + '</span><span class="ctag">' + tag + '</span>' +
@@ -1796,7 +1918,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.4.0',
+        version: '0.5.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2136,6 +2258,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var previous = SRC;
     SRC = img;
     return Promise.all(STYLES.map(function (s) {
+      if (s.preview) { state.thumbs[s.id] = s.preview; return Promise.resolve(); }
       return renderStyleAsync(s.id, 560, 420, { strength: 0.95, grain: 0.28 }).then(function (c) {
         if (c) state.thumbs[s.id] = c.toDataURL('image/jpeg', 0.86);
       }).catch(function () {});
@@ -2300,6 +2423,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   /* ————— 设置 ————— */
   var setLayer = $('#settingsLayer');
   var settingsReturnFocus = null;
+  function previewPrompt() {
+    var box = $('#promptPreview');
+    var style = styleById(state.focus || '');
+    if (!box) return;
+    if (!style || style.renderer !== 'model') { toast('先选一个云端风格'); return; }
+    if (!cloudReady()) { toast('先在设置里保存 API Key'); return; }
+    box.hidden = false;
+    box.textContent = '正在请求 Context-IR…';
+    fetch(API + '/cloud/context-ir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: style.prompt }),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || 'Context-IR 失败');
+        var text = (data.revisedPrompt || '') + (data.aspectRatio ? '\n\naspect: ' + data.aspectRatio : '');
+        box.textContent = text || '没有返回改写';
+      });
+    }).catch(function (err) { box.textContent = err.message || 'Context-IR 失败'; });
+  }
+
   function loadUsage() {
     var today = $('#usageToday');
     var month = $('#usageMonth');
@@ -2455,6 +2599,158 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function (err) { toast(err.message || '检查 Key 失败'); });
   }
 
+  /* ————— 批量矩阵 ————— */
+  function openMatrix() {
+    var layer = $('#matrixLayer');
+    if (!layer) return;
+    layer.inert = false;
+    layer.classList.add('open');
+    layer.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeMatrix() {
+    var layer = $('#matrixLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.setAttribute('aria-hidden', 'true');
+    layer.inert = true;
+  }
+
+  function readMatrixFile(file) {
+    return new Promise(function (resolve) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          resolve({ name: file.name, url: reader.result, w: img.naturalWidth, h: img.naturalHeight, img: img });
+        };
+        img.onerror = function () { resolve(null); };
+        img.src = reader.result;
+      };
+      reader.onerror = function () { resolve(null); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addMatrixFiles(files) {
+    var room = 4 - matrix.sources.length;
+    var picked = Array.prototype.slice.call(files || []).filter(function (f) {
+      return /^image\//.test(f.type);
+    }).slice(0, Math.max(0, room));
+    if (!picked.length) return;
+    Promise.all(picked.map(readMatrixFile)).then(function (list) {
+      matrix.sources = matrix.sources.concat(list.filter(Boolean));
+      renderMatrixSources();
+      matrixHint('已加入 ' + matrix.sources.length + ' 张；生成时不会上传。');
+    });
+  }
+
+  function renderMatrixSources() {
+    var box = $('#matrixSources');
+    if (!box) return;
+    $('#matrixCount').textContent = matrix.sources.length + ' / 4';
+    box.innerHTML = matrix.sources.map(function (src) {
+      return '<div class="matrix-source"><img src="' + src.url + '" alt=""><span>' + escapeHTML(src.name) + '</span></div>';
+    }).join('');
+    $('#matrixRun').disabled = !matrix.sources.length;
+  }
+
+  function renderMatrixResults() {
+    var box = $('#matrixResults');
+    if (!box) return;
+    box.innerHTML = matrix.results.map(function (r, i) {
+      return '<div class="matrix-result"><img src="' + r.url + '" alt="">' +
+        '<button class="mdl" data-matrix-dl="' + i + '">下载</button>' +
+        '<span class="mlabel">' + escapeHTML(r.sourceName) + ' · ' + escapeHTML(r.styleName) + '</span></div>';
+    }).join('');
+    $('#matrixZip').disabled = !matrix.results.length;
+  }
+
+  function matrixHint(text) {
+    var el = $('#matrixHint');
+    if (el) el.textContent = text;
+  }
+
+  function matrixSize(src) {
+    var long = state.params.size === '640' ? 640 : state.params.size === '1200' ? 1200 : 960;
+    var r = state.frame === '原图' ? src.h / src.w : frameRatio();
+    if (r >= 1) return { w: Math.round(long / r), h: long };
+    return { w: long, h: Math.round(long * r) };
+  }
+
+  function runMatrix() {
+    if (!matrix.sources.length) { matrixHint('先选择至少一张图片'); return; }
+    var styles = state.selected.map(styleById).filter(function (s) { return s && s.renderer !== 'model'; });
+    if (!styles.length) { matrixHint('当前没有选本机风格'); return; }
+    var btn = $('#matrixRun');
+    btn.disabled = true;
+    btn.textContent = '生成中…';
+    matrixHint('正在生成 ' + matrix.sources.length + ' 图 × ' + styles.length + ' 风格…');
+    matrix.results = [];
+    var previous = SRC;
+    (async function () {
+      for (var si = 0; si < matrix.sources.length; si++) {
+        var src = matrix.sources[si];
+        var size = matrixSize(src);
+        SRC = src.img;
+        for (var st = 0; st < styles.length; st++) {
+          if (disposed) return;
+          var c = await renderStyleAsync(styles[st].id, size.w, size.h).catch(function () { return null; });
+          if (c) {
+            matrix.results.push({
+              sourceName: src.name,
+              styleName: styles[st].name,
+              url: c.toDataURL('image/jpeg', 0.92),
+              w: size.w,
+              h: size.h
+            });
+          }
+          renderMatrixResults();
+          matrixHint('已完成 ' + matrix.results.length + ' 张');
+        }
+      }
+      SRC = previous;
+      btn.textContent = '重新生成矩阵';
+      btn.disabled = false;
+      matrixHint('完成 ' + matrix.results.length + ' 张；可逐张下载或打包。');
+    })();
+  }
+
+  function matrixDownload(index) {
+    var r = matrix.results[index];
+    if (!r) return;
+    var a = document.createElement('a');
+    a.href = r.url;
+    a.download = 'matrix-' + ('0' + (index + 1)).slice(-2) + '-' + r.styleName + '.jpg';
+    a.click();
+  }
+
+  function matrixZip() {
+    if (!matrix.results.length) { matrixHint('还没有结果'); return; }
+    matrixHint('正在打包…');
+    var files = matrix.results.map(function (r, i) {
+      return { name: ('0' + (i + 1)).slice(-2) + '-' + r.styleName + '.jpg', dataUrl: r.url };
+    });
+    fetch(API + '/export', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        files: files,
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.5.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+      }),
+    }).then(function (res) {
+      if (!res.ok) throw new Error('export');
+      return res.blob();
+    }).then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'image-matrix-' + new Date().toISOString().slice(0, 10) + '.zip';
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+      matrixHint('ZIP 已导出（可能由浏览器提示保存）');
+    }).catch(function () { matrixHint('打包失败；请检查 Host'); });
+  }
+
   /* ————— 提示 ————— */
   function toast(msg) {
     var el = $('#toast');
@@ -2559,6 +2855,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
+    $('#importPack').addEventListener('click', importPack);
+    $('#packInput').addEventListener('change', function (e) { readPackFiles(e.target.files); e.target.value = ''; });
+    $('#contextPreview').addEventListener('click', previewPrompt);
+    $('#matrixBtn').addEventListener('click', openMatrix);
+    $$('[data-matrix-close]').forEach(function (el) { el.addEventListener('click', closeMatrix); });
+    $('#matrixPick').addEventListener('click', function () { $('#matrixInput').click(); });
+    $('#matrixInput').addEventListener('change', function (e) {
+      addMatrixFiles(e.target.files);
+      e.target.value = '';
+    });
+    $('#matrixRun').addEventListener('click', runMatrix);
+    $('#matrixZip').addEventListener('click', matrixZip);
+    $('#matrixResults').addEventListener('click', function (e) {
+      var dl = e.target.closest('[data-matrix-dl]');
+      if (dl) matrixDownload(Number(dl.dataset.matrixDl));
+    });
     $('#pickEmpty').addEventListener('click', function () { $('#fileInput').click(); });
     $('#useSample').addEventListener('click', useSample);
     $$('#scopeGroup button').forEach(function (el) {
@@ -2719,6 +3031,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         }
       }
       if (e.key === 'Escape' && setLayer.classList.contains('open')) closeSettings();
+      if (e.key === 'Escape' && $('#matrixLayer')?.classList.contains('open')) closeMatrix();
       if (e.key === 'Escape' && state.comparing) {
         state.comparing = false;
         $('#print').classList.remove('compare');
@@ -2777,6 +3090,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     showEmpty();
     renderHistory();
     loadSettings();
+    loadStyles();
     loadHostHistory();
     loadSampleThumbs();
     applyFrame();

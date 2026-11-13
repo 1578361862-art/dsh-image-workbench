@@ -1,6 +1,6 @@
 # 图像风格工作台 · 剩余待办
 
-> 2026-11-13 · 当前 0.4.0：P1 + P2 + P3（真实 2K 已验证）完成；自动 cloud 历史、job 持久化、cancel、usage 已接；下一步 P4。源码 `~/Code/dsh-image-workbench`。
+> 2026-11-13 · 当前 0.5.0：P1–P4 已实现；P3 真实 2K 已验证；P4 Agent/矩阵/预设包/Context-IR 已接。源码 `~/Code/dsh-image-workbench`。
 
 ## 已完成
 
@@ -28,8 +28,11 @@
 - [x] cloud job 自动写 index/history（成功结果出现于 Host 历史，不再手动补 batch）。
 - [x] job 快照持久化：重启后 running → unknown、queued → failed，不自动重试；13 项 host 测试通过。
 - [x] cancel 路由与用量面板：设置显示今日/本月云端费用；ledger 成功记录。
-- [ ] 90 天清理、失败重试（手动二次确认）、账本按 usage 回填实际费用。
-- [ ] 下次：P4（Agent 工具、矩阵批量、风格包导入、Context-IR）。
+- [x] P4.1 Agent 工具 `image_workbench`：云端 estimate/start/status，要求用户确认费用；本机风格提示回页面。
+- [x] P4.2 批量矩阵：最多 4 图 × 当前本机风格（含预设包），批量下载/ZIP；云端暂单张。
+- [x] P4.3 预设风格包导入：`style.json` + preview，base 内置本机风格 + params；不允许脚本/HTML。
+- [x] P4.4 Context-IR 预览：云端风格「预览模型改写」，只返回 revised_prompt/aspect，不出图。
+- [ ] P5：90 天清理、失败重试（二次确认费用）、账本按 usage 回填实际费用、真实页面验收。
 
 ### P4 / P5
 - [ ] Agent 工具、矩阵批量、风格包导入、Context-IR 预览。
@@ -37,6 +40,6 @@
 
 ## 拍板
 
-1. P4 先做哪个：Agent 工具（对话里触发）/ 矩阵批量 / 风格包导入 / Context-IR 预览？
+1. P5 先做哪项：90 天清理 / 云端失败重试（二次确认）/ 真实页面验收？
 2. 4K 促销到 2026-11-18；之后是否保留 4K 选项？
-3. 90 天清理和「重试失败云端任务（二次确认费用）」是否现在做？
+3. 矩阵的云端版（多图 × H3）是否要现在开，成本会按张累加。
