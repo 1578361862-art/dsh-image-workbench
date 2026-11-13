@@ -757,8 +757,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </main>
 
   <footer class="wrap foot">
-    <span>P1 / P2 / P3 · 本机 Canvas + 模板；云端 H3 按量 · 国内站。</span>
-    <span>DSH · IMAGE STUDIO / P1–P3</span>
+    <span>P1–P5 · 本机 Canvas + 模板；云端 H3 按量 · 国内站。</span>
+    <span>DSH · IMAGE STUDIO / P1–P5</span>
   </footer>
 </div>
 
