@@ -28,10 +28,10 @@
 - [x] cloud job 自动写 index/history（成功结果出现于 Host 历史，不再手动补 batch）。
 - [x] job 快照持久化：重启后 running → unknown、queued → failed，不自动重试；13 项 host 测试通过。
 - [x] cancel 路由与用量面板：设置显示今日/本月云端费用；ledger 成功记录。
-- [x] P4.1 Agent 工具 `image_workbench`：云端 estimate/start/status，要求用户确认费用；本机风格提示回页面。
-- [x] P4.2 批量矩阵：最多 4 图 × 当前本机风格（含预设包），批量下载/ZIP；云端暂单张。
-- [x] P4.3 预设风格包导入：`style.json` + preview，base 内置本机风格 + params；不允许脚本/HTML。
-- [x] P4.4 Context-IR 预览：云端风格「预览模型改写」，只返回 revised_prompt/aspect，不出图。
+- [x] P4.1 Agent 工具 `image_workbench`：云端 estimate/start/status，要求用户确认费用；本机风格提示回页面。真实 1K 测试成功（job_mweu17a1_6da526c6，944×1120）。
+- [x] P4.2 批量矩阵：最多 4 图 × 当前本机风格（含预设包），批量下载/ZIP；云端暂单张。harness 2×3 通过。
+- [x] P4.3 预设风格包导入：`style.json` + preview，base 内置本机风格 + params；不允许脚本/HTML；Host 14 项测试。
+- [x] P4.4 Context-IR 预览：云端风格「预览模型改写」，只返回 revised_prompt/aspect，不出图。真实调用 200，2258 tokens，aspect 3:4。
 - [ ] P5：90 天清理、失败重试（二次确认费用）、账本按 usage 回填实际费用、真实页面验收。
 
 ### P4 / P5

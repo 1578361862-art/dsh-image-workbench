@@ -7,7 +7,7 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { estimate } from './lib/budget.js'
-import { baseUrlFor, generateContextIR, sniffMime } from './lib/minimax.js'
+import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -446,6 +446,7 @@ export default {
             prompt: body.prompt,
             key,
             baseUrl: baseUrlFor(config),
+            model: modelFor(config.model),
           }))
         }
         if (method === 'POST' && path === 'cloud/jobs') {

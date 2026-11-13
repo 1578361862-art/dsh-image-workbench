@@ -15,6 +15,13 @@
 9. 云端风格：在设置里保存 MiniMax API Key，选中 H3 卡，选云端画质（1K/2K/4K），点生成；首次会确认上传与估价。
 10. 右上角「设置」保存 Key、默认尺寸、隐私、预算；Key 存 DSH credentials。
 
+## P4 用法
+
+- **Agent 工具**：在聊天里调用 `image_workbench`，先用 action=estimate 估价，再 action=start + confirm=true 起云端作业，action=status 轮询；只支持云端 H3。
+- **批量矩阵**：页面 stage bar 的「批量」，最多 4 图 × 当前本机风格，结果在独立矩阵弹窗里逐张下载或 ZIP；云端请单张。
+- **预设风格包**：设置里「导入风格包…」选择一个含 `style.json`（可选 preview 图）的文件夹；目前只支持 `renderer=preset`，base 必须是内置本机风格，params 固定可用字段；不执行脚本/HTML。
+- **Context-IR 预览**：选中云端风格后，检查器「预览模型改写」调用 MiniMax Context-IR，显示 revised_prompt/aspect；只消耗增强 token，不出图。
+
 ## P2 范围
 
 - 6 个本机风格：半调网点、双色限墨、Riso 错版、蓝染/氰版、胶片褪色、印刷海报。

@@ -276,6 +276,7 @@ export async function generateContextIR({
   prompt,
   key,
   baseUrl,
+  model = 'MiniMax-H3-Image',
   timeoutMs = 60_000,
   fetchImpl = globalThis.fetch,
 } = {}) {
@@ -294,7 +295,7 @@ export async function generateContextIR({
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt: prompt.trim() }),
+      body: JSON.stringify({ prompt: prompt.trim(), model }),
       signal: AbortSignal.timeout(timeoutMs),
     })
   } catch (err) {

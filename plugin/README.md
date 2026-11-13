@@ -31,6 +31,12 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - 客户端：1120×860、1000、900 宽 harness 验证空态、模板、参数作用域、原图下载、ZIP、Host 历史、A/B、夜版。
 - DSH 内：路由 `/image-workbench/{health,storage,history,assets}` 均返回插件的 401 JSON，说明 Host 已加载；带页面会话的真实点击仍需刷新页面验收。
 
+## P4 限制
+
+- 矩阵只做本机风格（最多 4 图），云端矩阵未开，避免一次误扣多张。
+- 风格包只支持 `renderer=preset`（复用内置本机 renderer + params），不支持任意 HTML/JS 渲染器。
+- Agent 工具只支持云端 H3；本机 Canvas 风格需在页面工作台操作。
+
 ## 已知限制
 
 - 真实 DSH 页面视觉/下载落盘尚未在本 shell 验收（桌面端 auth token 拿不到）。
