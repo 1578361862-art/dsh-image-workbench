@@ -341,6 +341,49 @@ export function createStorage(root) {
     }
   }
 
+  async function indexCloudJob({ id, createdAt, assetId, styleIds, results }) {
+    if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) fail('批次 id 无效')
+    return withIndexLock(async () => {
+      const rows = await readIndexRows()
+      if (rows.some((row) => row.id === id)) return false
+      rows.push({
+        id,
+        createdAt: typeof createdAt === 'string' ? createdAt : new Date().toISOString(),
+        assetId: typeof assetId === 'string' ? assetId : '',
+        sourceName: '',
+        styleIds: Array.isArray(styleIds) ? styleIds : [],
+        results: Array.isArray(results) ? results : [],
+      })
+      await writeIndexRows(rows)
+      return true
+    })
+  }
+
+  async function backfillCloudIndex() {
+    let entries = []
+    try {
+      entries = await readdir(outputsRoot, { withFileTypes: true })
+    } catch {
+      return 0
+    }
+    let added = 0
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const batch = await readJson(join(outputsRoot, entry.name, 'batch.json')).catch(() => null)
+      if (!batch || batch.kind !== 'cloud' || batch.id !== entry.name) continue
+      if (!Array.isArray(batch.results) || batch.results.length === 0) continue
+      const indexed = await indexCloudJob({
+        id: batch.id,
+        createdAt: batch.createdAt,
+        assetId: batch.assetId,
+        styleIds: batch.results.map((item) => item.styleId).filter(Boolean),
+        results: batch.results.map((item) => ({ styleId: item.styleId, url: item.url })),
+      })
+      if (indexed) added += 1
+    }
+    return added
+  }
+
   async function getBatch(id) {
     if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) return null
     const batch = await readJson(join(outputsRoot, id, 'batch.json'))
@@ -477,6 +520,8 @@ export function createStorage(root) {
     getAsset,
     createBatch,
     getBatch,
+    indexCloudJob,
+    backfillCloudIndex,
     listHistory,
     deleteBatch,
     resultPath,

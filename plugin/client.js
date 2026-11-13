@@ -809,8 +809,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
       <section class="set-sec last">
         <div class="set-title"><span>用量</span><span class="mono">USAGE</span></div>
+        <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
+        <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
         <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
-        <div class="set-links"><button class="ghost-btn" id="billingLink">查看账单 ↗</button></div>
+        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button></div>
       </section>
     </div>
 
@@ -1794,7 +1796,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.3.0',
+        version: '0.4.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2298,8 +2300,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   /* ————— 设置 ————— */
   var setLayer = $('#settingsLayer');
   var settingsReturnFocus = null;
+  function loadUsage() {
+    var today = $('#usageToday');
+    var month = $('#usageMonth');
+    if (!today || !month) return;
+    apiFetch('/usage', { cache: 'no-store' }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok, data: data }; });
+    }).then(function (result) {
+      if (!result.ok) {
+        today.textContent = result.data.error || '—';
+        month.textContent = '—';
+        return;
+      }
+      var t = result.data.today || {};
+      var m = result.data.month || {};
+      today.textContent = (t.count || 0) + ' 张 · ¥' + Number(t.costYuan || 0).toFixed(4);
+      month.textContent = (m.count || 0) + ' 张 · ¥' + Number(m.costYuan || 0).toFixed(4);
+    }).catch(function () { today.textContent = '—'; month.textContent = '—'; });
+  }
   function openSettings() {
     settingsReturnFocus = document.activeElement;
+    loadUsage();
     setLayer.inert = false;
     setLayer.classList.add('open');
     setLayer.setAttribute('aria-hidden', 'false');
@@ -2673,7 +2694,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         toast('历史已清空');
       });
     });
-    $('#billingLink').addEventListener('click', function () { toast('账单入口在 P3 接入'); });
+    $('#billingLink').addEventListener('click', function () { loadUsage(); toast('已刷新云端用量'); });
     $$('.mini-seg').forEach(function (group) {
       group.addEventListener('click', function (e) {
         var b = e.target.closest('button');

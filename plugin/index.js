@@ -201,6 +201,7 @@ export default {
   inject: ['webServer', 'connection'],
   apply(ctx) {
     const storage = createStorage(ROOT)
+    storage.backfillCloudIndex().catch(() => {})
     const cloud = createCloud({
       root: ROOT,
       storage,
@@ -291,11 +292,13 @@ export default {
 
       // ---- P3：云端基础能力，默认关闭 ----
       if (path === 'usage' && method === 'GET') {
+        await cloud.ready
         const config = await readConfig()
         if (config.cloudEnabled !== true) return json(res, 403, { error: '云端功能未启用' })
         return json(res, 200, await cloud.usage())
       }
       if (seg[0] === 'cloud') {
+        await cloud.ready
         const config = await readConfig()
         if (config.cloudEnabled !== true) return json(res, 403, { error: '云端功能未启用' })
         if (method === 'POST' && path === 'cloud/jobs') {
@@ -304,6 +307,9 @@ export default {
         }
         if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
           return json(res, 200, cloud.getJob(seg[2]))
+        }
+        if (method === 'POST' && seg.length === 4 && seg[1] === 'jobs' && seg[3] === 'cancel') {
+          return json(res, 200, cloud.cancelJob(seg[2]))
         }
         if (method === 'POST' && path === 'cloud/key-test') {
           const key = await readKeyValue(ctx)

@@ -42,11 +42,20 @@ export function hashParams(params) {
   return createHash('sha256').update(stableStringify(params ?? {})).digest('hex')
 }
 
-export function createJobs({ clock = () => new Date() } = {}) {
+export function createJobs({ clock = () => new Date(), onChange } = {}) {
   const jobs = new Map()
 
   function nowIso() {
     return clock().toISOString()
+  }
+
+  function notify(job) {
+    if (typeof onChange !== 'function') return Promise.resolve()
+    try {
+      return Promise.resolve(onChange({ ...job })).catch(() => {})
+    } catch {
+      return Promise.resolve()
+    }
   }
 
   function create(input = {}) {
@@ -73,6 +82,7 @@ export function createJobs({ clock = () => new Date() } = {}) {
       error: null,
     }
     jobs.set(id, job)
+    void notify(job)
     return job
   }
 
@@ -85,6 +95,7 @@ export function createJobs({ clock = () => new Date() } = {}) {
     const job = get(id)
     if (!job) return null
     Object.assign(job, patch, { updatedAt: nowIso() })
+    void notify(job)
     return job
   }
 
@@ -120,6 +131,7 @@ export function createJobs({ clock = () => new Date() } = {}) {
     job.requestSentAt = nowIso()
     job.updatedAt = job.requestSentAt
     job.attempts += 1
+    await notify(job)
 
     try {
       const result = (await task(job)) ?? {}
@@ -133,6 +145,7 @@ export function createJobs({ clock = () => new Date() } = {}) {
     } catch (err) {
       finishError(job, err)
     }
+    await notify(job)
     return job
   }
 
@@ -148,6 +161,7 @@ export function createJobs({ clock = () => new Date() } = {}) {
       retryable: false,
       at: job.updatedAt,
     }
+    void notify(job)
     return job
   }
 
@@ -157,8 +171,55 @@ export function createJobs({ clock = () => new Date() } = {}) {
     if (TERMINAL.has(job.status)) return job
     job.status = 'canceled'
     job.updatedAt = nowIso()
+    void notify(job)
     return job
   }
 
-  return { create, get, update, start, failBeforeRequest, cancel }
+  function hydrate(records = []) {
+    const loaded = []
+    const validStatus = new Set(JOB_STATUSES)
+    for (const record of records) {
+      if (!record || typeof record !== 'object' || typeof record.id !== 'string' || jobs.has(record.id)) continue
+      const job = {
+        id: record.id,
+        status: validStatus.has(record.status) ? record.status : 'failed',
+        createdAt: typeof record.createdAt === 'string' ? record.createdAt : nowIso(),
+        updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : nowIso(),
+        provider: 'minimax',
+        assetId: typeof record.assetId === 'string' ? record.assetId : null,
+        styleId: typeof record.styleId === 'string' ? record.styleId : null,
+        prompt: typeof record.prompt === 'string' ? record.prompt : '',
+        size: typeof record.size === 'string' ? record.size : null,
+        params: record.params && typeof record.params === 'object' ? record.params : {},
+        paramsHash: typeof record.paramsHash === 'string' ? record.paramsHash : hashParams(record.params ?? {}),
+        model: typeof record.model === 'string' ? record.model : 'standard',
+        requestSentAt: typeof record.requestSentAt === 'string' ? record.requestSentAt : null,
+        attempts: Number.isInteger(record.attempts) ? record.attempts : 0,
+        output: record.output && typeof record.output === 'object' ? record.output : null,
+        usage: record.usage && typeof record.usage === 'object' ? record.usage : null,
+        revisedPrompt: typeof record.revisedPrompt === 'string' ? record.revisedPrompt : null,
+        error: record.error && typeof record.error === 'object' ? record.error : null,
+        rawMeta: record.rawMeta && typeof record.rawMeta === 'object' ? record.rawMeta : null,
+      }
+      if (['queued', 'preparing', 'running'].includes(job.status)) {
+        job.status = job.requestSentAt ? 'unknown' : 'failed'
+        job.error = {
+          code: job.requestSentAt ? 'interrupted' : 'interrupted_before_request',
+          message: job.requestSentAt
+            ? 'Harness 重启，请求可能已发出并计费；未自动重试'
+            : 'Harness 重启，作业未发出；未自动重试',
+          status: 0,
+          retryable: false,
+          at: nowIso(),
+        }
+        job.updatedAt = nowIso()
+      }
+      jobs.set(job.id, job)
+      loaded.push(job)
+      void notify(job)
+    }
+    return loaded
+  }
+
+  return { create, get, update, start, failBeforeRequest, cancel, hydrate }
 }

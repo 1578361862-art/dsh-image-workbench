@@ -1,6 +1,6 @@
 // P3 云端编排：作业 + 预算闸门 + 台账 + 结果落盘。
 // 默认关闭（config.cloudEnabled !== true 时路由层直接 403）；这里不碰客户端设置默认值。
-import { mkdir, readFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { checkBudget, estimate as estimateCost } from './budget.js'
 import { fail } from './errors.js'
@@ -24,7 +24,26 @@ export function createCloud({
   generate = generateEdit,
 }) {
   const ledger = createLedger(join(root, 'ledger.jsonl'), { clock })
-  const jobs = createJobs({ clock })
+  const jobsDir = join(root, 'jobs')
+  async function persistJob(job) {
+    await writeAtomic(join(jobsDir, `${job.id}.json`), JSON.stringify(job, null, 2), 0o600)
+  }
+  const jobs = createJobs({ clock, onChange: persistJob })
+  const ready = (async () => {
+    let names = []
+    try { names = await readdir(jobsDir) } catch { return }
+    const records = []
+    for (const name of names) {
+      if (!name.endsWith('.json')) continue
+      try {
+        const parsed = JSON.parse(await readFile(join(jobsDir, name), 'utf8'))
+        if (parsed && typeof parsed === 'object') records.push(parsed)
+      } catch {
+        // 损坏的 job 文件不影响其他作业
+      }
+    }
+    jobs.hydrate(records)
+  })().catch(() => {})
 
   function assertEnabled(config) {
     if (config?.cloudEnabled !== true) fail('云端功能未启用', 403)
@@ -66,6 +85,14 @@ export function createCloud({
       ),
       0o644,
     ).catch(() => {})
+
+    await storage.indexCloudJob({
+      id: job.id,
+      createdAt: job.createdAt,
+      assetId: job.assetId,
+      styleIds: [job.styleId],
+      results: [{ styleId: job.styleId, url: output.url }],
+    }).catch(() => {})
 
     await ledger
       .append({
@@ -189,6 +216,14 @@ export function createCloud({
     const job = jobs.get(id)
     if (!job) fail('作业不存在', 404)
     return job
+  }
+
+  function cancelJob(id) {
+    const job = jobs.get(id)
+    if (!job) fail('作业不存在', 404)
+    if (job.requestSentAt) fail('请求已发出，不能取消；可能已生成并计费', 409)
+    const next = jobs.cancel(id)
+    return next
   }
 
   async function usage() {

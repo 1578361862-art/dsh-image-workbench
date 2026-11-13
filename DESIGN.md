@@ -1,6 +1,6 @@
 # 图像风格工作台 · 设计方案 v1
 
-> 状态：P1 + P2 + P3 UI 已实现（`dsh-image-workbench` 0.3.0） · 2026-11-13
+> 状态：P1 + P2 + P3 已实现并完成真实 2K 验证（`dsh-image-workbench` 0.4.0） · 2026-11-13
 > 交付形态：DSH 插件 bundle（host + client），左栏入口 → 中央整页
 > 方案与边界见本文；P1/P2 实现在 [plugin/](plugin/)，P3 云端 UI/provider/队列/预算已落地，保存 Key 后启用
 > 详细剩余工作与验收清单：[NEXT.md](NEXT.md)
@@ -438,14 +438,14 @@ Job {
 
 ## 9. 分期与验收
 
-> 2026-11-13：P1 + P2 + P3 UI 代码完成，Host 12 项测试通过；真实 DSH 页面与真实 MiniMax Key 验收见 [NEXT.md](NEXT.md)。
+> 2026-11-13：P1 + P2 + P3 完成；真实 MiniMax H3 2K 成功并邮件交付；Host 13 项测试通过。下一步 P4。
 
 | 阶段 | 内容 | 估时 | 验收 |
 |---|---|---|---|
 | P0 | 本方案定稿、风格清单冻结 | 0.5 d | 你确认 |
 | P1 | 插件骨架、左栏入口、中央页、上传/粘贴、6 个 canvas 风格、多选生成、网格、下载、本地历史 | 2–3 d | 真浏览器跑通：上传→勾 3 个→出 3 张→下载 |
 | P2 | ✅ HTML 文字层 + Canvas 图像、海报/卡片 2 个模板、共用/当前风格参数、原图导出、ZIP、Host 持久历史 | 2 d | 模板截图与设计稿一致；字体/版式不溢出 |
-| P3 | ✅ 云端 UI（1K/2K/4K、费用/预算/隐私、partial failure、unknown 不重试）+ Host provider/队列/账本；真实 Key live 待验 | 2–3 d | 1 张原图出 1 张云端结果；断网超时进 `unknown` 且不重试 |
+| P3 | ✅ 云端 UI + Host provider/队列/账本；真实 2K 成功；自动 history、job 持久化、cancel、usage | 2–3 d | 1 张原图出 1 张云端结果；断网超时进 `unknown` 且不重试 |
 | P4 | Agent 工具、矩阵批量、风格包导入、自由描述 + Context-IR | 2 d | 对话里能触发；导入一个外部 pack 可用 |
 | P5 | 打磨、空态/错误态、文档 | 1–2 d | 无阻塞缺陷 |
 

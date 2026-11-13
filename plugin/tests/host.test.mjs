@@ -528,6 +528,21 @@ test('P3 jobs：请求前落点、超时 unknown、绝不自动重试', async ()
   assert.equal(done.error, null)
 })
 
+test('P3 jobs：重启后 running 标 unknown，queued 标 failed，不自动重试', async () => {
+  const { createJobs } = await import(new URL('../lib/jobs.js', import.meta.url).href)
+  const restored = createJobs({ clock: () => new Date('2026-11-13T00:00:00.000Z') })
+  const loaded = restored.hydrate([
+    { id: 'job_running', status: 'running', requestSentAt: '2026-11-13T00:00:00.000Z', attempts: 1 },
+    { id: 'job_queued', status: 'queued', requestSentAt: null, attempts: 0 },
+  ])
+  assert.equal(loaded.length, 2)
+  assert.equal(restored.get('job_running').status, 'unknown')
+  assert.equal(restored.get('job_running').error.code, 'interrupted')
+  assert.equal(restored.get('job_queued').status, 'failed')
+  assert.equal(restored.get('job_queued').error.code, 'interrupted_before_request')
+  assert.equal(restored.get('job_running').attempts, 1)
+})
+
 test('P3 budget / ledger：单价、日预算、手动放行、损坏行容忍', async () => {
   const { estimate, checkBudget } = await import(new URL('../lib/budget.js', import.meta.url).href)
   const { createLedger } = await import(new URL('../lib/ledger.js', import.meta.url).href)
@@ -633,6 +648,8 @@ test('P3 cloud 编排：成功落盘/记账、超时 unknown、不重试、预�
   assert.equal(ledger.today.costYuan, 0.1747)
   assert.equal(ledger.entries[0].jobId, started2.id)
   assert.equal(ledger.entries[0].usage.total_tokens, 5)
+  const history = await storage.listHistory(10)
+  assert.ok(history.entries.some((entry) => entry.id === started2.id), 'cloud 成功结果应自动写 history index')
 
   // 已终态作业再次 start 不会产生第二次请求
   const before = calls
