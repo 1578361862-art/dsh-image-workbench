@@ -118,7 +118,7 @@ export function createCloud({
     return { output }
   }
 
-  async function runJob(job, { config, key, asset, estimated }) {
+  async function runJob(job, { config, key, asset, estimated, reference }) {
     jobs.update(job.id, { status: 'preparing' })
     let imageBuffer
     try {
@@ -132,6 +132,8 @@ export function createCloud({
       const result = await generate({
         imageBuffer,
         mime: asset.meta.mime,
+        referenceBuffer: reference?.buffer,
+        referenceMime: reference?.mime,
         prompt: current.prompt,
         size: current.size,
         key,
@@ -148,7 +150,7 @@ export function createCloud({
     })
   }
 
-  async function createJob(body = {}, config) {
+  async function createJob(body = {}, config, extras = {}) {
     assertEnabled(config)
     if (!body || typeof body !== 'object' || Array.isArray(body)) fail('请求内容无效')
 
@@ -205,7 +207,7 @@ export function createCloud({
 
     // 异步执行；错误全部收敛到 job.status，不会冒泡成未处理异常。
     setImmediate(() => {
-      runJob(job, { config, key, asset, estimated }).catch((err) => {
+      runJob(job, { config, key, asset, estimated, reference: extras.reference }).catch((err) => {
         jobs.failBeforeRequest(job.id, err)
       })
     })

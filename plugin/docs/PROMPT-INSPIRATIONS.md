@@ -14,6 +14,12 @@ User-provided references were studied and turned into 7 new cloud styles. The of
 | 8 | 热带没有巧克力 · 星河是我的脉搏 | Cosmic surreal classical oil, black and gold nebula/accretion disc, cloud sea, robed figure on a cliff, sacred scale | `h3-cosmic` 星河神性 |
 | 9 | 用户提供 · 金石印谱提示词 | 3:4 海报上下 1:1；上方原片，下半页肖形印蜕 + 边款墨拓；朱砂/墨/宣纸白，大量留白；真实篆刻材质 | `h3-seal` 金石印谱 |
 
+
+## MiniMax Context-IR 试验
+
+对 8 个新 prompt 调用过 MiniMax `/v1/h3_image_context_ir`。返回结果把它们统一重写成了「暗黑奇幻女性角色」场景，丢失了原图保留、画格、印谱和具体风格约束，因此**没有采用 Context-IR 文本**。改用更直接的方式：把用户提供的示例图作为 **图2 风格/材质参考** 发送给 H3，并在 prompt 中明确图1/图2角色；这比让 Context-IR 改写成另一张场景更接近示例图。
+
+
 ## How the prompts were adapted
 
 - The MJ `--sref`, `--profile`, `--stylize`, `--chaos` flags are not supported by the H3 image-edit API and are not copied; only visible style language is kept.

@@ -121,6 +121,8 @@ function perImageError(item, key) {
 export async function generateEdit({
   imageBuffer,
   mime = 'image/jpeg',
+  referenceBuffer,
+  referenceMime,
   prompt,
   size = '2K',
   key,
@@ -163,6 +165,10 @@ export async function generateEdit({
   form.append('output_format', 'jpeg')
   form.append('n', '1')
   form.append('image', new Blob([imageBuffer], { type: mime }), `source.${extForMime(mime)}`)
+  if (Buffer.isBuffer(referenceBuffer) && referenceBuffer.length) {
+    const refMime = referenceMime || sniffMime(referenceBuffer)
+    form.append('image', new Blob([referenceBuffer], { type: refMime }), `reference.${extForMime(refMime)}`)
+  }
 
   let response
   try {

@@ -924,7 +924,7 @@ test('云端风格 v2 提示词：Client 与 Host 保持同一份 29 条', () =>
   const root = fileURLToPath(new URL('..', import.meta.url))
   const client = readFileSync(join(root, 'client.js'), 'utf8')
   const host = readFileSync(join(root, 'index.js'), 'utf8')
-  const re = /prompt: (?:cloud(?:Scene)?Prompt|cloudSealPrompt)\('([^']*)'(?:, true)?\)/g
+  const re = /prompt: (?:cloud(?:Scene)?(?:Ref)?Prompt|cloudSealPrompt)\('([^']*)'(?:, true)?\)/g
   const clientBodies = [...client.matchAll(re)].map((m) => m[1])
   const hostBodies = [...host.matchAll(re)].map((m) => m[1])
   assert.equal(clientBodies.length, 29)

@@ -205,6 +205,8 @@ const CLOUD_EDIT_HEAD = '图1是唯一参考图与构图来源。先读图1：�
 const CLOUD_EDIT_TAIL = '保留原图文字的位置和图形轮廓，不生成新的可读句子；全尺寸下仍能看到材质的真实细节；不要水印、签名、UI、网页边框、平滑数字渐变或塑料感。'
 const CLOUD_SCENE_HEAD = '图1是唯一主体参考。锁定主体数量、身份、面部或关键特征、体型、姿态和主体间关系；成图保留这些核心特征。允许重新设计服装、时代、环境、景别、镜头、光线和空间尺度；不新增或删除主体；新服装或环境必须与主体有真实接触、遮挡、透视和光影关系。最终必须像一张完整完成的作品，而不是原图加滤镜。'
 const CLOUD_SCENE_TAIL = '保留原图文字的位置与图形轮廓，不生成新的可读句子；全尺寸下仍能看到材质与光影细节；不要水印、签名、UI、网页边框或无关长文。'
+const CLOUD_REF_HEAD = '图1是用户上传照片与唯一主体/身份来源；图2只是风格、材质、光线、色彩、笔触与场景语言的参考，绝对不能复制图2中的具体人物、物体、文字、构图或背景内容。保留图1的主体数量、身份、面部或关键特征、姿态和主体间关系；只把图2的视觉语言应用到图1。'
+const CLOUD_SCENE_REF_HEAD = '图1是唯一主体与身份来源；图2只是风格、材质、光线、色彩、场景语言参考，不复制图2中的具体人物、物体、文字或构图。保留图1主体身份、面部特征、姿态和主体间关系；允许重设服装、环境、景别、镜头和空间尺度，但新环境必须与主体有真实接触、遮挡、透视和光影关系。'
 const CLOUD_LAYOUT_HEAD = '图1是唯一设计参考与主体来源。先读图1：锁定主体数量、身份、标志性轮廓、姿态、服装或结构、关键配饰、比例与主要部件关系。成图保持主体设计和身份一致，但允许按该风格重新组织版面与视图；不新增、删除或替换主体，不改变核心结构。只改变呈现方式、介质、光线、色彩与标注体系。最终必须像一张正式完成的设计图、图解或图纸，而不是原图加滤镜。'
 const CLOUD_LAYOUT_TAIL = '标签只描述图中可见的结构与特征，用简短、可读、不重叠的文字；不编造数据、来源或结论；不要水印、签名、UI、网页边框或无关长文。'
 function cloudPrompt(body, layout = false) {
@@ -213,6 +215,14 @@ function cloudPrompt(body, layout = false) {
 
 function cloudScenePrompt(body) {
   return CLOUD_SCENE_HEAD + body + CLOUD_SCENE_TAIL
+}
+
+function cloudRefPrompt(body) {
+  return CLOUD_REF_HEAD + body + CLOUD_EDIT_TAIL
+}
+
+function cloudSceneRefPrompt(body) {
+  return CLOUD_SCENE_REF_HEAD + body + CLOUD_SCENE_TAIL
 }
 
 function cloudSealPrompt(body) {
@@ -306,36 +316,48 @@ const CLOUD_STYLES = Object.freeze({
   },
   'h3-sacred': {
     name: '圣光暗童话',
-    prompt: cloudPrompt('CG数字插画/暗黑童话概念艺术：深炭黑背景、去饱和银灰与幽灵蓝冷光；主体呈戏剧化剪影，披风与衣褶形成大面积暗形；圣光从上方或背后穿过尘雾，边缘冷光、面部少量暖光；精细painterly纹理、电影舞台光、心理悬疑与“天真/禁忌力量”的象征物；保留主体身份、姿态、服装轮廓和构图；不要照片、塑料3D、霓虹、可爱化或新增角色。'),
+    prompt: cloudRefPrompt('CG数字插画/暗黑童话概念艺术：深炭黑背景、去饱和银灰与幽灵蓝冷光；主体呈戏剧化剪影，披风与衣褶形成大面积暗形；圣光从上方或背后穿过尘雾，边缘冷光、面部少量暖光；精细painterly纹理、电影舞台光、心理悬疑与“天真/禁忌力量”的象征物；保留主体身份、姿态、服装轮廓和构图；不要照片、塑料3D、霓虹、可爱化或新增角色。'),
   },
   'h3-mystic': {
     name: '玄黄奇境',
-    prompt: cloudScenePrompt('玄幻/科幻奇境概念艺术：超广角，主体成为渺小而孤独的旅人（保留身份、姿态、服装），站在发光黄橙地貌上；深青星空、板岩蓝巨岩、右侧巨崖、中央向上翻卷的黄色云涡或洞口，上空一弯发光新月；深青、石板灰、明黄、火橙，体积云与空气透视，宏大尺度；不要普通风景照、卡通、UI或文字。'),
+    prompt: cloudSceneRefPrompt('玄幻/科幻奇境概念艺术：超广角，主体成为渺小而孤独的旅人（保留身份、姿态、服装），站在发光黄橙地貌上；深青星空、板岩蓝巨岩、右侧巨崖、中央向上翻卷的黄色云涡或洞口，上空一弯发光新月；深青、石板灰、明黄、火橙，体积云与空气透视，宏大尺度；不要普通风景照、卡通、UI或文字。'),
   },
   'h3-observer': {
     name: '旁观者视角',
-    prompt: cloudScenePrompt('宽景数字插画，旁观者视角：主体在前景或中景，以背影、侧背朝向镜头，成为观众代入的那个瞬间；远处是超现实粉彩地形、白色道路轨迹、小车辆、巨型粉彩云柱和明亮太阳，蓝天留出白色航迹；前景米色岩石、深灰巨石、低矮荒漠植物形成框架；大色块、清晰地平线、空气透视、电影感静止瞬间；保留主体身份、姿态和服装；不要正面肖像、普通风景或过度细节。'),
+    prompt: cloudSceneRefPrompt('宽景数字插画，旁观者视角：主体在前景或中景，以背影、侧背朝向镜头，成为观众代入的那个瞬间；远处是超现实粉彩地形、白色道路轨迹、小车辆、巨型粉彩云柱和明亮太阳，蓝天留出白色航迹；前景米色岩石、深灰巨石、低矮荒漠植物形成框架；大色块、清晰地平线、空气透视、电影感静止瞬间；保留主体身份、姿态和服装；不要正面肖像、普通风景或过度细节。'),
   },
   'h3-west1960': {
     name: '1960 西部动画',
-    prompt: cloudScenePrompt('1960西部电影×日系手绘数字动画：宽银幕中近景，主体在干旱灌木平原、木屋或马匹旁；正午硬光、深阴影、地面暖反光、踢起的尘土薄雾；低饱和青绿、赭黄、暗红，手绘动画线稿、纸纹与胶片颗粒；保留主体身份、姿态、服装轮廓与电影式构图；不要现代摄影、3D、海报字体或UI。'),
+    prompt: cloudSceneRefPrompt('1960西部电影×日系手绘数字动画：宽银幕中近景，主体在干旱灌木平原、木屋或马匹旁；正午硬光、深阴影、地面暖反光、踢起的尘土薄雾；低饱和青绿、赭黄、暗红，手绘动画线稿、纸纹与胶片颗粒；保留主体身份、姿态、服装轮廓与电影式构图；不要现代摄影、3D、海报字体或UI。'),
   },
   'h3-blackgold': {
     name: '暗金圣骑',
-    prompt: cloudScenePrompt('暗黑奇幻/巴洛克圣骑士壁纸：黑金高对比，主体重铸为黑钢与暗金ornate甲胄，披风、月牙或圣徽、细密金线、尖刺与层叠甲片；体积圣光与尘雾，深黑虚空，金属高光与磨损；保留主体身份、面部关键特征和姿态；像一张完成的角色海报，不要塑料3D、游戏UI、文字或水印。'),
+    prompt: cloudSceneRefPrompt('暗黑奇幻/巴洛克圣骑士壁纸：黑金高对比，主体重铸为黑钢与暗金ornate甲胄，披风、月牙或圣徽、细密金线、尖刺与层叠甲片；体积圣光与尘雾，深黑虚空，金属高光与磨损；保留主体身份、面部关键特征和姿态；像一张完成的角色海报，不要塑料3D、游戏UI、文字或水印。'),
   },
   'h3-ramayana': {
     name: '罗摩衍那',
-    prompt: cloudScenePrompt('印度史诗《罗摩衍那》油画/古典插画：红金主色，强烈动态对角线，战车、黑马、弓与箭、飘动红披风、金色珠宝与繁复纹样；厚涂油画与古典插画质感，烟尘和夕阳；主体成为史诗英雄或神祇，保留身份、姿态、服装轮廓和关键特征；允许战车与马匹作为环境叙事元素，不替换主体；不要现代照片、3DCG、文字或UI。'),
+    prompt: cloudSceneRefPrompt('印度史诗《罗摩衍那》油画/古典插画：红金主色，强烈动态对角线，战车、黑马、弓与箭、飘动红披风、金色珠宝与繁复纹样；厚涂油画与古典插画质感，烟尘和夕阳；主体成为史诗英雄或神祇，保留身份、姿态、服装轮廓和关键特征；允许战车与马匹作为环境叙事元素，不替换主体；不要现代照片、3DCG、文字或UI。'),
   },
   'h3-cosmic': {
     name: '星河神性',
-    prompt: cloudScenePrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。'),
+    prompt: cloudSceneRefPrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。'),
   },  'h3-seal': {
     name: '金石印谱',
     prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。'),
   },
 })
+
+const STYLE_REFERENCE_IDS = new Set(['h3-sacred', 'h3-mystic', 'h3-observer', 'h3-west1960', 'h3-blackgold', 'h3-ramayana', 'h3-cosmic'])
+
+async function styleReferenceFor(id) {
+  if (!STYLE_REFERENCE_IDS.has(id)) return null
+  try {
+    return { buffer: await readFile(join(STYLE_PREVIEW_DIR, 'full', id + '.jpg')), mime: 'image/jpeg' }
+  } catch {
+    return null
+  }
+}
+
 
 async function readToolImage(storage, imagePath) {
   if (typeof imagePath !== 'string' || !imagePath.trim()) fail('imagePath 不能为空')
@@ -433,6 +455,7 @@ function registerImageTool(ctx, cloud, storage) {
             }
           }
           const saved = await readToolImage(storage, args.imagePath)
+          const reference = await styleReferenceFor(args.style)
           const job = await cloud.createJob(
             {
               assetId: saved.meta.id,
@@ -442,6 +465,7 @@ function registerImageTool(ctx, cloud, storage) {
               params: {},
             },
             config,
+            { reference },
           )
           return { jobId: job.id, status: job.status, costYuan: price.costYuan }
         },
@@ -603,7 +627,8 @@ export default {
         }
         if (method === 'POST' && path === 'cloud/jobs') {
           const body = await readBody(req, MAX_CLOUD_BODY)
-          return json(res, 202, await cloud.createJob(body ?? {}, config))
+          const reference = await styleReferenceFor(body?.styleId)
+          return json(res, 202, await cloud.createJob(body ?? {}, config, { reference }))
         }
         if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
           return json(res, 200, cloud.getJob(seg[2]))
