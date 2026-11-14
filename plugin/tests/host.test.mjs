@@ -191,6 +191,10 @@ test('P4 风格包：preset import/list，拒绝内置 id 和非法 base', async
   assert.equal(duplicate.status, 400)
   const badBase = await postJson('/styles', { ...pack, id: 'my-bad', base: 'h3-illus' })
   assert.equal(badBase.status, 400)
+  const deleted = await api('/styles/my-preset', { method: 'DELETE' })
+  assert.equal(deleted.status, 200)
+  const after = await api('/styles')
+  assert.equal(after.body.styles.some((style) => style.id === 'my-preset'), false)
 })
 
 test('P5 90 天清理：旧 batch/原图/job 删除，当前与 styles 保留', async () => {

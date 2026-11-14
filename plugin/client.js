@@ -619,6 +619,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .set-row b{ font-weight: 500; color: var(--p-ink-2); }
 .iw-root .set-links{ display: flex; gap: 12px; margin-top: 2px; }
+.iw-root .pack-list{ display:flex; flex-direction:column; gap:4px; margin:6px 0 4px; max-height:168px; overflow-y:auto; }
+.iw-root .pack-row{ display:flex; align-items:center; gap:7px; min-width:0; padding:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
+.iw-root .pack-thumb{ width:44px; height:32px; flex:none; padding:0; overflow:hidden; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .pack-thumb img{ display:block; width:100%; height:100%; object-fit:cover; }
+.iw-root .pack-thumb span{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
+.iw-root .pack-info{ min-width:0; flex:1; display:flex; flex-direction:column; gap:1px; }
+.iw-root .pack-info b{ font-size:11px; font-weight:500; color:var(--p-ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .pack-info span{ font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .pack-del{ flex:none; height:22px; padding:0 6px; border:1px solid var(--p-hair); background:transparent; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); cursor:pointer; }
+.iw-root .pack-del:hover{ color:var(--p-signal); border-color:var(--p-signal); }
+.iw-root .pack-empty{ padding:8px 0; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+
 .iw-root .set-field{ margin-top: 8px; }
 .iw-root .set-field .lab{
   display: block; margin-bottom: 4px;
@@ -1150,10 +1162,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </section>
 
       <section class="set-sec last">
-        <div class="set-title"><span>风格包与最近</span></div>
-        <div class="set-row"><span>已安装</span><b id="packCount">—</b></div>
+        <div class="set-title"><span>风格库与最近</span></div>
+        <div class="set-row"><span>自定义风格包</span><b id="packCount">—</b></div>
+        <div class="pack-list" id="packList"></div>
+        <p class="set-note">展示已保存的本机预设；点缩略图可预览，删除只影响自定义风格包，内置本机与云端风格不受影响。</p>
         <div class="set-links">
-          <button class="ghost-btn" id="importPack">导入风格包…</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
           <button class="ghost-btn" id="cleanupBtn">清理 90 天前</button>
         </div>
@@ -1214,7 +1227,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
-<input type="file" id="packInput" webkitdirectory multiple hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 `;
@@ -1916,48 +1928,57 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var added = false;
       data.styles.forEach(function (pack) { if (addPackStyle(pack)) added = true; });
       if (added) { renderGrid(); renderChips(); }
+      renderPackList();
+      renderStamp();
     }).catch(function () {});
   }
 
-  function importPack() {
-    var input = $('#packInput');
-    if (input) input.click();
+  function customPacks() {
+    return STYLES.filter(function (s) { return s.renderer === 'preset'; });
   }
 
-  function readPackFiles(files) {
-    var list = Array.prototype.slice.call(files || []);
-    var jsonFile = list.find(function (f) { return /(^|\/)style\.json$/i.test(f.webkitRelativePath || f.name); });
-    if (!jsonFile) { toast('文件夹里没有 style.json'); return; }
-    var previewFile = list.find(function (f) { return /^image\//.test(f.type); });
-    var reader = new FileReader();
-    reader.onload = function () {
-      var pack;
-      try { pack = JSON.parse(String(reader.result)); } catch (e) { toast('style.json 不是有效 JSON'); return; }
-      var send = function (preview) {
-        if (preview) pack.preview = preview;
-        apiFetch('/styles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(pack),
-        }).then(function (res) {
-          return res.json().catch(function () { return {}; }).then(function (data) {
-            if (!res.ok) throw new Error(data.error || '导入失败');
-            addPackStyle(data.style || pack);
-            renderGrid();
-            renderChips();
-            toast('风格包已导入 · ' + (data.style?.name || pack.name || pack.id));
-          });
-        }).catch(function (err) { toast(err.message || '风格包导入失败'); });
-      };
-      if (previewFile) {
-        var pr = new FileReader();
-        pr.onload = function () { send(String(pr.result)); };
-        pr.onerror = function () { send(''); };
-        pr.readAsDataURL(previewFile);
-      } else send('');
-    };
-    reader.onerror = function () { toast('读取 style.json 失败'); };
-    reader.readAsText(jsonFile);
+  function renderPackList() {
+    var list = customPacks();
+    var count = $('#packCount');
+    if (count) count.textContent = list.length + ' 个';
+    var box = $('#packList');
+    if (!box) return;
+    if (!list.length) {
+      box.innerHTML = '<div class="pack-empty">还没有自定义风格包。</div>';
+      return;
+    }
+    box.innerHTML = list.map(function (s) {
+      return '<div class="pack-row">' +
+        '<button class="pack-thumb" data-pack-view="' + s.id + '" title="预览 ' + escapeHTML(s.name) + '" aria-label="预览 ' + escapeHTML(s.name) + '">' +
+        (s.preview ? '<img src="' + s.preview + '" alt="">' : '<span>预设</span>') +
+        '</button>' +
+        '<div class="pack-info"><b>' + escapeHTML(s.name) + '</b><span>' + escapeHTML(s.base || 'preset') + ' · ' + s.id + '</span></div>' +
+        '<button class="pack-del" data-pack-delete="' + s.id + '">删除</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  function deletePack(id) {
+    var s = styleById(id);
+    if (!s || s.renderer !== 'preset') return;
+    if (!window.confirm('删除自定义风格包「' + s.name + '」？此操作不可撤销。')) return;
+    apiFetch('/styles/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || '删除失败');
+        var idx = STYLES.indexOf(s);
+        if (idx >= 0) STYLES.splice(idx, 1);
+        state.selected = state.selected.filter(function (x) { return x !== id; });
+        if (state.focus === id) state.focus = state.selected[state.selected.length - 1] || null;
+        state.results = state.results.filter(function (r) { return r.id !== id; });
+        if (state.activeResult === id) state.activeResult = null;
+        renderGrid();
+        renderChips();
+        renderProof();
+        renderPackList();
+        updateUI();
+        toast('已删除风格包 · ' + s.name);
+      });
+    }).catch(function (err) { toast(err.message || '删除失败'); });
   }
 
   function filteredStyles() {
@@ -2048,7 +2069,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var localCount = STYLES.filter(function (x) { return x.renderer !== 'model'; }).length;
     var cloudCount = STYLES.filter(function (x) { return x.renderer === 'model'; }).length;
     $('#stampSub').textContent = '本机 ' + localCount + ' · 云端 ' + cloudCount;
-    if ($('#packCount')) $('#packCount').textContent = STYLES.length + ' 个 · ' + cloudCount + ' 个云端';
+    if ($('#packCount')) $('#packCount').textContent = customPacks().length + ' 个';
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
 
@@ -2531,7 +2552,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.15.2',
+        version: '0.16.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3256,6 +3277,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   function openSettings() {
     settingsReturnFocus = document.activeElement;
+    renderPackList();
     loadUsage();
     setLayer.inert = false;
     setLayer.classList.add('open');
@@ -3639,7 +3661,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.16.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3793,8 +3815,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
-    $('#importPack').addEventListener('click', importPack);
-    $('#packInput').addEventListener('change', function (e) { readPackFiles(e.target.files); e.target.value = ''; });
+    $('#packList').addEventListener('click', function (e) {
+      var view = e.target.closest('[data-pack-view]');
+      if (view) { closeSettings(); openStylePreview(view.dataset.packView); return; }
+      var del = e.target.closest('[data-pack-delete]');
+      if (del) deletePack(del.dataset.packDelete);
+    });
     $('#matrixBtn').addEventListener('click', openMatrix);
     $$('[data-matrix-close]').forEach(function (el) { el.addEventListener('click', closeMatrix); });
     $('#matrixPick').addEventListener('click', function () { $('#matrixInput').click(); });

@@ -555,6 +555,9 @@ export default {
         const body = await readBody(req, MAX_STYLE_BODY)
         return json(res, 201, { style: await storage.putStyle(body ?? {}) })
       }
+      if (method === 'DELETE' && seg.length === 2 && seg[0] === 'styles') {
+        return json(res, 200, await storage.deleteStyle(seg[1]))
+      }
       if (method === 'POST' && path === 'export') {
         const body = await readBody(req, MAX_EXPORT_BODY)
         const { buffer } = await storage.exportZip(body?.files, body?.manifest)

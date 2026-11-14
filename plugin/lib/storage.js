@@ -444,6 +444,12 @@ export function createStorage(root) {
     return style
   }
 
+  async function deleteStyle(id) {
+    if (typeof id !== 'string' || !PACK_ID_RE.test(id)) fail('风格包 id 无效')
+    await rm(join(stylesRoot, id), { recursive: true, force: true })
+    return { ok: true }
+  }
+
   async function getBatch(id) {
     if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) return null
     const batch = await readJson(join(outputsRoot, id, 'batch.json'))
@@ -651,6 +657,7 @@ export function createStorage(root) {
     backfillCloudIndex,
     listStyles,
     putStyle,
+    deleteStyle,
     listHistory,
     clearHistory,
     cleanupOld,
