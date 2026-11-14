@@ -543,8 +543,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .drawer-body{ flex: 1; overflow: auto; padding: 2px 16px 8px; }
 .iw-root .set-sec{ padding: 13px 0; border-bottom: 1px solid var(--p-hair); }
 .iw-root .set-sec.last{ border-bottom: 0; }
-.iw-root .set-subtitle{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--p-hair-2); font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label); text-transform: uppercase; color: var(--p-ink-3); }
-.iw-root .set-subtitle .mono{ font-size: 10px; font-weight: 400; color: var(--p-ink-4); }
+.iw-root .set-subtitle{ margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--p-hair-2); font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label); text-transform: uppercase; color: var(--p-ink-3); }
 .iw-root .set-title{
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
   margin-bottom: 4px; font-size: 13px; font-weight: 500; color: var(--p-ink);
@@ -967,16 +966,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <header class="drawer-head">
       <div>
-        <div class="eyebrow"><span class="mark"></span> Settings · 偏好 <span class="fill"></span></div>
         <h2 id="setTitle">设置</h2>
       </div>
       <button class="icon-btn" data-close aria-label="关闭设置"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
 
     <div class="drawer-body">
-      <div class="p3-banner"><span id="cloudBanner"><b>云端未启用。</b> 保存 API Key 后启用云端（按量 · 国内站）；第一次生成会确认上传与费用。</span></div>
       <section class="set-sec">
-        <div class="set-title"><span>云端与费用</span><span class="mono">MINIMAX</span></div>
+        <div class="set-title"><span>云端与费用</span></div>
         <div class="set-row"><span>API Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
         <div class="key-edit" id="keyEdit" hidden>
           <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off">
@@ -987,7 +984,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <button class="ghost-btn" id="keyTest">检查 Key（需一次生成）</button>
         </div>
         <details class="p3-details">
-          <summary>云端配置 <span>国内站 / 按量 / 预算</span></summary>
+          <summary>云端配置</summary>
           <div class="set-field p3-field">
             <span class="lab">接口地址</span>
             <div class="mini-seg" data-group="base"><button class="on">国内站</button><button>国际站</button></div>
@@ -1006,7 +1003,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
             <div class="mini-seg" data-group="conc"><button>1</button><button class="on">2</button><button>3</button><button>4</button></div>
           </div>
         </details>
-        <div class="set-subtitle"><span>用量</span><span class="mono">USAGE</span></div>
+        <div class="set-subtitle"><span>用量</span></div>
         <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
         <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
         <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
@@ -1014,31 +1011,30 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </section>
 
       <section class="set-sec">
-        <div class="set-title"><span>输出与隐私</span><span class="mono">OUTPUT</span></div>
+        <div class="set-title"><span>输出与隐私</span></div>
         <div class="set-field">
           <span class="lab">默认长边</span>
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
-        <p class="set-note">预览按长边 640 / 960 / 1200 px；单张下载与打包按原图长边（上限 4096）。</p>
+        <p class="set-note">预览 640 / 960 / 1200；下载按原图长边（≤4096）。</p>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
-        <p class="set-note">本机风格只在浏览器里处理；云端风格会把原图上传到 MiniMax（国内站，按量）。</p>
+        <p class="set-note">本机不上传；云端上传 MiniMax（国内站，按量）。</p>
       </section>
 
       <section class="set-sec last">
-        <div class="set-title"><span>风格包与最近</span><span class="mono">LIBRARY</span></div>
+        <div class="set-title"><span>风格包与最近</span></div>
         <div class="set-row"><span>已安装</span><b id="packCount">—</b></div>
         <div class="set-links">
           <button class="ghost-btn" id="importPack">导入风格包…</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
           <button class="ghost-btn" id="cleanupBtn">清理 90 天前</button>
         </div>
-        <p class="set-note">清理会删除 90 天前的原图、结果和作业；风格包与账本保留。</p>
+        <p class="set-note">仅清理 90 天前的数据；风格包与账本保留。</p>
       </section>
     </div>
 
     <footer class="drawer-foot">
       <button class="go" id="saveSettings">保存设置</button>
-      <div class="ins-note">Key 存 DSH 凭据；只在本机/云端生成时使用。</div>
     </footer>
   </aside>
 </div>
@@ -2122,7 +2118,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.8.1',
+        version: '0.8.2',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2780,19 +2776,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function setKeyState(s) {
     var el = $('#keyState');
     if (!el) return;
-    var banner = $('#cloudBanner');
     if (s && s.hasKey && s.cloud) {
-      el.textContent = '已保存 · 尾号 ' + (s.keyHint || '****');
+      el.textContent = '已启用 · 尾号 ' + (s.keyHint || '****');
       el.classList.remove('warn');
-      if (banner) banner.innerHTML = '<b>云端已启用</b> · 按量 · 国内站。每次生成会先确认上传与费用。';
     } else if (s && s.hasKey) {
       el.textContent = '已保存 · 云端未启用';
       el.classList.add('warn');
-      if (banner) banner.textContent = 'Key 已保存；点「保存设置」启用云端。';
     } else {
       el.textContent = '未配置 · 云端不可用';
       el.classList.add('warn');
-      if (banner) banner.textContent = '保存 API Key 后启用云端（按量 · 国内站）；第一次生成会确认上传与费用。';
     }
   }
   function loadSettings() {
@@ -3024,7 +3016,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.8.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.8.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
