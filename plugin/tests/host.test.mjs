@@ -743,6 +743,39 @@ test('P3 cloud 编排：成功落盘/记账、超时 unknown、不重试、预�
   assert.equal((await cloud.usage()).today.count, 2)
 })
 
+test('P3 pure text：/cloud/text-jobs 落盘与历史', async () => {
+  const { createStorage } = await import(new URL('../lib/storage.js', import.meta.url).href)
+  const { createCloud } = await import(new URL('../lib/cloud.js', import.meta.url).href)
+  const root = join(HOME, 'cloud-text-unit')
+  const storage = createStorage(root)
+  const config = { cloudEnabled: true, base: 'cn', model: 'standard', billing: 'payg', budget: 10 }
+  let seen = null
+  const cloud = createCloud({
+    root,
+    storage,
+    readKey: async () => 'sk-unit-test',
+    generateText: async (opts) => {
+      seen = opts
+      return {
+        buffer: JPEG,
+        mime: 'image/jpeg',
+        revisedPrompt: opts.prompt,
+        usage: { generated_images: 1, total_tokens: 5 },
+        rawMeta: { model: 'MiniMax-H3-Image', speed: 'standard', size: '2048x2048', requestId: 'req_text', status: 200 },
+      }
+    },
+  })
+  const started = await cloud.createTextJob({ prompt: '一只橘猫', size: '2048x2048' }, config)
+  const done = await waitJob(cloud, started.id)
+  assert.equal(done.status, 'succeeded')
+  assert.equal(seen.size, '2048x2048')
+  assert.equal(done.output.url, `/image-workbench/result/${started.id}/h3-text.jpg`)
+  assert.ok(existsSync(join(root, 'outputs', started.id, 'h3-text.jpg')))
+  const history = await storage.listHistory(10)
+  assert.ok(history.entries.some((entry) => entry.id === started.id && entry.results[0].styleId === 'h3-text'))
+  assert.equal((await cloud.usage()).today.count, 1)
+})
+
 function startMock(handlerFn) {
   const mock = http.createServer((req, res) => {
     res.on('error', () => {})

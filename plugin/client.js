@@ -293,6 +293,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .view-tabs button{ height:30px; padding:0 2px; border:0; border-bottom:2px solid transparent; background:none; font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-label); text-transform:uppercase; color:var(--p-ink-4); cursor:pointer; }
 .iw-root .view-tabs button.on{ color:var(--p-ink); border-bottom-color:var(--p-ink); }
 .iw-root .view-tabs button span{ margin-left:4px; color:var(--p-ink-4); }
+.iw-root .text-page[hidden]{ display:none; }
+.iw-root .text-page{ margin-top:16px; padding-bottom:36px; }
+.iw-root .text-head{ display:flex; align-items:flex-end; justify-content:space-between; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
+.iw-root .text-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
+.iw-root .text-head span{ display:block; margin-top:3px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+.iw-root .text-layout{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-top:12px; }
+.iw-root .text-form{ display:flex; flex-direction:column; min-height:470px; padding:12px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
+.iw-root .text-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .text-form textarea{ width:100%; flex:1; min-height:210px; margin-top:6px; padding:10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.7; resize:vertical; }
+.iw-root .text-form textarea:focus{ outline:none; border-color:var(--p-hair); box-shadow:none; }
+.iw-root .text-options{ display:flex; flex-wrap:wrap; gap:18px; margin-top:10px; }
+.iw-root .text-field{ display:flex; flex-direction:column; gap:5px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .text-form-foot{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; padding-top:12px; }
+.iw-root .text-form-foot>span{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .text-form-foot .go{ width:auto; min-width:120px; margin:0; padding:0 18px; }
+.iw-root .text-result{ position:relative; min-height:470px; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-sunken); overflow:hidden; }
+.iw-root .text-result img[hidden],.iw-root .text-result .text-result-actions[hidden]{ display:none; }
+.iw-root .text-result img{ display:block; max-width:100%; max-height:calc(100vh - 230px); object-fit:contain; }
+.iw-root .text-empty{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+.iw-root .text-result-actions{ position:absolute; right:10px; bottom:10px; display:flex; gap:6px; }
+@media (max-width:900px){.iw-root .text-layout{grid-template-columns:1fr;} .iw-root .text-form{min-height:0;} .iw-root .text-result{min-height:320px;}}
 .iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
 .iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
@@ -698,7 +719,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   padding: 4px 0; font-size: 10px; color: var(--p-ink-3);
 }
 .iw-root .set-row b{ font-weight: 500; color: var(--p-ink-2); }
-.iw-root .set-links{ display: flex; gap: 12px; margin-top: 2px; }
+.iw-root .set-links{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.iw-root .set-action{ height: 28px; padding: 0 10px; border: 1px solid var(--p-ink-4); background: var(--p-paper); color: var(--p-ink-2); font-family: var(--p-mono); font-size: 10px; cursor: pointer; }
+.iw-root .set-action:hover{ color: var(--p-ink); border-color: var(--p-ink-3); }
+.iw-root .set-layer input:focus, .iw-root .set-layer textarea:focus{ outline: none; border-color: var(--p-hair); }
 .iw-root .lib-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; margin:6px 0 4px; max-height:220px; overflow-y:auto; }
 .iw-root .lib-grid-hidden{ max-height:150px; }
 .iw-root .lib-card{ display:flex; align-items:center; gap:5px; min-width:0; padding:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
@@ -946,6 +970,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <nav class="wrap view-tabs" id="viewTabs" aria-label="页面切换">
     <button data-view="studio" class="on">工作台</button>
     <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
+    <button data-view="text">纯文生图</button>
   </nav>
 
   <main class="wrap work">
@@ -1122,6 +1147,31 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </div>
     <div class="recent-grid" id="recentGrid"></div>
   </section>
+
+  <section class="wrap text-page" id="textPage" hidden>
+    <div class="text-head">
+      <div><h2>纯文生图</h2><span>Prompt 增强已关闭 · 不读取参考图</span></div>
+    </div>
+    <div class="text-layout">
+      <div class="text-form">
+        <label class="text-label" for="textPrompt">提示词</label>
+        <textarea id="textPrompt" rows="9" placeholder="描述想要的画面…" spellcheck="false"></textarea>
+        <div class="text-options">
+          <div class="text-field"><span>画幅</span><div class="mini-seg" id="textAspect"><button data-aspect="1:1" class="on">1:1</button><button data-aspect="4:5">4:5</button><button data-aspect="3:4">3:4</button><button data-aspect="16:9">16:9</button><button data-aspect="9:16">9:16</button></div></div>
+          <div class="text-field"><span>画质</span><div class="mini-seg" id="textQuality"><button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button></div></div>
+        </div>
+        <div class="text-form-foot"><span id="textCost"></span><button class="go" id="textGenerate">生成</button></div>
+      </div>
+      <div class="text-result" id="textResult">
+        <div class="text-empty" id="textEmpty">还没有结果</div>
+        <img id="textImage" alt="文生图结果" hidden>
+        <div class="text-result-actions" id="textActions" hidden>
+          <button class="result-action" id="textView">查看大图</button>
+          <button class="result-action" id="textDownload">下载</button>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <div class="matrix-layer" id="matrixLayer" aria-hidden="true" inert>
@@ -1162,11 +1212,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-row"><span>API Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
         <div class="key-edit" id="keyEdit" hidden>
           <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off">
-          <button class="ghost-btn" id="keySave">保存</button>
+          <button class="set-action" id="keySave">保存</button>
         </div>
         <div class="set-links">
-          <button class="ghost-btn" id="keyChange">更换 Key</button>
-          <button class="ghost-btn" id="keyTest">检查 Key（需一次生成）</button>
+          <button class="set-action" id="keyChange">更换 Key</button>
+          <button class="set-action" id="keyTest">检查 Key</button>
         </div>
         <details class="p3-details">
           <summary>云端配置</summary>
@@ -1192,7 +1242,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
         <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
         <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
-        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button></div>
+        <div class="set-links"><button class="set-action" id="billingLink">刷新用量</button></div>
       </section>
 
       <section class="set-sec">
@@ -1201,26 +1251,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <span class="lab">默认长边</span>
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
-        <p class="set-note">预览 640 / 960 / 1200；下载按原图长边（≤4096）。</p>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
-        <p class="set-note">本机不上传；云端上传 MiniMax（国内站，按量）。</p>
-        <div class="set-row"><span>提示词增强</span><b>图片编辑强制开启</b></div>
-        <p class="set-note">MiniMax 图片编辑接口始终执行 Prompt 增强；只有文生图接口支持 disable_prompt_enhanced。二次编辑同样走图片编辑。</p>
+        <div class="set-row"><span>提示词增强</span><b>图片编辑强制 · 文生图关闭</b></div>
       </section>
 
       <section class="set-sec last">
         <div class="set-title"><span>风格库管理</span></div>
         <div class="set-row"><span>当前显示</span><b id="packCount">—</b></div>
         <div class="lib-grid" id="libList"></div>
-        <p class="set-note">删除只是从工作台风格库移除，不删除风格定义、预览或云端资源；可在下方「已移除」恢复。</p>
         <div class="set-row"><span>已移除</span><b id="hiddenCount">0 个</b></div>
         <div class="lib-grid lib-grid-hidden" id="hiddenList"></div>
         <div class="set-links">
-          <button class="ghost-btn" id="restoreAll" hidden>全部恢复</button>
-          <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
-          <button class="ghost-btn" id="cleanupBtn">清理 90 天前</button>
+          <button class="set-action" id="restoreAll" hidden>全部恢复</button>
+          <button class="set-action" id="clearHistory">清空历史</button>
+          <button class="set-action" id="cleanupBtn">清理 90 天前</button>
         </div>
-        <p class="set-note">仅清理 90 天前的数据；风格库配置与账本保留。</p>
       </section>
     </div>
 
@@ -1474,6 +1519,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-cosmic', name: '星河神性', renderer: 'model', eta: '25s', desc: '黑洞星云、古典油画', previewBase: 'duotone', previewParams: {'ink': 'ink'}, prompt: cloudSceneRefPrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。') },
     { id: 'h3-seal', name: '金石印谱', renderer: 'model', eta: '25s', desc: '3:4 双格 · 肖形印蜕', previewBase: 'poster', fixedRatio: '3:4', prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。') },
     { id: 'h3-refine', name: '二次编辑', renderer: 'model', hidden: true, eta: '25s', desc: '对已生成图片再次编辑' },
+    { id: 'h3-text', name: '纯文生图', renderer: 'model', hidden: true, eta: '25s', desc: '纯提示词生成' },
   ];
 
   STYLES.forEach(function (s) {
@@ -2048,12 +2094,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return !!(state.settings && state.settings.hasKey && state.settings.cloud);
   }
 
-  function cloudUnitPrice() {
-    if (state.cloudQuality === '4K') {
+  function cloudUnitPrice(quality) {
+    var q = quality || state.cloudQuality;
+    if (q === '4K') {
       var promoEnd = new Date('2026-11-18T00:00:00+08:00').getTime();
       return Date.now() < promoEnd ? 0.2404 : 0.4809;
     }
-    return state.cloudQuality === '1K' ? 0.1744 : 0.1747;
+    return q === '1K' ? 0.1744 : 0.1747;
   }
 
   function styleById(id) {
@@ -2135,7 +2182,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#packCount').textContent = visible.length + ' 个';
     $('#hiddenCount').textContent = hidden.length + ' 个';
     $('#libList').innerHTML = visible.length ? visible.map(function (s) { return libraryCard(s, false); }).join('') : '<div class="lib-empty">风格库为空。</div>';
-    $('#hiddenList').innerHTML = hidden.length ? hidden.map(function (s) { return libraryCard(s, true); }).join('') : '<div class="lib-empty">没有已移除的风格。</div>';
+    $('#hiddenList').innerHTML = hidden.length ? hidden.map(function (s) { return libraryCard(s, true); }).join('') : '';
     $('#restoreAll').hidden = !hidden.length;
   }
 
@@ -2706,7 +2753,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.28.0',
+        version: '0.29.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3252,15 +3299,109 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
+  var textState = { aspect: '1:1', quality: '2K', busy: false, result: null };
+
+  function textTargetSize(aspect, quality) {
+    var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[quality] || 4194304;
+    var parts = aspect.split(':');
+    var ratio = Number(parts[0]) / Number(parts[1]);
+    var width = Math.round(Math.sqrt(target * ratio));
+    var height = Math.round(width / ratio);
+    return width + 'x' + height;
+  }
+
+  function renderTextPage() {
+    if (!$('#textPage')) return;
+    $$('#textAspect button').forEach(function (b) { b.classList.toggle('on', b.dataset.aspect === textState.aspect); });
+    $$('#textQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.quality === textState.quality); });
+    var size = textTargetSize(textState.aspect, textState.quality);
+    $('#textCost').textContent = textState.quality + ' · ' + size + ' · 约 ¥' + Number(cloudUnitPrice(textState.quality)).toFixed(4);
+    $('#textGenerate').disabled = textState.busy || !$('#textPrompt').value.trim();
+    $('#textGenerate').textContent = textState.busy ? '生成中…' : '生成';
+  }
+
+  async function startTextJob() {
+    if (textState.busy) return;
+    var prompt = $('#textPrompt').value.trim();
+    if (!prompt) { toast('填写提示词'); $('#textPrompt').focus(); return; }
+    if (!cloudReady()) { toast('先在设置里保存 API Key'); openSettings(); return; }
+    var size = textTargetSize(textState.aspect, textState.quality);
+    if (state.settings.privacyConfirm) {
+      var ok = window.confirm('纯文生图会请求 MiniMax，预计 ¥' + Number(cloudUnitPrice(textState.quality)).toFixed(4) + '。\n\n继续？');
+      if (!ok) return;
+    }
+    textState.busy = true;
+    renderTextPage();
+    try {
+      var res = await fetch(API + '/cloud/text-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, size: size }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.status === 402 && data.code === 'budget_exceeded') {
+        var msg = '今日云端预算不足。\n预计 ¥' + Number(data.estimatedYuan || 0).toFixed(2) +
+          ' · 已用 ¥' + Number(data.spentTodayYuan || 0).toFixed(2) +
+          ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) + '。\n\n仍要生成吗？';
+        if (!window.confirm(msg)) throw cloudError('已取消文生图', 'budget_cancelled');
+        res = await fetch(API + '/cloud/text-jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: prompt, size: size, allowOverBudget: true }),
+        });
+        data = await res.json().catch(function () { return {}; });
+      }
+      if (!res.ok) throw cloudError(data.error || ('文生图请求失败 ' + res.status), data.code);
+      var job = await waitCloudJob(data.id);
+      if (job.status !== 'succeeded' || !job.output) {
+        throw cloudError((job.error && job.error.message) || ('文生图作业 ' + job.status), (job.error && job.error.code) || job.status);
+      }
+      textState.result = { url: job.output.url, w: job.output.w, h: job.output.h };
+      $('#textEmpty').hidden = true;
+      $('#textActions').hidden = false;
+      var img = $('#textImage');
+      img.src = job.output.url;
+      img.hidden = false;
+      $('#textPage').classList.add('has-result');
+      loadAllHistory(true);
+      toast('文生图完成');
+    } catch (err) {
+      toast(err.message || '文生图失败');
+    } finally {
+      textState.busy = false;
+      renderTextPage();
+    }
+  }
+
+  function viewTextResult() {
+    if (!textState.result) return;
+    openBig({
+      key: resultKey({ id: 'h3-text', cloud: true, url: textState.result.url }),
+      url: textState.result.url,
+      title: '纯文生图',
+      meta: '文生图 · ' + textState.result.w + ' × ' + textState.result.h + ' · Prompt 增强已关闭',
+      info: '',
+      w: textState.result.w,
+      h: textState.result.h,
+      border: 'none',
+      resultId: null,
+      styleId: 'h3-text',
+      cloud: true,
+    });
+  }
+
   function switchView(view) {
     var recent = view === 'recent';
-    $('.work').hidden = recent;
+    var text = view === 'text';
+    $('.work').hidden = view !== 'studio';
     $('#recentPage').hidden = !recent;
+    $('#textPage').hidden = !text;
     $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
     if (recent) {
       renderRecentPage();
       if (!recentLoaded) loadAllHistory();
     }
+    if (text) renderTextPage();
   }
 
   function currentHistory() {
@@ -4369,7 +4510,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.28.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.29.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4504,6 +4645,24 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (b) switchView(b.dataset.view);
     });
     $('#recentRefresh').addEventListener('click', function () { loadAllHistory(true); });
+    $('#textPrompt').addEventListener('input', renderTextPage);
+    $('#textAspect').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-aspect]');
+      if (!b) return;
+      textState.aspect = b.dataset.aspect;
+      renderTextPage();
+    });
+    $('#textQuality').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-quality]');
+      if (!b) return;
+      textState.quality = b.dataset.quality;
+      renderTextPage();
+    });
+    $('#textGenerate').addEventListener('click', startTextJob);
+    $('#textView').addEventListener('click', viewTextResult);
+    $('#textDownload').addEventListener('click', function () {
+      if (textState.result) triggerDownload(textState.result.url, '文生图-' + Date.now() + '.jpg');
+    });
     $('#recentGrid').addEventListener('click', function (e) {
       var card = e.target.closest('[data-recent]');
       if (card) openRecentImage(Number(card.dataset.recent));

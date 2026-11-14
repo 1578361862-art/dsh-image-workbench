@@ -6,7 +6,7 @@ import { checkBudget, estimate as estimateCost } from './budget.js'
 import { fail } from './errors.js'
 import { createJobs, hashParams } from './jobs.js'
 import { createLedger } from './ledger.js'
-import { baseUrlFor, generateEdit, isValidSize } from './minimax.js'
+import { baseUrlFor, generateEdit, generateText, isValidSize } from './minimax.js'
 import { writeAtomic } from './storage.js'
 
 const STYLE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
@@ -22,6 +22,7 @@ export function createCloud({
   readKey,
   clock = () => new Date(),
   generate = generateEdit,
+  generateText: textGenerate = generateText,
 }) {
   const ledger = createLedger(join(root, 'ledger.jsonl'), { clock })
   const jobsDir = join(root, 'jobs')
@@ -215,6 +216,77 @@ export function createCloud({
     return { id: job.id, status: job.status }
   }
 
+  async function runTextJob(job, { config, key, estimated }) {
+    jobs.update(job.id, { status: 'preparing' })
+    return jobs.start(job.id, async (current) => {
+      const result = await textGenerate({
+        prompt: current.prompt,
+        size: current.size,
+        key,
+        baseUrl: baseUrlFor(config),
+        speed: config.model,
+      })
+      const persisted = await persistResult(current, result, config, estimated)
+      return {
+        output: persisted.output,
+        usage: result.usage ?? null,
+        revisedPrompt: result.revisedPrompt ?? null,
+        rawMeta: result.rawMeta ?? null,
+      }
+    })
+  }
+
+  async function createTextJob(body = {}, config) {
+    assertEnabled(config)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) fail('请求内容无效')
+    const { prompt, size } = body
+    if (typeof prompt !== 'string' || !prompt.trim()) fail('prompt 不能为空')
+    if (prompt.length > 32000) fail('prompt 太长')
+    if (typeof size !== 'string' || !/^\d{2,5}x\d{2,5}$/i.test(size) || !isValidSize(size)) {
+      fail('关闭 Prompt 增强时，文生图 size 必须是 WxH')
+    }
+    const key = await readKey()
+    if (!key) fail('还没有保存 API Key', 400)
+    const estimated = estimateCost({
+      size,
+      speed: config.model,
+      billing: config.billing,
+      count: 1,
+      now: clock(),
+    })
+    const spentToday = await ledger.spentToday(clock())
+    const decision = checkBudget({
+      spentToday,
+      estimated: estimated.costYuan,
+      limit: numberOr(config.budget, 10),
+      billing: config.billing,
+      allow: body.allowOverBudget === true,
+    })
+    if (!decision.allowed) {
+      fail('超出每日预算，需要手动放行', 402, {
+        code: 'budget_exceeded',
+        estimatedYuan: decision.estimatedYuan,
+        spentTodayYuan: decision.spentTodayYuan,
+        budgetYuan: decision.limitYuan,
+      })
+    }
+    const job = jobs.create({
+      assetId: '',
+      styleId: 'h3-text',
+      prompt: prompt.trim(),
+      size,
+      params: {},
+      model: config.model,
+      paramsHash: hashParams({ prompt: prompt.trim(), size, params: {} }),
+    })
+    setImmediate(() => {
+      runTextJob(job, { config, key, estimated }).catch((err) => {
+        jobs.failBeforeRequest(job.id, err)
+      })
+    })
+    return { id: job.id, status: job.status }
+  }
+
   function getJob(id) {
     const job = jobs.get(id)
     if (!job) fail('作业不存在', 404)
@@ -233,5 +305,5 @@ export function createCloud({
     return ledger.summary(clock())
   }
 
-  return { createJob, getJob, usage, ledger, jobs }
+  return { createJob, createTextJob, getJob, usage, ledger, jobs }
 }

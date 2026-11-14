@@ -328,3 +328,127 @@ export async function generateContextIR({
   }
   return { revisedPrompt, aspectRatio, usage: payload?.usage ?? null }
 }
+
+/**
+ * 纯文生图：/v1/images/generations，显式关闭 Prompt 增强。
+ * disable_prompt_enhanced 要求 size 为明确的 WxH。
+ */
+export async function generateText({
+  prompt,
+  size,
+  key,
+  baseUrl,
+  speed = 'standard',
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  downloadTimeoutMs = 120_000,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  if (typeof key !== 'string' || !key.trim()) {
+    throw makeError('还没有保存 API Key', { code: 'missing_key', status: 400, beforeRequest: true })
+  }
+  if (typeof prompt !== 'string' || !prompt.trim()) {
+    throw makeError('提示词不能为空', { code: 'invalid_prompt', status: 400, beforeRequest: true })
+  }
+  const checkedSize = validateSize(size)
+  if (!checkedSize || checkedSize.mode !== 'exact') {
+    throw makeError('关闭 Prompt 增强时，文生图 size 必须是 WxH', {
+      code: 'invalid_size',
+      status: 400,
+      beforeRequest: true,
+    })
+  }
+  const endpoint = `${String(baseUrl || BASES.cn).replace(/\/+$/, '')}/v1/images/generations`
+  const model = modelFor(speed)
+  let response
+  try {
+    response = await fetchImpl(endpoint, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${key.trim()}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        prompt: prompt.trim(),
+        size: checkedSize.value,
+        disable_prompt_enhanced: true,
+        response_format: 'url',
+        output_format: 'jpeg',
+        n: 1,
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+  } catch (err) {
+    const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError'
+    throw makeError(
+      timedOut
+        ? `请求已发出，${Math.round(timeoutMs / 1000)} 秒内没有响应；可能已生成并计费，请不要自动重试`
+        : '请求已发出但连接中断；可能已生成并计费，请不要自动重试',
+      { code: timedOut ? 'timeout' : 'network', unknown: true, cause: err },
+    )
+  }
+  const responseText = await response.text().catch(() => '')
+  let payload = null
+  try { payload = responseText ? JSON.parse(responseText) : null } catch { payload = null }
+  if (!response.ok) {
+    const classification = classifyStatus(response.status, responseText, payload)
+    const message = redactKey(errorMessageFromPayload(payload, responseText || `MiniMax 返回 HTTP ${response.status}`), key).slice(0, 500)
+    throw makeError(message || `MiniMax 返回 HTTP ${response.status}`, {
+      code: classification.code,
+      status: response.status,
+      unknown: classification.unknown,
+    })
+  }
+  if (!payload || typeof payload !== 'object') {
+    throw makeError('MiniMax 返回的响应不是有效 JSON', { code: 'bad_response', status: response.status, unknown: true })
+  }
+  if (payload.base_resp?.status_code && payload.base_resp.status_code !== 0) {
+    throw makeError(redactKey(payload.base_resp.status_msg || 'MiniMax 返回错误', key), {
+      code: 'api_error', status: 0, unknown: false,
+    })
+  }
+  const item = Array.isArray(payload.data) ? payload.data[0] : null
+  if (!item) throw makeError('MiniMax 响应里没有图片结果', { code: 'bad_response', status: response.status, unknown: true })
+  const imageFailure = perImageError(item, key)
+  if (imageFailure) throw imageFailure
+
+  const outputFormat = payload.output_format ?? null
+  let buffer = null
+  let outMime = null
+  if (item.url) {
+    try {
+      const download = await fetchImpl(item.url, { signal: AbortSignal.timeout(downloadTimeoutMs) })
+      if (!download.ok) throw new Error(`HTTP ${download.status}`)
+      buffer = Buffer.from(await download.arrayBuffer())
+      const header = String(download.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase()
+      outMime = header.startsWith('image/') ? header : mimeForFormat(outputFormat, buffer)
+    } catch (err) {
+      if (!item.b64_json) {
+        throw makeError('图片已生成但下载失败；可能已计费，请到 MiniMax 控制台核对', {
+          code: 'download_failed', unknown: true, cause: err,
+        })
+      }
+    }
+  }
+  if (!buffer && item.b64_json) {
+    buffer = Buffer.from(String(item.b64_json), 'base64')
+    outMime = mimeForFormat(outputFormat, buffer)
+  }
+  if (!buffer?.length) {
+    throw makeError('MiniMax 响应里没有可用的图片数据', { code: 'bad_response', status: response.status, unknown: true })
+  }
+  return {
+    buffer,
+    mime: outMime || sniffMime(buffer),
+    revisedPrompt: item.revised_prompt ?? payload.revised_prompt ?? null,
+    usage: payload.usage ?? item.usage ?? null,
+    rawMeta: {
+      requestId: payload.request_id ?? item.id ?? null,
+      status: response.status,
+      model,
+      speed,
+      size: item.size ?? checkedSize.value,
+      outputFormat: outputFormat ?? null,
+    },
+  }
+}

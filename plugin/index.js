@@ -630,6 +630,10 @@ export default {
           const reference = await styleReferenceFor(body?.styleId)
           return json(res, 202, await cloud.createJob(body ?? {}, config, { reference }))
         }
+        if (method === 'POST' && path === 'cloud/text-jobs') {
+          const body = await readBody(req, MAX_CLOUD_BODY)
+          return json(res, 202, await cloud.createTextJob(body ?? {}, config))
+        }
         if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
           return json(res, 200, cloud.getJob(seg[2]))
         }
