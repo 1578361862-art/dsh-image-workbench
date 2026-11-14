@@ -1024,7 +1024,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
       <section class="set-sec">
         <div class="set-title"><span>风格包</span><span class="mono">PACKS</span></div>
-        <div class="set-row"><span>已安装</span><b>8 个 · 2 个云端</b></div>
+        <div class="set-row"><span>已安装</span><b id="packCount">—</b></div>
         <div class="set-links">
           <button class="ghost-btn" id="importPack">导入风格包…</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
@@ -1098,7 +1098,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'film', name: '胶片褪色', renderer: 'canvas', eta: '0.2s', desc: '提黑、褪色、轻颗粒，像旧底片' },
     { id: 'poster', name: '印刷海报', renderer: 'html', eta: '2.4s', desc: '模板排版：图 + 标题 + 版式，一键出海报' },
     { id: 'h3-illus', name: 'H3 插画化', renderer: 'model', eta: '25s', desc: '云端语义重绘，保留构图与主体', prompt: '将图1转为 H3 插画风格：保留主体身份、姿态、构图、文字和背景关系；只改变材质、光线、色彩与笔触；暖色、细颗粒、轻微光晕。' },
-    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '云端黑白银盐，保留构图与主体', prompt: '将图1转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；只改变影调、材质与颗粒；深黑、银灰、高光柔和。' }
+    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '云端黑白银盐，保留构图与主体', prompt: '将图1转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；只改变影调、材质与颗粒；深黑、银灰、高光柔和。' },
+    // The nine styles below summarize MiniMax-H3-Image's official showcase prompts:
+    // artistic-worlds.md / surreal-worlds.md / real-world.md / game-worlds.md
+    // https://github.com/MiniMax-AI/MiniMax-H3-Image/tree/main/showcase
+    { id: 'h3-oil', name: '古典油画', renderer: 'model', eta: '25s', desc: '伦勃朗式明暗、厚涂与画布', previewBase: 'film', previewParams: { strength: 0.92, grain: 0.22 }, prompt: '以图1为唯一主体与构图参考，转为17世纪欧洲古典油画：伦勃朗/卡拉瓦乔式明暗对照，深色背景与单侧暖光，可见笔触、厚涂高光、亚麻画布纹理与陈年清漆的暖金色；保留主体身份、姿态、画面布局和文字位置，不改变内容。' },
+    { id: 'h3-impression', name: '印象派', renderer: 'model', eta: '25s', desc: '可见短笔触与晨雾柔光', previewBase: 'film', previewParams: { strength: 0.58, grain: 0.1 }, prompt: '以图1为唯一主体与构图参考，转为法国印象派油画：湿画法、可见短笔触、纯色并置、高调晨雾与柔光，形体在光中溶解但轮廓仍可辨；保留主体身份、姿态、主要构图和文字位置；不要水墨、工笔或数字模糊。' },
+    { id: 'h3-manuscript', name: '金箔手抄本', renderer: 'model', eta: '25s', desc: '蛋彩、金箔与卷草边框', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: '以图1为主体与构图参考，转为中世纪泥金手抄本插画：平涂蛋彩、深色墨线、平透视、朱红/群青/金箔、卷草纹边框与羊皮纸磨损；保留主体可识别和构图，金饰不遮挡主体与文字。' },
+    { id: 'h3-dunhuang', name: '敦煌壁画', renderer: 'model', eta: '25s', desc: '矿物颜料与土壁颗粒', previewBase: 'duotone', previewParams: { ink: 'ink' }, prompt: '以图1为主体与构图参考，转为唐代敦煌土壁壁画：矿物颜料（朱砂、石青、石绿、赭石）、土壁颗粒与细线人物，飘带/云纹、平涂与局部晕染；保留主体身份、姿态和构图，不做电影光或金属反射。' },
+    { id: 'h3-gongbi', name: '工笔重彩', renderer: 'model', eta: '25s', desc: '绢本细线、矿物色罩染', previewBase: 'cyanotype', previewParams: { strength: 0.8, grain: 0.16 }, prompt: '以图1为主体与构图参考，转为中国工笔重彩绢本：细密线描、矿物色分层罩染、绢丝纹理与留白；保留主体身份、姿态、构图和文字位置；不要写意或油画笔触。' },
+    { id: 'h3-collage', name: '剪纸拼贴', renderer: 'model', eta: '25s', desc: '分层色纸、刀口与投影', previewBase: 'riso', previewParams: { ink: 'indigo' }, prompt: '以图1为主体与构图参考，转为手工剪纸与纸张拼贴：分层色纸、清晰刀口和纸边、轻微投影、有限暖色/蓝灰色板；把细节简化为纸片形状，保留主体轮廓、姿态、构图和文字。' },
+    { id: 'h3-pixel', name: '像素海报', renderer: 'model', eta: '25s', desc: '有限调色板与 8-bit 抖动', previewBase: 'halftone', prompt: '以图1为主体与构图参考，转为复古像素海报：有限调色板、清晰像素格、有序抖动、8/16-bit 质感；保留主体身份、姿态、构图和文字可读性，不要平滑渐变或3D渲染。' },
+    { id: 'h3-film', name: '电影胶片', renderer: 'model', eta: '25s', desc: '35mm 自然光与细颗粒', previewBase: 'film', previewParams: { strength: 0.98, grain: 0.18 }, prompt: '以图1为主体与构图参考，转为35mm电影胶片剧照/纪实摄影：自然光、浅景深、细颗粒、轻微 halation、真实肤色；保留主体、姿态、构图和文字；不要插画或绘画。' },
+    { id: 'h3-concept', name: '概念场景', renderer: 'model', eta: '25s', desc: '游戏/电影 matte painting', previewBase: 'film', previewParams: { strength: 0.72, grain: 0.16 }, prompt: '以图1为主体与构图参考，转为游戏/电影概念场景 matte painting：大气透视、层次光、手绘笔触与照片纹理结合；保留主体轮廓、姿态和主要构图，不添加UI、字幕或水印。' }
   ];
 
   var state = {
@@ -1824,7 +1836,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var unknownCost = cloudResults.some(function (r) { return !(Number(r.cost) > 0); });
     var cost = cloudResults.reduce(function (sum, r) { return sum + (Number(r.cost) || 0); }, 0);
     $('#stampMain').textContent = '今日 ' + success + ' 张 · ' + (unknownCost ? '¥—' : '¥' + cost.toFixed(2));
-    $('#stampSub').textContent = '本机 6 · 云端 2';
+    var localCount = STYLES.filter(function (x) { return x.renderer !== 'model'; }).length;
+    var cloudCount = STYLES.filter(function (x) { return x.renderer === 'model'; }).length;
+    $('#stampSub').textContent = '本机 ' + localCount + ' · 云端 ' + cloudCount;
+    if ($('#packCount')) $('#packCount').textContent = STYLES.length + ' 个 · ' + cloudCount + ' 个云端';
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
 
@@ -2104,7 +2119,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.6.1',
+        version: '0.7.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2491,7 +2506,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     SRC = img;
     return Promise.all(STYLES.map(function (s) {
       if (s.preview) { state.thumbs[s.id] = s.preview; return Promise.resolve(); }
-      return renderStyleAsync(s.id, 560, 420, { strength: 0.95, grain: 0.28 }).then(function (c) {
+      var previewId = (s.renderer === 'model' && s.previewBase) ? s.previewBase : s.id;
+      return renderStyleAsync(previewId, 560, 420, Object.assign({ strength: 0.95, grain: 0.28 }, s.previewParams || {})).then(function (c) {
         if (c) state.thumbs[s.id] = c.toDataURL('image/jpeg', 0.86);
       }).catch(function () {});
     })).then(function () {
@@ -3005,7 +3021,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.6.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.7.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');

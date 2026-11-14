@@ -198,6 +198,8 @@ function zipFileName() {
   return `image-workbench-${new Date().toISOString().replace(/[:.]/g, '-')}.zip`
 }
 
+// Cloud style prompts summarized from MiniMax-H3-Image's official showcase:
+// https://github.com/MiniMax-AI/MiniMax-H3-Image/tree/main/showcase
 const CLOUD_STYLES = Object.freeze({
   'h3-illus': {
     name: 'H3 插画化',
@@ -206,6 +208,42 @@ const CLOUD_STYLES = Object.freeze({
   'h3-silver': {
     name: 'H3 银盐',
     prompt: '将图1转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；只改变影调、材质与颗粒；深黑、银灰、高光柔和。',
+  },
+  'h3-oil': {
+    name: '古典油画',
+    prompt: '以图1为唯一主体与构图参考，转为17世纪欧洲古典油画：伦勃朗/卡拉瓦乔式明暗对照，深色背景与单侧暖光，可见笔触、厚涂高光、亚麻画布纹理与陈年清漆的暖金色；保留主体身份、姿态、画面布局和文字位置，不改变内容。',
+  },
+  'h3-impression': {
+    name: '印象派',
+    prompt: '以图1为唯一主体与构图参考，转为法国印象派油画：湿画法、可见短笔触、纯色并置、高调晨雾与柔光，形体在光中溶解但轮廓仍可辨；保留主体身份、姿态、主要构图和文字位置；不要水墨、工笔或数字模糊。',
+  },
+  'h3-manuscript': {
+    name: '金箔手抄本',
+    prompt: '以图1为主体与构图参考，转为中世纪泥金手抄本插画：平涂蛋彩、深色墨线、平透视、朱红/群青/金箔、卷草纹边框与羊皮纸磨损；保留主体可识别和构图，金饰不遮挡主体与文字。',
+  },
+  'h3-dunhuang': {
+    name: '敦煌壁画',
+    prompt: '以图1为主体与构图参考，转为唐代敦煌土壁壁画：矿物颜料（朱砂、石青、石绿、赭石）、土壁颗粒与细线人物，飘带/云纹、平涂与局部晕染；保留主体身份、姿态和构图，不做电影光或金属反射。',
+  },
+  'h3-gongbi': {
+    name: '工笔重彩',
+    prompt: '以图1为主体与构图参考，转为中国工笔重彩绢本：细密线描、矿物色分层罩染、绢丝纹理与留白；保留主体身份、姿态、构图和文字位置；不要写意或油画笔触。',
+  },
+  'h3-collage': {
+    name: '剪纸拼贴',
+    prompt: '以图1为主体与构图参考，转为手工剪纸与纸张拼贴：分层色纸、清晰刀口和纸边、轻微投影、有限暖色/蓝灰色板；把细节简化为纸片形状，保留主体轮廓、姿态、构图和文字。',
+  },
+  'h3-pixel': {
+    name: '像素海报',
+    prompt: '以图1为主体与构图参考，转为复古像素海报：有限调色板、清晰像素格、有序抖动、8/16-bit 质感；保留主体身份、姿态、构图和文字可读性，不要平滑渐变或3D渲染。',
+  },
+  'h3-film': {
+    name: '电影胶片',
+    prompt: '以图1为主体与构图参考，转为35mm电影胶片剧照/纪实摄影：自然光、浅景深、细颗粒、轻微 halation、真实肤色；保留主体、姿态、构图和文字；不要插画或绘画。',
+  },
+  'h3-concept': {
+    name: '概念场景',
+    prompt: '以图1为主体与构图参考，转为游戏/电影概念场景 matte painting：大气透视、层次光、手绘笔触与照片纹理结合；保留主体轮廓、姿态和主要构图，不添加UI、字幕或水印。',
   },
 })
 
@@ -234,13 +272,13 @@ function registerImageTool(ctx, cloud, storage) {
       tools.register({
         name: 'image_workbench',
         description:
-          '用图像风格工作台的 MiniMax H3 云端出图。只能生成云端 H3 插画/银盐；本机 Canvas 风格只在工作台页面里。先 action=estimate 让用户确认费用，再 action=start 且 confirm=true；start 只创建作业，用 action=status 轮询。',
+          '用图像风格工作台的 MiniMax H3 云端出图。只能生成云端 H3 风格；本机 Canvas 风格只在工作台页面里。先 action=estimate 让用户确认费用，再 action=start 且 confirm=true；start 只创建作业，用 action=status 轮询。',
         parameters: {
           type: 'object',
           properties: {
             action: { type: 'string', enum: ['estimate', 'start', 'status'], description: 'estimate 估价 / start 创建作业 / status 查询' },
             imagePath: { type: 'string', description: '本地图片绝对路径（start 必填），≤20 MB' },
-            style: { type: 'string', enum: ['h3-illus', 'h3-silver'], description: '云端风格' },
+            style: { type: 'string', enum: Object.keys(CLOUD_STYLES), description: '云端风格' },
             quality: { type: 'string', enum: ['1K', '2K', '4K'], description: '云端画质，默认 2K' },
             prompt: { type: 'string', description: '可选；覆盖默认风格提示词' },
             jobId: { type: 'string', description: 'status 必填' },
@@ -290,7 +328,7 @@ function registerImageTool(ctx, cloud, storage) {
           }
           if (action !== 'estimate' && action !== 'start') fail('action 必须是 estimate / start / status')
           const style = CLOUD_STYLES[args.style]
-          if (!style) fail('style 只支持 h3-illus / h3-silver；本机风格请在页面工作台使用')
+          if (!style) fail('未知云端风格；本机风格请在页面工作台使用')
           const quality = ['1K', '2K', '4K'].includes(args.quality) ? args.quality : '2K'
           const config = await readConfig()
           if (config.cloudEnabled !== true) fail('云端未启用；先在工作台设置里保存 API Key')

@@ -1,6 +1,6 @@
 # 图像风格工作台 · 剩余待办
 
-> 2026-11-13 · 当前 0.6.1：P1–P5 已实现；P3/P4 live 已验证；真实 DSH 页面（侧栏/历史/设置/单张下载/ZIP）已实测。源码 `~/Code/dsh-image-workbench`。
+> 2026-11-13 · 当前 0.7.0：P1–P5 已实现；P3/P4 live 已验证；真实 DSH 页面（侧栏/历史/设置/单张下载/ZIP）已实测。源码 `~/Code/dsh-image-workbench`。
 
 ## 已完成
 
@@ -13,6 +13,7 @@
 - P4：Agent 工具 `image_workbench`（1K live）、本机批量矩阵、preset 风格包、Context-IR 预览（live 200）。
 - P5：90 天清理、失败卡重试（非 unknown，二次确认）、4K 促销提示、真实页面历史/设置/单张下载/ZIP 验收；`dsh_verify` 客户端 PASS 14/14。
 - 2026-11-14 修复：风格卡再次点击取消；最近记录悬停 × 删除（Host/local）；油墨色块选中环改为 inset 阴影不再被裁切；移除导入风格包的旧 P2 toast。
+- 2026-11-14 云端风格扩到 11 个：新增古典油画、印象派、金箔手抄本、敦煌壁画、工笔重彩、剪纸拼贴、像素海报、电影胶片、概念场景；prompt 归纳自 MiniMax-H3-Image 官方 showcase，见 `plugin/docs/CLOUD-STYLES.md`。
 
 ## 还需闭环
 
