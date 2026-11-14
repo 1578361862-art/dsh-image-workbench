@@ -964,11 +964,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格"></select>
           <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
           <div class="prompt-actions">
-            <button class="ghost-btn" id="cloudPromptOptimize">优化提示词</button>
             <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
           </div>
-          <div class="prompt-preview" id="promptPreview" hidden></div>
-          <button class="note-link" id="applyPrompt" hidden>应用改写</button>
+          <p class="scope-hint">默认提示词在新增风格时一次性固化；生成时不再单独调用 Context-IR。</p>
         </div>
       </details>
 
@@ -2127,7 +2125,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return state.promptOverrides[id] !== undefined ? state.promptOverrides[id] : defaultPrompt(id);
   }
 
-  var pendingPrompt = null;
 
   function renderPromptPanel() {
     var ids = selectedCloudIds();
@@ -2153,52 +2150,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (area && document.activeElement !== area) area.value = promptFor(id);
     var stateEl = $('#promptState');
     if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '已改写' : '默认';
-    if (!pendingPrompt || pendingPrompt.id !== id) {
-      $('#promptPreview').hidden = true;
-      $('#applyPrompt').hidden = true;
-    }
-  }
-
-  function optimizePrompt() {
-    var id = currentCloudStyleId();
-    if (!id) { toast('先选一个云端风格'); return; }
-    if (!cloudReady()) { toast('先在设置里保存 API Key'); openSettings(); return; }
-    var prompt = $('#cloudPrompt') ? $('#cloudPrompt').value : promptFor(id);
-    var box = $('#promptPreview');
-    box.hidden = false;
-    box.textContent = '正在请求 Context-IR…';
-    $('#applyPrompt').hidden = true;
-    fetch(API + '/cloud/context-ir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) throw new Error(data.error || 'Context-IR 失败');
-        var text = data.revisedPrompt || '';
-        if (!text) throw new Error('Context-IR 没有返回改写');
-        pendingPrompt = { id: id, text: text };
-        box.textContent = text + (data.aspectRatio ? '\n\naspect: ' + data.aspectRatio : '');
-        $('#applyPrompt').hidden = false;
-      });
-    }).catch(function (err) {
-      pendingPrompt = null;
-      box.textContent = err.message || 'Context-IR 失败';
-    });
-  }
-
-  function applyPrompt() {
-    if (!pendingPrompt) return;
-    state.promptOverrides[pendingPrompt.id] = pendingPrompt.text;
-    var area = $('#cloudPrompt');
-    if (area) area.value = pendingPrompt.text;
-    $('#promptState').textContent = '已改写';
-    $('#promptPreview').hidden = true;
-    $('#applyPrompt').hidden = true;
-    pendingPrompt = null;
-    if (state.results.length) state.dirty = true;
-    updateUI();
-    toast('提示词已应用');
   }
 
   function resetPrompt() {
@@ -2208,9 +2159,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var area = $('#cloudPrompt');
     if (area) area.value = defaultPrompt(id);
     $('#promptState').textContent = '默认';
-    $('#promptPreview').hidden = true;
-    $('#applyPrompt').hidden = true;
-    pendingPrompt = null;
     if (state.results.length) state.dirty = true;
     toast('已恢复默认提示词');
   }
@@ -2581,7 +2529,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.19.0',
+        version: '0.20.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3694,7 +3642,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.19.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.20.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3992,9 +3940,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!box.hidden) $('#keyInput').focus();
     });
     $('#keySave').addEventListener('click', saveKeyOnly);
-    $('#cloudPromptOptimize').addEventListener('click', optimizePrompt);
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
-    $('#applyPrompt').addEventListener('click', applyPrompt);
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;
       renderChips();
