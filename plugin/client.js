@@ -347,7 +347,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .stage-bar{
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  height: 22px; font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-mono); color: var(--p-ink-3);
+  height: 22px; margin-bottom: 10px; font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-mono); color: var(--p-ink-3);
 }
 .iw-root .stage-bar .r{ display: flex; align-items: center; gap: 8px; }
 .iw-root .link-btn{
@@ -543,6 +543,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .drawer-body{ flex: 1; overflow: auto; padding: 2px 16px 8px; }
 .iw-root .set-sec{ padding: 13px 0; border-bottom: 1px solid var(--p-hair); }
 .iw-root .set-sec.last{ border-bottom: 0; }
+.iw-root .set-subtitle{ display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--p-hair-2); font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label); text-transform: uppercase; color: var(--p-ink-3); }
+.iw-root .set-subtitle .mono{ font-size: 10px; font-weight: 400; color: var(--p-ink-4); }
 .iw-root .set-title{
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
   margin-bottom: 4px; font-size: 13px; font-weight: 500; color: var(--p-ink);
@@ -645,7 +647,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
 @media (max-width: 760px) {.iw-root .wrap{ padding-left: 16px; padding-right: 16px; }
 .iw-root .masthead{ flex-direction: column; align-items: flex-start; }
-.iw-root .mast-right{ align-items: flex-start; }
+.iw-root .mast-right{ width: 100%; align-items: center; justify-content: space-between; }
 .iw-root .work{ grid-template-columns: 1fr; }
 .iw-root .rail{ padding: 0 0 14px; border-right: 0; border-bottom: 1px solid var(--p-hair); }
 .iw-root .stage-col{ padding: 14px 0 0; }
@@ -787,10 +789,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <header class="wrap masthead">
     <h1 class="title">图像风格工作台</h1>
     <div class="mast-right">
+      <div class="stamp"><b id="stampMain">今日 0 张 · ¥0.00</b><span id="stampSub">本机 6 · 云端 2 · 队列空闲</span></div>
       <div class="mast-tools">
         <button class="icon-btn wide" id="settingsBtn" aria-label="打开设置"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5.6" cy="4.2" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="10.4" cy="8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="6.4" cy="11.8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/></svg><span>设置</span></button>
       </div>
-      <div class="stamp"><b id="stampMain">今日 0 张 · ¥0.00</b><span id="stampSub">本机 6 · 云端 2 · 队列空闲</span></div>
     </div>
   </header>
 
@@ -974,7 +976,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <div class="drawer-body">
       <div class="p3-banner"><span id="cloudBanner"><b>云端未启用。</b> 保存 API Key 后启用云端（按量 · 国内站）；第一次生成会确认上传与费用。</span></div>
       <section class="set-sec">
-        <div class="set-title"><span>云端服务</span><span class="mono">MINIMAX</span></div>
+        <div class="set-title"><span>云端与费用</span><span class="mono">MINIMAX</span></div>
         <div class="set-row"><span>API Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
         <div class="key-edit" id="keyEdit" hidden>
           <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off">
@@ -1004,39 +1006,33 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
             <div class="mini-seg" data-group="conc"><button>1</button><button class="on">2</button><button>3</button><button>4</button></div>
           </div>
         </details>
+        <div class="set-subtitle"><span>用量</span><span class="mono">USAGE</span></div>
+        <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
+        <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
+        <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
+        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button></div>
       </section>
 
       <section class="set-sec">
-        <div class="set-title"><span>本机输出</span><span class="mono">LOCAL</span></div>
+        <div class="set-title"><span>输出与隐私</span><span class="mono">OUTPUT</span></div>
         <div class="set-field">
           <span class="lab">默认长边</span>
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
         <p class="set-note">预览按长边 640 / 960 / 1200 px；单张下载与打包按原图长边（上限 4096）。</p>
-      </section>
-
-      <section class="set-sec">
-        <div class="set-title"><span>隐私</span><span class="mono">PRIVACY</span></div>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
-        <div class="set-row"><span>本机风格</span><b>不离开浏览器</b></div>
-        <p class="set-note">云端风格会把原图上传到 MiniMax（国内站，按量）；本机风格只在浏览器里处理，不上传。</p>
+        <p class="set-note">本机风格只在浏览器里处理；云端风格会把原图上传到 MiniMax（国内站，按量）。</p>
       </section>
 
-      <section class="set-sec">
-        <div class="set-title"><span>风格包</span><span class="mono">PACKS</span></div>
+      <section class="set-sec last">
+        <div class="set-title"><span>风格包与最近</span><span class="mono">LIBRARY</span></div>
         <div class="set-row"><span>已安装</span><b id="packCount">—</b></div>
         <div class="set-links">
           <button class="ghost-btn" id="importPack">导入风格包…</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
+          <button class="ghost-btn" id="cleanupBtn">清理 90 天前</button>
         </div>
-      </section>
-
-      <section class="set-sec last">
-        <div class="set-title"><span>用量</span><span class="mono">USAGE</span></div>
-        <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
-        <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
-        <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
-        <div class="set-links"><button class="ghost-btn" id="billingLink">刷新用量</button><button class="ghost-btn" id="cleanupBtn">清理 90 天前</button></div>
+        <p class="set-note">清理会删除 90 天前的原图、结果和作业；风格包与账本保留。</p>
       </section>
     </div>
 
@@ -2126,7 +2122,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.8.0',
+        version: '0.8.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3028,7 +3024,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.8.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.8.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
