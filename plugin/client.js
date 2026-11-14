@@ -619,57 +619,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .set-row b{ font-weight: 500; color: var(--p-ink-2); }
 .iw-root .set-links{ display: flex; gap: 12px; margin-top: 2px; }
-.iw-root .pack-list{ display:flex; flex-direction:column; gap:4px; margin:6px 0 4px; max-height:168px; overflow-y:auto; }
-.iw-root .pack-row{ display:flex; align-items:center; gap:7px; min-width:0; padding:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
-.iw-root .pack-thumb{ width:44px; height:32px; flex:none; padding:0; overflow:hidden; border:1px solid var(--p-hair); background:var(--p-sunken); }
-.iw-root .pack-thumb img{ display:block; width:100%; height:100%; object-fit:cover; }
-.iw-root .pack-thumb span{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
-.iw-root .pack-info{ min-width:0; flex:1; display:flex; flex-direction:column; gap:1px; }
-.iw-root .pack-info b{ font-size:11px; font-weight:500; color:var(--p-ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.iw-root .pack-info span{ font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.iw-root .pack-del{ flex:none; height:22px; padding:0 6px; border:1px solid var(--p-hair); background:transparent; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); cursor:pointer; }
-.iw-root .pack-del:hover{ color:var(--p-signal); border-color:var(--p-signal); }
-.iw-root .pack-empty{ padding:8px 0; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
-
-.iw-root .set-field{ margin-top: 8px; }
-.iw-root .set-field .lab{
-  display: block; margin-bottom: 4px;
-  font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label); text-transform: uppercase; color: var(--p-ink-3);
-}
-.iw-root .mini-seg{ display: flex; gap: 2px; padding: 2px; background: var(--p-sunken); border-radius: 8px; }
-.iw-root .mini-seg button{
-  flex: 1; height: 22px; border: 0; border-radius: 0px; background: transparent;
-  font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3);
-}
-.iw-root .mini-seg button.on{ background: var(--p-paper-2); color: var(--p-ink); box-shadow: inset 0 0 0 1px var(--p-hair); }
-.iw-root .key-edit{ display: flex; gap: 4px; margin: 5px 0 3px; }
-.iw-root .key-edit[hidden]{ display: none; }
-.iw-root .key-edit input{
-  flex: 1; min-width: 0; height: 28px; border: 1px solid var(--p-hair); border-radius: 8px;
-  background: var(--p-paper); padding: 0 8px; font-family: var(--p-mono); font-size: 10px; outline: 0;
-}
-.iw-root .num-wrap{ display: flex; align-items: center; gap: 2px; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
-.iw-root .num{
-  width: 50px; height: 22px; border: 1px solid var(--p-hair); border-radius: 5px;
-  background: var(--p-paper); padding: 0 5px; font-family: var(--p-mono); font-size: 10px; text-align: right;
-}
-.iw-root .toggle-row{
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 7px 0; border-bottom: 1px solid var(--p-hair-2); font-size: 10px; color: var(--p-ink-2);
-}
-.iw-root .toggle-row:last-of-type{ border-bottom: 0; }
-.iw-root .toggle-row input{
-  appearance: none; -webkit-appearance: none; position: relative; flex: none;
-  width: 30px; height: 16px; margin: 0; border: 1px solid var(--p-hair); border-radius: 999px;
-  background: var(--p-sunken); cursor: pointer; transition: background .15s, border-color .15s;
-}
-.iw-root .toggle-row input::after{
-  content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px;
-  border-radius: 50%; background: var(--p-ink-4); transition: transform .15s, background .15s;
-}
-.iw-root .toggle-row input:checked{ background: var(--p-ink); border-color: var(--p-ink); }
-.iw-root .toggle-row input:checked::after{ transform: translateX(14px); background: var(--p-paper); }
-.iw-root .toggle-row input:disabled{ opacity: .45; cursor: default; }
+.iw-root .lib-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; margin:6px 0 4px; max-height:220px; overflow-y:auto; }
+.iw-root .lib-grid-hidden{ max-height:150px; }
+.iw-root .lib-card{ display:flex; align-items:center; gap:5px; min-width:0; padding:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
+.iw-root .lib-thumb{ width:34px; height:27px; flex:none; padding:0; overflow:hidden; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .lib-thumb img{ display:block; width:100%; height:100%; object-fit:cover; }
+.iw-root .lib-thumb span{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); }
+.iw-root .lib-info{ min-width:0; flex:1; display:flex; flex-direction:column; gap:1px; }
+.iw-root .lib-info b{ font-size:10.5px; font-weight:500; color:var(--p-ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .lib-info span{ font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .lib-action{ flex:none; height:20px; padding:0 4px; border:1px solid var(--p-hair); background:transparent; font-family:var(--p-mono); font-size:8px; color:var(--p-ink-3); cursor:pointer; }
+.iw-root .lib-action:hover{ color:var(--p-signal); border-color:var(--p-signal); }
+.iw-root .lib-grid-hidden .lib-card{ opacity:.72; }
+.iw-root .lib-empty{ grid-column:1 / -1; padding:7px 0; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
 .iw-root .set-note{ margin: 7px 0 0; font-size: 10px; line-height: 1.55; color: var(--p-ink-4); }
 .iw-root .drawer-foot{ padding: 12px 16px 16px; border-top: 1px solid var(--p-rule); }
 .iw-root .drawer-foot .go{ margin-top: 0; }
@@ -1162,15 +1124,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </section>
 
       <section class="set-sec last">
-        <div class="set-title"><span>风格库与最近</span></div>
-        <div class="set-row"><span>自定义风格包</span><b id="packCount">—</b></div>
-        <div class="pack-list" id="packList"></div>
-        <p class="set-note">展示已保存的本机预设；点缩略图可预览，删除只影响自定义风格包，内置本机与云端风格不受影响。</p>
+        <div class="set-title"><span>风格库管理</span></div>
+        <div class="set-row"><span>当前显示</span><b id="packCount">—</b></div>
+        <div class="lib-grid" id="libList"></div>
+        <p class="set-note">删除只是从工作台风格库移除，不删除风格定义、预览或云端资源；可在下方「已移除」恢复。</p>
+        <div class="set-row"><span>已移除</span><b id="hiddenCount">0 个</b></div>
+        <div class="lib-grid lib-grid-hidden" id="hiddenList"></div>
         <div class="set-links">
+          <button class="ghost-btn" id="restoreAll" hidden>全部恢复</button>
           <button class="ghost-btn" id="clearHistory">清空最近（需确认）</button>
           <button class="ghost-btn" id="cleanupBtn">清理 90 天前</button>
         </div>
-        <p class="set-note">仅清理 90 天前的数据；风格包与账本保留。</p>
+        <p class="set-note">仅清理 90 天前的数据；风格库配置与账本保留。</p>
       </section>
     </div>
 
@@ -1252,6 +1217,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   var HISTORY_KEY = 'dsh-image-workbench/history/v1';
+  var HIDDEN_KEY = 'dsh-image-workbench/hidden-styles/v1';
+  var hiddenStyles = readHiddenStyles();
   var INKS = { vermilion: '#a8452f', indigo: '#2b3a67', ink: '#1b1813' };
   var INK_NAMES = { vermilion: '朱红', indigo: '靛蓝', ink: '墨黑' };
   var SERIF = '"Songti SC","Iowan Old Style","Source Han Serif SC","Noto Serif SC",Georgia,serif';
@@ -1928,62 +1895,108 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var added = false;
       data.styles.forEach(function (pack) { if (addPackStyle(pack)) added = true; });
       if (added) { renderGrid(); renderChips(); }
-      renderPackList();
+      renderLibraryManager();
       renderStamp();
     }).catch(function () {});
   }
 
-  function customPacks() {
-    return STYLES.filter(function (s) { return s.renderer === 'preset'; });
+  function readHiddenStyles() {
+    try {
+      var list = JSON.parse(localStorage.getItem(HIDDEN_KEY)) || [];
+      return Array.isArray(list) ? list.filter(function (id) { return typeof id === 'string'; }) : [];
+    } catch (e) { return []; }
   }
 
-  function renderPackList() {
-    var list = customPacks();
-    var count = $('#packCount');
-    if (count) count.textContent = list.length + ' 个';
-    var box = $('#packList');
-    if (!box) return;
-    if (!list.length) {
-      box.innerHTML = '<div class="pack-empty">还没有自定义风格包。</div>';
-      return;
-    }
-    box.innerHTML = list.map(function (s) {
-      return '<div class="pack-row">' +
-        '<button class="pack-thumb" data-pack-view="' + s.id + '" title="预览 ' + escapeHTML(s.name) + '" aria-label="预览 ' + escapeHTML(s.name) + '">' +
-        (s.preview ? '<img src="' + s.preview + '" alt="">' : '<span>预设</span>') +
-        '</button>' +
-        '<div class="pack-info"><b>' + escapeHTML(s.name) + '</b><span>' + escapeHTML(s.base || 'preset') + ' · ' + s.id + '</span></div>' +
-        '<button class="pack-del" data-pack-delete="' + s.id + '">删除</button>' +
-        '</div>';
-    }).join('');
+  function saveHiddenStyles() {
+    try { localStorage.setItem(HIDDEN_KEY, JSON.stringify(hiddenStyles)); } catch (e) {}
   }
 
-  function deletePack(id) {
+  function styleHidden(id) {
+    return hiddenStyles.indexOf(id) >= 0;
+  }
+
+  function visibleStyles() {
+    return STYLES.filter(function (s) { return !styleHidden(s.id); });
+  }
+
+  function libraryType(s) {
+    if (s.renderer === 'model') return '云端';
+    if (s.renderer === 'preset') return '预设';
+    if (s.renderer === 'html') return '模板';
+    return '本机';
+  }
+
+  function libraryPreview(s) {
+    return s.preview || state.thumbs[s.id] || '';
+  }
+
+  function libraryCard(s, restore) {
+    var action = restore
+      ? '<button class="lib-action" data-restore-style="' + s.id + '">恢复</button>'
+      : '<button class="lib-action" data-hide-style="' + s.id + '">删除</button>';
+    return '<div class="lib-card">' +
+      '<span class="lib-thumb">' + (libraryPreview(s) ? '<img src="' + libraryPreview(s) + '" alt="">' : '<span>预设</span>') + '</span>' +
+      '<span class="lib-info"><b>' + escapeHTML(s.name) + '</b><span>' + libraryType(s) + ' · ' + s.id + '</span></span>' +
+      action +
+      '</div>';
+  }
+
+  function renderLibraryManager() {
+    var visible = visibleStyles();
+    var hidden = STYLES.filter(function (s) { return styleHidden(s.id); });
+    $('#packCount').textContent = visible.length + ' 个';
+    $('#hiddenCount').textContent = hidden.length + ' 个';
+    $('#libList').innerHTML = visible.length ? visible.map(function (s) { return libraryCard(s, false); }).join('') : '<div class="lib-empty">风格库为空。</div>';
+    $('#hiddenList').innerHTML = hidden.length ? hidden.map(function (s) { return libraryCard(s, true); }).join('') : '<div class="lib-empty">没有已移除的风格。</div>';
+    $('#restoreAll').hidden = !hidden.length;
+  }
+
+  function hideStyleFromLibrary(id) {
     var s = styleById(id);
-    if (!s || s.renderer !== 'preset') return;
-    if (!window.confirm('删除自定义风格包「' + s.name + '」？此操作不可撤销。')) return;
-    apiFetch('/styles/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) throw new Error(data.error || '删除失败');
-        var idx = STYLES.indexOf(s);
-        if (idx >= 0) STYLES.splice(idx, 1);
-        state.selected = state.selected.filter(function (x) { return x !== id; });
-        if (state.focus === id) state.focus = state.selected[state.selected.length - 1] || null;
-        state.results = state.results.filter(function (r) { return r.id !== id; });
-        if (state.activeResult === id) state.activeResult = null;
-        renderGrid();
-        renderChips();
-        renderProof();
-        renderPackList();
-        updateUI();
-        toast('已删除风格包 · ' + s.name);
-      });
-    }).catch(function (err) { toast(err.message || '删除失败'); });
+    if (!s) return;
+    if (!window.confirm('从风格库删除「' + s.name + '」？可在「已移除」中恢复。')) return;
+    if (!styleHidden(id)) hiddenStyles.push(id);
+    saveHiddenStyles();
+    state.selected = state.selected.filter(function (x) { return x !== id; });
+    if (state.focus === id) state.focus = state.selected[state.selected.length - 1] || null;
+    renderGrid();
+    renderChips();
+    renderProof();
+    updateUI();
+    renderStamp();
+    renderLibraryManager();
+    toast('已从风格库移除 · ' + s.name);
+  }
+
+  function restoreStyleToLibrary(id) {
+    hiddenStyles = hiddenStyles.filter(function (x) { return x !== id; });
+    saveHiddenStyles();
+    renderGrid();
+    renderChips();
+    renderProof();
+    updateUI();
+    renderStamp();
+    renderLibraryManager();
+    var s = styleById(id);
+    toast('已恢复风格 · ' + (s ? s.name : id));
+  }
+
+  function restoreAllStyles() {
+    hiddenStyles = [];
+    saveHiddenStyles();
+    renderGrid();
+    renderChips();
+    renderProof();
+    updateUI();
+    renderStamp();
+    renderLibraryManager();
+    toast('已恢复全部风格');
   }
 
   function filteredStyles() {
     var q = state.query.trim().toLowerCase();
     return STYLES.filter(function (s) {
+      if (styleHidden(s.id)) return false;
       if (state.filter === 'local' && s.renderer === 'model') return false;
       if (state.filter === 'cloud' && s.renderer !== 'model') return false;
       if (q && (s.name + s.desc).toLowerCase().indexOf(q) < 0) return false;
@@ -2066,10 +2079,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var unknownCost = cloudResults.some(function (r) { return !(Number(r.cost) > 0); });
     var cost = cloudResults.reduce(function (sum, r) { return sum + (Number(r.cost) || 0); }, 0);
     $('#stampMain').textContent = '今日 ' + success + ' 张 · ' + (unknownCost ? '¥—' : '¥' + cost.toFixed(2));
-    var localCount = STYLES.filter(function (x) { return x.renderer !== 'model'; }).length;
-    var cloudCount = STYLES.filter(function (x) { return x.renderer === 'model'; }).length;
+    var visible = visibleStyles();
+    var localCount = visible.filter(function (x) { return x.renderer !== 'model'; }).length;
+    var cloudCount = visible.filter(function (x) { return x.renderer === 'model'; }).length;
     $('#stampSub').textContent = '本机 ' + localCount + ' · 云端 ' + cloudCount;
-    if ($('#packCount')) $('#packCount').textContent = customPacks().length + ' 个';
+    if ($('#packCount')) $('#packCount').textContent = visible.length + ' 个';
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
 
@@ -2552,7 +2566,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.16.0',
+        version: '0.17.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3277,7 +3291,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   function openSettings() {
     settingsReturnFocus = document.activeElement;
-    renderPackList();
+    renderLibraryManager();
     loadUsage();
     setLayer.inert = false;
     setLayer.classList.add('open');
@@ -3661,7 +3675,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.16.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.17.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3815,12 +3829,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
-    $('#packList').addEventListener('click', function (e) {
-      var view = e.target.closest('[data-pack-view]');
-      if (view) { closeSettings(); openStylePreview(view.dataset.packView); return; }
-      var del = e.target.closest('[data-pack-delete]');
-      if (del) deletePack(del.dataset.packDelete);
+    $('#libList').addEventListener('click', function (e) {
+      var del = e.target.closest('[data-hide-style]');
+      if (del) hideStyleFromLibrary(del.dataset.hideStyle);
     });
+    $('#hiddenList').addEventListener('click', function (e) {
+      var restore = e.target.closest('[data-restore-style]');
+      if (restore) restoreStyleToLibrary(restore.dataset.restoreStyle);
+    });
+    $('#restoreAll').addEventListener('click', restoreAllStyles);
     $('#matrixBtn').addEventListener('click', openMatrix);
     $$('[data-matrix-close]').forEach(function (el) { el.addEventListener('click', closeMatrix); });
     $('#matrixPick').addEventListener('click', function () { $('#matrixInput').click(); });
