@@ -7,3 +7,5 @@ These are static 16:10 thumbnails used by the style library cards.
 - `h3-illus` and `h3-silver` are actual H3 outputs of the workbench's built-in `assets/sample.jpg`.
 - Card thumbnails are local 640×400 JPEGs served at `/image-workbench/style-preview/<id>.jpg`; full images (max 1600 long edge) live in `full/` and are served at `/image-workbench/style-preview/<id>-full.jpg` for the lightbox.
 - The generated images on a user's own photo are still produced live; these are only style examples.
+
+- The 7 inspiration thumbnails (`h3-sacred`, `h3-mystic`, `h3-observer`, `h3-west1960`, `h3-blackgold`, `h3-ramayana`, `h3-cosmic`) are cropped from the user-provided Douyin reference posts and are kept only as local visual style references. Rights remain with their creators: 诺皮克NovaPix, 真, After, 热带没有巧克力. Replace them with your own generated examples before redistributing the plugin.

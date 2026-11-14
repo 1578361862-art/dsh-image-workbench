@@ -1,0 +1,21 @@
+# Prompt inspirations · 2026-11-14
+
+User-provided references were studied and turned into 7 new cloud styles. The official 21 styles remain tied to MiniMax's own showcase; these 7 are marked as inspirations, not official examples.
+
+| # | Reference | What was learned | Style |
+| --- | --- | --- | --- |
+| 1 | 小红书 `6af531d700000000260258c1` | The direct note URL redirects to a login / security verification wall without an authenticated web session, so its body could not be read. No content was invented. | Not added yet |
+| 2 | 诺皮克NovaPix · 神圣光影 | CG digital illustration, dark fairytale, dramatic silhouette, charcoal/silver/ghostly blue, theatrical cinematic light, psychological mystery | `h3-sacred` 圣光暗童话 |
+| 3 | 诺皮克NovaPix · Sref 玄幻 | Tiny solitary figure, glowing yellow-orange terrain, slate-blue cliffs, yellow cloud vortex, dark teal starry sky, crescent moon | `h3-mystic` 玄黄奇境 |
+| 4 | 诺皮克NovaPix · 旁观者视角 | Wide shot from behind, viewer as observer, pastel surreal ground, giant cloud column, bright sun, blue sky | `h3-observer` 旁观者视角 |
+| 5 | 诺皮克NovaPix · 《蛮山野侠》1960 | 1960 western camera language + Japanese hand-drawn animation, hard noon sun, dust, wheat/teal/red, film grain | `h3-west1960` 1960 西部动画 |
+| 6 | 真 · 不说狠话，不做软事 | Black-gold high-contrast dark knight, ornate baroque armor, crescent/saint motifs, volumetric light, wallpaper | `h3-blackgold` 暗金圣骑 |
+| 7 | After · 罗摩衍那 | Indian epic illustration, red/gold, chariot and black horses, diagonal motion, ornate jewelry, classical paint | `h3-ramayana` 罗摩衍那 |
+| 8 | 热带没有巧克力 · 星河是我的脉搏 | Cosmic surreal classical oil, black and gold nebula/accretion disc, cloud sea, robed figure on a cliff, sacred scale | `h3-cosmic` 星河神性 |
+
+## How the prompts were adapted
+
+- The MJ `--sref`, `--profile`, `--stylize`, `--chaos` flags are not supported by the H3 image-edit API and are not copied; only visible style language is kept.
+- The 6 scene-changing styles use `cloudScenePrompt()` so the subject's identity, face, body, pose and subject relationships survive while clothing, era, environment, shot and scale may be re-authored.
+- The exact scene content of the references (specific women, horses, chariots, quotes) is not pasted into the prompts; the user's own image remains the subject.
+- The 7 preview images are local visual references only; rights remain with the original creators. Replace them with self-generated previews before redistributing.
