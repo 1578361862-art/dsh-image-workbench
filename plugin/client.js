@@ -632,6 +632,23 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .result-feedback{ display:flex; align-items:center; gap:5px; }
 .iw-root .result-feedback .ghost-btn{ min-width:36px; height:24px; padding:0 7px; font-size:10px; }
 .iw-root .result-feedback .ghost-btn.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .refine-layer{ position:fixed; inset:0; z-index:80; display:none; }
+.iw-root .refine-layer.open{ display:block; }
+.iw-root .refine-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
+.iw-root .refine-dialog{ width:min(1080px,calc(100vw - 40px)); max-height:calc(100vh - 40px); }
+.iw-root .refine-body{ flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.8fr); gap:16px; padding:16px; background:var(--p-paper-2); }
+.iw-root .refine-preview{ display:flex; align-items:center; justify-content:center; min-height:280px; background:var(--p-sunken); overflow:hidden; }
+.iw-root .refine-preview img{ display:block; max-width:100%; max-height:calc(100vh - 250px); object-fit:contain; }
+.iw-root .refine-form{ display:flex; flex-direction:column; min-width:0; }
+.iw-root .refine-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .refine-form textarea{ width:100%; min-height:170px; margin-top:6px; padding:10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.6; resize:vertical; }
+.iw-root .refine-note{ margin:8px 0 0; font-size:10px; line-height:1.5; color:var(--p-ink-4); }
+.iw-root .refine-cost{ margin-top:auto; padding-top:12px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .refine-foot{ gap:12px; }
+.iw-root .refine-actions{ display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+.iw-root .refine-status{ min-height:14px; }
+.iw-root .refine-status.error{ color:var(--p-signal); }
+@media (max-width:760px){.iw-root .refine-body{grid-template-columns:1fr; overflow:auto;} .iw-root .refine-preview{min-height:180px;} .iw-root .refine-form textarea{min-height:110px;}}
 .iw-root .result-foot-right{ display:flex; align-items:center; gap:8px; }
 .iw-root .result-foot-right #resultInfo{ max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .iw-root .favorites-layer{ position:fixed; inset:0; z-index:77; display:none; }
@@ -1184,6 +1201,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <p class="set-note">预览 640 / 960 / 1200；下载按原图长边（≤4096）。</p>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
         <p class="set-note">本机不上传；云端上传 MiniMax（国内站，按量）。</p>
+        <div class="set-row"><span>提示词增强</span><b>图片编辑强制开启</b></div>
+        <p class="set-note">MiniMax 图片编辑接口始终执行 Prompt 增强；只有文生图接口支持 disable_prompt_enhanced。二次编辑同样走图片编辑。</p>
       </section>
 
       <section class="set-sec last">
@@ -1267,6 +1286,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <button class="ghost-btn" id="resultLike" aria-pressed="false">赞</button>
         <button class="ghost-btn" id="resultDislike" aria-pressed="false">踩</button>
         <button class="ghost-btn" id="resultFavorite" aria-pressed="false">收藏</button>
+        <button class="ghost-btn" id="resultRefine">再次编辑</button>
       </div>
       <div class="result-foot-right"><span id="resultInfo"></span><button class="ghost-btn" id="resultDownload">下载原图</button></div>
     </footer>
@@ -1286,6 +1306,35 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="ghost-btn" data-favorites-close>关闭</button>
     </footer>
   </figure>
+</div>
+
+<div class="refine-layer" id="refineLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-refine-close></div>
+  <section class="preview-dialog refine-dialog" role="dialog" aria-modal="true" aria-labelledby="refineTitle">
+    <header class="preview-head">
+      <div><h2 id="refineTitle">再次编辑</h2><span id="refineMeta"></span></div>
+      <button class="icon-btn" data-refine-close aria-label="关闭再次编辑"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="refine-body">
+      <div class="refine-preview"><img id="refineSource" alt="待二次编辑的图片"></div>
+      <div class="refine-form">
+        <label class="refine-label" for="refinePrompt">编辑要求</label>
+        <textarea id="refinePrompt" rows="7" spellcheck="false"></textarea>
+        <p class="refine-note">图片编辑接口会强制进行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
+        <div class="refine-cost" id="refineCost"></div>
+      </div>
+    </div>
+    <footer class="preview-foot refine-foot">
+      <span id="refineStatus" class="refine-status"></span>
+      <div class="refine-actions">
+        <button class="ghost-btn" data-refine-close>取消</button>
+        <button class="ghost-btn" id="refineDownload" hidden>下载</button>
+        <button class="ghost-btn" id="refineView" hidden>查看大图</button>
+        <button class="ghost-btn" id="refineAgain" hidden>继续编辑</button>
+        <button class="go" id="refineStart">开始二次优化</button>
+      </div>
+    </footer>
+  </section>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
@@ -1421,6 +1470,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-ramayana', name: '罗摩衍那', renderer: 'model', eta: '25s', desc: '红金史诗、战车', previewBase: 'riso', previewParams: {'ink': 'vermilion'}, prompt: cloudSceneRefPrompt('印度史诗《罗摩衍那》油画/古典插画：红金主色，强烈动态对角线，战车、黑马、弓与箭、飘动红披风、金色珠宝与繁复纹样；厚涂油画与古典插画质感，烟尘和夕阳；主体成为史诗英雄或神祇，保留身份、姿态、服装轮廓和关键特征；允许战车与马匹作为环境叙事元素，不替换主体；不要现代照片、3DCG、文字或UI。') },
     { id: 'h3-cosmic', name: '星河神性', renderer: 'model', eta: '25s', desc: '黑洞星云、古典油画', previewBase: 'duotone', previewParams: {'ink': 'ink'}, prompt: cloudSceneRefPrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。') },
     { id: 'h3-seal', name: '金石印谱', renderer: 'model', eta: '25s', desc: '3:4 双格 · 肖形印蜕', previewBase: 'poster', fixedRatio: '3:4', prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。') },
+    { id: 'h3-refine', name: '二次编辑', renderer: 'model', hidden: true, eta: '25s', desc: '对已生成图片再次编辑' },
   ];
 
   STYLES.forEach(function (s) {
@@ -2051,7 +2101,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function visibleStyles() {
-    return STYLES.filter(function (s) { return !styleHidden(s.id); });
+    return STYLES.filter(function (s) { return !s.hidden && !styleHidden(s.id); });
   }
 
   function libraryType(s) {
@@ -2653,7 +2703,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.25.0',
+        version: '0.26.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3953,7 +4003,154 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
-  /* ————— 示例放大 ————— */
+  /* ————— 二次编辑 ————— */
+  var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
+  var refine = { url: '', title: '', w: 0, h: 0, busy: false, result: null };
+
+  function refineTargetSize(w, h) {
+    var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[state.cloudQuality] || 4194304;
+    if (!w || !h) return '2K';
+    var scale = Math.sqrt(target / (w * h));
+    var nw = Math.max(128, Math.round(w * scale));
+    var nh = Math.max(128, Math.round(h * scale));
+    while (nw * nh < 655360) { nw += 64; nh += 64; }
+    return nw + 'x' + nh;
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = function () { reject(new Error('图片读取失败')); };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function uploadRefineSource(url) {
+    var dataUrl = url;
+    if (url.indexOf('data:') !== 0) {
+      var fetched = await fetch(url);
+      if (!fetched.ok) throw cloudError('二次编辑原图读取失败', 'asset_read_failed');
+      dataUrl = await blobToDataUrl(await fetched.blob());
+    }
+    var res = await apiFetch('/assets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl: dataUrl, name: 'refine-source.jpg', w: refine.w, h: refine.h }),
+    });
+    var saved = await res.json().catch(function () { return null; });
+    if (!res.ok || !saved || !saved.id) throw cloudError((saved && saved.error) || '二次编辑原图上传失败', 'asset_upload_failed');
+    return saved.id;
+  }
+
+  function syncRefineCost() {
+    var cost = Number(cloudUnitPrice()) || 0;
+    $('#refineCost').textContent = state.cloudQuality + ' · ' + refineTargetSize(refine.w, refine.h) + ' · 约 ¥' + cost.toFixed(4);
+  }
+
+  function openRefine() {
+    if (!bigState || !bigState.url) return;
+    refine = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0, busy: false, result: null };
+    $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
+    $('#refineSource').src = refine.url;
+    $('#refinePrompt').value = REFINE_PROMPT;
+    $('#refineStatus').textContent = '';
+    $('#refineStatus').className = 'refine-status';
+    $('#refineView').hidden = true;
+    $('#refineDownload').hidden = true;
+    $('#refineAgain').hidden = true;
+    $('#refineStart').hidden = false;
+    $('#refineStart').disabled = false;
+    $('#refineStart').textContent = '开始二次优化';
+    syncRefineCost();
+    $('#refineLayer').inert = false;
+    $('#refineLayer').classList.add('open');
+    $('#refineLayer').setAttribute('aria-hidden', 'false');
+    $('#refinePrompt').focus();
+  }
+
+  function closeRefine() {
+    var layer = $('#refineLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.inert = true;
+    layer.setAttribute('aria-hidden', 'true');
+    $('#refineSource').removeAttribute('src');
+  }
+
+  async function startRefine() {
+    if (refine.busy) return;
+    if (!cloudReady()) { toast('先在设置里保存 API Key 启用云端'); openSettings(); return; }
+    var prompt = $('#refinePrompt').value.trim();
+    if (!prompt) { toast('填写二次编辑要求'); $('#refinePrompt').focus(); return; }
+    if (state.settings.privacyConfirm) {
+      var ok = window.confirm('二次编辑会把当前生成图上传到 MiniMax（国内站，按量）。\n' +
+        state.cloudQuality + ' · 预计 ¥' + Number(cloudUnitPrice()).toFixed(4) + '。\n\n继续？');
+      if (!ok) return;
+    }
+    refine.busy = true;
+    var startBtn = $('#refineStart');
+    startBtn.disabled = true;
+    startBtn.textContent = '生成中…';
+    $('#refineStatus').textContent = '读取原图…';
+    $('#refineStatus').className = 'refine-status';
+    try {
+      var assetId = await uploadRefineSource(refine.url);
+      $('#refineStatus').textContent = '上传完成，提交作业…';
+      var body = {
+        assetId: assetId,
+        styleId: 'h3-refine',
+        prompt: prompt,
+        size: refineTargetSize(refine.w, refine.h),
+        params: {},
+      };
+      var res = await fetch(API + '/cloud/jobs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.status === 402 && data.code === 'budget_exceeded') {
+        var msg = '今日云端预算不足。\n预计 ¥' + Number(data.estimatedYuan || 0).toFixed(2) +
+          ' · 已用 ¥' + Number(data.spentTodayYuan || 0).toFixed(2) +
+          ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) +
+          '。\n\n仍要继续二次优化吗？';
+        if (!window.confirm(msg)) throw cloudError('已取消二次优化', 'budget_cancelled');
+        body.allowOverBudget = true;
+        res = await fetch(API + '/cloud/jobs', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        });
+        data = await res.json().catch(function () { return {}; });
+      }
+      if (!res.ok) throw cloudError(data.error || ('云端请求失败 ' + res.status), data.code);
+      $('#refineStatus').textContent = '生成中…';
+      var job = await waitCloudJob(data.id);
+      if (job.status !== 'succeeded' || !job.output) {
+        throw cloudError((job.error && job.error.message) || ('云端作业 ' + job.status), (job.error && job.error.code) || job.status);
+      }
+      refine.result = { url: job.output.url, w: job.output.w, h: job.output.h, cost: Number(cloudUnitPrice()) };
+      refine.url = refine.result.url;
+      refine.w = refine.result.w;
+      refine.h = refine.result.h;
+      $('#refineSource').src = refine.result.url;
+      $('#refineMeta').textContent = '二次编辑 · ' + refine.result.w + ' × ' + refine.result.h;
+      $('#refineStatus').textContent = '完成 · 已加入最近生成';
+      startBtn.hidden = true;
+      $('#refineView').hidden = false;
+      $('#refineDownload').hidden = false;
+      $('#refineAgain').hidden = false;
+      loadAllHistory(true);
+      toast('二次优化完成');
+    } catch (err) {
+      $('#refineStatus').textContent = err.message || '二次优化失败';
+      $('#refineStatus').className = 'refine-status error';
+      startBtn.disabled = false;
+      startBtn.textContent = '重试二次优化';
+    } finally {
+      refine.busy = false;
+      if (!refine.result) startBtn.disabled = false;
+    }
+  }
+
+    /* ————— 示例放大 ————— */
   var previewReturnFocus = null;
   var previewRenderToken = 0;
   var previewIds = [];
@@ -4166,7 +4363,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.25.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.26.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4243,6 +4440,41 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultLike').addEventListener('click', function () { toggleFeedback('up'); });
     $('#resultDislike').addEventListener('click', function () { toggleFeedback('down'); });
     $('#resultFavorite').addEventListener('click', toggleFavoriteBig);
+    $('#resultRefine').addEventListener('click', openRefine);
+    $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
+    $('#refineStart').addEventListener('click', startRefine);
+    $('#refineView').addEventListener('click', function () {
+      if (!refine.result) return;
+      var result = refine.result;
+      closeRefine();
+      openBig({
+        key: resultKey({ id: 'h3-refine', cloud: true, url: result.url }),
+        url: result.url,
+        title: '二次编辑',
+        meta: '二次编辑 · ' + result.w + ' × ' + result.h,
+        info: '二次编辑结果 · ' + result.w + ' × ' + result.h,
+        w: result.w, h: result.h, border: 'none', resultId: null, styleId: 'h3-refine', cloud: true,
+      });
+    });
+    $('#refineDownload').addEventListener('click', function () {
+      if (refine.result) triggerDownload(refine.result.url, '二次编辑-' + Date.now() + '.jpg');
+    });
+    $('#refineAgain').addEventListener('click', function () {
+      if (!refine.result) return;
+      refine.busy = false;
+      refine.result = null;
+      $('#refineSource').src = refine.url;
+      $('#refinePrompt').value = REFINE_PROMPT;
+      $('#refineStatus').textContent = '';
+      $('#refineStatus').className = 'refine-status';
+      $('#refineView').hidden = true;
+      $('#refineDownload').hidden = true;
+      $('#refineAgain').hidden = true;
+      $('#refineStart').hidden = false;
+      $('#refineStart').disabled = false;
+      $('#refineStart').textContent = '开始二次优化';
+      syncRefineCost();
+    });
     $('#favoritesBtn').addEventListener('click', openFavorites);
     $$('[data-favorites-close]').forEach(function (el) { el.addEventListener('click', closeFavorites); });
     $('#favoritesGrid').addEventListener('click', function (e) {
@@ -4560,6 +4792,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && $('#refineLayer')?.classList.contains('open')) { closeRefine(); return; }
       if (e.key === 'Escape' && $('#favoritesLayer')?.classList.contains('open')) { closeFavorites(); return; }
       if (e.key === 'Escape' && $('#cropLayer')?.classList.contains('open')) { closeCrop(); return; }
       if (e.key === 'Escape' && $('#resultLayer')?.classList.contains('open')) { closeResultBig(); return; }
