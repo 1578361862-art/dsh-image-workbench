@@ -560,7 +560,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .border-options button{ height:24px; padding:0 4px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); cursor:pointer; }
 .iw-root .border-options button:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
 .iw-root .border-options button.on{ background:var(--p-ink); color:var(--p-paper); border-color:var(--p-ink); }
-.iw-root .pcard.frame-polaroid{ padding:7px 7px 22px; background:#f6efe1; border-color:#d9cbb5; box-shadow:0 3px 10px rgba(40,30,20,.12); }
+.iw-root .pcard.frame-polaroid{ aspect-ratio:4/5; display:flex; flex-direction:column; padding:7px 7px 22px; background:#f6efe1; border-color:#d9cbb5; box-shadow:0 3px 10px rgba(40,30,20,.12); }
+.iw-root .pcard.frame-polaroid img{ flex:1; min-height:0; width:100%; height:auto; aspect-ratio:auto; object-fit:cover; }
 .iw-root .pcard.frame-polaroid img{ border:1px solid rgba(70,50,30,.12); }
 .iw-root .pcard.frame-polaroid .pcap{ color:var(--p-ink-2); }
 .iw-root .pcard.frame-film{ padding:8px 5px; background:#111; border-color:#333; }
@@ -581,7 +582,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .result-stage{ flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 10px; background: #1b1915; overflow: auto; }
 .iw-root .result-stage img{ display: block; max-width: 100%; max-height: calc(100vh - 190px); width: auto; height: auto; object-fit: contain; }
 .iw-root .result-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px 12px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
-.iw-root .result-layer.frame-polaroid .result-stage img{ border:12px solid #f6efe1; border-bottom-width:42px; background:#f6efe1; box-shadow:0 16px 40px rgba(0,0,0,.35); box-sizing:content-box; }
+.iw-root .result-layer.frame-polaroid .result-stage img{ width:auto; height:min(calc(100vh - 190px), 80vh); aspect-ratio:4/5; object-fit:cover; border:12px solid #f6efe1; border-bottom-width:42px; background:#f6efe1; box-shadow:0 16px 40px rgba(0,0,0,.35); box-sizing:border-box; }
 .iw-root .result-layer.frame-film .result-stage img{ border:10px solid #111; background:#111; box-shadow:inset 0 0 0 1px #333; box-sizing:content-box; }
 .iw-root .result-layer.frame-paper .result-stage img{ border:14px solid #fff; background:#fff; box-sizing:content-box; }
 .iw-root .pcard-zoom{ position:absolute; top:4px; left:4px; z-index:2; width:34px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-ui); line-height:1; padding:0; }
@@ -1863,7 +1864,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var stage = $('#stage');
     var print = $('#print');
     if (!stage || !print) return;
-    var r = frameRatio();
+    var r = state.border === 'polaroid' ? 1.25 : frameRatio();
     var padX = state.border === 'polaroid' ? 9 : state.border === 'paper' ? 12 : state.border === 'film' ? 9 : 0;
     var padT = padX;
     var padB = state.border === 'polaroid' ? 32 : padX;
@@ -2210,7 +2211,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       applyFrame();
     }
     $$('#borderOptions button').forEach(function (el) { el.classList.toggle('on', el.dataset.border === state.border); });
-    var borderHints = { none: '无边框：保留原图边缘。', polaroid: '宝利来：奶油白相纸，底部留白更宽。', film: '胶片：黑色片边与齿孔。', paper: '留白：均匀白边，适合排版。' };
+    var borderHints = { none: '无边框：保留原图边缘。', polaroid: '宝利来：4:5 固定比例，中心裁切，奶油白相纸与底部留白。', film: '胶片：黑色片边与齿孔。', paper: '留白：均匀白边，适合排版。' };
     $('#borderHint').textContent = borderHints[state.border] || borderHints.none;
     $('#localOutputFields').hidden = !hasLocal;
     $('#outputGroup').hidden = !hasLocal && !hasCloud;
@@ -2427,10 +2428,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function framedCanvas(img, border) {
     var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
     if (!w || !h || !border || border === 'none') return null;
-    var pad = border === 'polaroid' ? Math.max(20, Math.round(w * 0.055)) : border === 'paper' ? Math.max(16, Math.round(w * 0.04)) : Math.max(12, Math.round(w * 0.024));
-    var bottom = border === 'polaroid' ? Math.max(pad * 3, Math.round(w * 0.16)) : pad;
-    var c = make(w + pad * 2, h + pad + bottom), ctx = c.getContext('2d');
-    ctx.fillStyle = border === 'film' ? '#111111' : border === 'paper' ? '#fffdf7' : '#f6efe1';
+    if (border === 'polaroid') {
+      var side = Math.min(w, h);
+      var outW = Math.round(side / 0.86);
+      var outH = Math.round(outW * 1.25);
+      var pc = make(outW, outH), pctx = pc.getContext('2d');
+      pctx.fillStyle = '#f6efe1';
+      pctx.fillRect(0, 0, outW, outH);
+      var sx = Math.round((w - side) / 2), sy = Math.round((h - side) / 2);
+      pctx.drawImage(img, sx, sy, side, side, Math.round(outW * 0.07), Math.round(outW * 0.07), side, side);
+      return pc;
+    }
+    var pad = border === 'paper' ? Math.max(16, Math.round(w * 0.04)) : Math.max(12, Math.round(w * 0.024));
+    var c = make(w + pad * 2, h + pad * 2), ctx = c.getContext('2d');
+    ctx.fillStyle = border === 'film' ? '#111111' : '#fffdf7';
     ctx.fillRect(0, 0, c.width, c.height);
     if (border === 'film') {
       ctx.fillStyle = '#e7c472';
@@ -2520,7 +2531,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.15.0',
+        version: '0.15.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3390,10 +3401,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!layer) return;
     var s = styleById(id) || { name: id };
     $('#resultTitle').textContent = s.name;
-    $('#resultMeta').textContent = (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h;
+    var ratioMeta = state.border === 'polaroid' ? ' · 宝利来 4:5' : '';
+    $('#resultMeta').textContent = (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h + ratioMeta;
     $('#resultBig').src = r.url;
     $('#resultBig').alt = s.name + ' 结果大图';
-    $('#resultInfo').textContent = '原图尺寸 · ' + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
+    $('#resultInfo').textContent = (state.border === 'polaroid' ? '宝利来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
     layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
     if (state.border !== 'none') layer.classList.add('frame-' + state.border);
     layer.inert = false;
@@ -3627,7 +3639,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
