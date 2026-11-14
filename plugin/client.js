@@ -1102,7 +1102,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     // The nine styles below summarize MiniMax-H3-Image's official showcase prompts:
     // artistic-worlds.md / surreal-worlds.md / real-world.md / game-worlds.md
     // https://github.com/MiniMax-AI/MiniMax-H3-Image/tree/main/showcase
-    { id: 'h3-oil', name: '古典油画', renderer: 'model', eta: '25s', desc: '伦勃朗式明暗、厚涂与画布', previewBase: 'film', previewParams: { strength: 0.92, grain: 0.22 }, prompt: '以图1为唯一主体与构图参考，转为17世纪欧洲古典油画：伦勃朗/卡拉瓦乔式明暗对照，深色背景与单侧暖光，可见笔触、厚涂高光、亚麻画布纹理与陈年清漆的暖金色；保留主体身份、姿态、画面布局和文字位置，不改变内容。' },
+    { id: 'h3-oil', name: '古典油画', renderer: 'model', eta: '25s', desc: '伦勃朗式明暗、厚涂与画布', previewBase: 'film', previewParams: { strength: 0.92, grain: 0.22 }, prompt: '以图1为唯一主体与构图参考，转为17世纪欧洲古典油画：伦勃朗/卡拉瓦乔式明暗对照，深色背景与单侧暖光，可见笔触、厚涂高光、亚麻画布纹理与陈年清漆的暖金色；主体面部、服装和举手动作必须清晰可读，暗部保留层次，不整体压黑；保留主体身份、姿态、画面布局和文字位置，不改变内容。' },
     { id: 'h3-impression', name: '印象派', renderer: 'model', eta: '25s', desc: '可见短笔触与晨雾柔光', previewBase: 'film', previewParams: { strength: 0.58, grain: 0.1 }, prompt: '以图1为唯一主体与构图参考，转为法国印象派油画：湿画法、可见短笔触、纯色并置、高调晨雾与柔光，形体在光中溶解但轮廓仍可辨；保留主体身份、姿态、主要构图和文字位置；不要水墨、工笔或数字模糊。' },
     { id: 'h3-manuscript', name: '金箔手抄本', renderer: 'model', eta: '25s', desc: '蛋彩、金箔与卷草边框', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: '以图1为主体与构图参考，转为中世纪泥金手抄本插画：平涂蛋彩、深色墨线、平透视、朱红/群青/金箔、卷草纹边框与羊皮纸磨损；保留主体可识别和构图，金饰不遮挡主体与文字。' },
     { id: 'h3-dunhuang', name: '敦煌壁画', renderer: 'model', eta: '25s', desc: '矿物颜料与土壁颗粒', previewBase: 'duotone', previewParams: { ink: 'ink' }, prompt: '以图1为主体与构图参考，转为唐代敦煌土壁壁画：矿物颜料（朱砂、石青、石绿、赭石）、土壁颗粒与细线人物，飘带/云纹、平涂与局部晕染；保留主体身份、姿态和构图，不做电影光或金属反射。' },
@@ -2119,7 +2119,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.7.0',
+        version: '0.7.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3021,7 +3021,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.7.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.7.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
