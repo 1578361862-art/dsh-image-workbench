@@ -10,7 +10,7 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - `lib/storage.js`：`~/Data/dsh-image-workbench/{library,outputs,styles,jobs}`、sha256 去重、`index.jsonl`、历史/删除/90 天清理。
 - `lib/zip.js`：无依赖 store-mode ZIP；`lib/minimax.js` / `jobs.js` / `budget.js` / `ledger.js` / `cloud.js`：P3 provider/队列/预算/账本。
 - `client.js`：React 外壳 + 单页控制器；6 个本机风格 + 11 个云端 H3 风格，印刷海报支持「海报 / 卡片」两种模板版式；参数支持「共用 / 当前风格」；原图导出；ZIP；历史。
-- `assets/sample.jpg`：示例静物；`docs/DETAIL.md`：插件详情；`tests/`：Host 测试。
+- `assets/sample.jpg`：示例静物；`assets/style-previews/`：风格库官方示例缩略图（h3-illus/h3-silver 为实际 H3 输出）；`docs/DETAIL.md`：插件详情；`tests/`：Host 测试。
 
 ## Host 路由（全部经过 `connection.requestRejection`）
 

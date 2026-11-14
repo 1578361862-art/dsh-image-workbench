@@ -14,6 +14,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(homedir(), 'Data', 'dsh-image-workbench')
 const CONFIG = join(ROOT, 'config.json')
 const SAMPLE = join(HERE, 'assets', 'sample.jpg')
+const STYLE_PREVIEW_DIR = join(HERE, 'assets', 'style-previews')
 const CREDENTIAL = 'dsh-image-workbench/minimax'
 const SIZES = ['640', '960', '1200']
 const MAX_BODY = 64 * 1024
@@ -432,6 +433,13 @@ export default {
       }
       if (method === 'GET' && path === 'sample') {
         return serveSample(req, res)
+      }
+      if (method === 'GET' && seg.length === 2 && seg[0] === 'style-preview') {
+        const id = seg[1].replace(/\.jpg$/i, '')
+        if (!/^[a-z0-9-]{1,63}$/.test(id) || !CLOUD_STYLES[id]) {
+          return json(res, 404, { error: '风格预览不存在' })
+        }
+        return serveStored(res, join(STYLE_PREVIEW_DIR, id + '.jpg'), 'image/jpeg')
       }
       if (method === 'POST' && path === 'settings') {
         const body = await readBody(req)
