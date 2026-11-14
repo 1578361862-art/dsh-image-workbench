@@ -2036,11 +2036,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function updateUI() {
     var n = state.selected.length;
     $('#selCount').textContent = n ? n + ' 版' : '未选';
-    $('#go').disabled = !n || state.generating || !state.source.url;
+    $('#go').disabled = state.generating || !state.source.url;
     $('#go').hidden = !state.source.url;
     var proofEl = document.querySelector('.proof');
     if (proofEl) proofEl.hidden = !state.source.url;
-    $('#go').textContent = !state.source.url ? '先载入图片' : (state.generating ? '生成中 ' + state.results.length + ' / ' + n : '生成 ' + n + ' 版');
+    $('#go').textContent = !state.source.url ? '先载入图片' : (state.generating ? '生成中 ' + state.results.length + ' / ' + n : (n ? '生成 ' + n + ' 版' : '生成'));
     $('#proofCount').textContent = state.results.length + ' / ' + (state.generating ? n : (state.results.length || n));
     var successCount = state.results.filter(function (r) { return !r.error; }).length;
     var failedCount = state.results.length - successCount;
@@ -2226,7 +2226,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (!state.results.length) {
-      grid.innerHTML = '<div class="proof-empty">点「生成 ' + state.selected.length + ' 版」，试印会出现在这里。</div>';
+      grid.innerHTML = state.selected.length
+        ? '<div class="proof-empty">点「生成 ' + state.selected.length + ' 版」，试印会出现在这里。</div>'
+        : '<div class="proof-empty">还没有选风格，先从左边风格库挑一个。</div>';
       return;
     }
     grid.innerHTML = state.results.map(proofCard).join('');
@@ -2318,7 +2320,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.11.0',
+        version: '0.11.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2462,7 +2464,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function generate(auto) {
-    if (state.generating || !state.selected.length || !state.source.url || disposed) return;
+    if (disposed || state.generating) return;
+    if (!state.source.url) { toast('先载入图片'); return; }
+    if (!state.selected.length) {
+      toast('还没有选风格，请先从左边风格库选一个');
+      var firstCard = $('#styleGrid .card');
+      if (firstCard) firstCard.focus();
+      return;
+    }
     var ids = state.selected.slice();
     var localIds = ids.filter(function (id) {
       var s2 = styleById(id);
@@ -2615,13 +2624,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function removeStyle(id) {
     if (state.generating) return;
-    if (state.selected.length <= 1) { toast('至少留一个风格'); return; }
     state.selected = state.selected.filter(function (x) { return x !== id; });
     if (state.focus === id) state.focus = state.selected[state.selected.length - 1] || null;
     if (state.results.length) state.dirty = true;
     renderGrid();
     renderChips();
     updateUI();
+    renderProof();
     schedulePreview();
   }
 
@@ -3260,7 +3269,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.11.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.11.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
