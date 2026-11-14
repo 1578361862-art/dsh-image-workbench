@@ -5,8 +5,8 @@ User-provided references were studied and turned into 7 new cloud styles. The of
 | # | Reference | What was learned | Style |
 | --- | --- | --- | --- |
 | 1 | 小红书 `6af531d700000000260258c1` | The direct note URL redirects to a login / security verification wall without an authenticated web session, so its body could not be read. No content was invented. | Not added yet |
-| 2 | 诺皮克NovaPix · 神圣光影 | CG digital illustration, dark fairytale, dramatic silhouette, charcoal/silver/ghostly blue, theatrical cinematic light, psychological mystery | `h3-sacred` 圣光暗童话 |
-| 3 | 诺皮克NovaPix · Sref 玄幻 | Tiny solitary figure, glowing yellow-orange terrain, slate-blue cliffs, yellow cloud vortex, dark teal starry sky, crescent moon | `h3-mystic` 玄黄奇境 |
+| 2 | 诺皮克NovaPix · 神圣光影 | White marble/plaster sculpture, black void, thin neon halo, silver monochrome, hard carved drapery | `h3-sacred` 圣光暗童话 |
+| 3 | 诺皮克NovaPix · Sref 玄幻 | 2D screen-print/woodcut, yellow/teal flat colors, hard-edge silhouette, giant sun, woodcut cloud dragon, concentric rings, paper grain | `h3-mystic` 玄黄奇境 |
 | 4 | 诺皮克NovaPix · 旁观者视角 | Wide shot from behind, viewer as observer, pastel surreal ground, giant cloud column, bright sun, blue sky | `h3-observer` 旁观者视角 |
 | 5 | 诺皮克NovaPix · 《蛮山野侠》1960 | 1960 western camera language + Japanese hand-drawn animation, hard noon sun, dust, wheat/teal/red, film grain | `h3-west1960` 1960 西部动画 |
 | 6 | 真 · 不说狠话，不做软事 | Black-gold high-contrast dark knight, ornate baroque armor, crescent/saint motifs, volumetric light, wallpaper | `h3-blackgold` 暗金圣骑 |

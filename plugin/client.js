@@ -1344,8 +1344,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-infographic', name: '信息图', renderer: 'model', eta: '25s', desc: '科普图解、细标签', previewBase: 'poster', prompt: cloudPrompt('编辑级信息图或科普图解，一张完整版面：米白纸底、扁平矢量加少量照片碎片、清晰分区、细箭头、短标签和比例尺；主体作为中心图示，保留识别特征；有限色板：米白、墨绿、陶土橙、灰蓝；标签只描述可见结构，文字简短、可读、不重叠；不要复杂3D、重复卡片、长文、编造数据或来源。', true) },
     { id: 'h3-cad', name: '工程蓝图', renderer: 'model', eta: '25s', desc: '正交视图、尺寸线', previewBase: 'cyanotype', prompt: cloudPrompt('正式工程蓝图或CAD图纸：深蓝底加细网格、白色细线；同一主体正交前视、侧视、俯视和等轴测线稿，比例一致；尺寸线、剖面线、中心线、短标签和标题栏；保留主体结构、比例和关键部件；不要照片、阴影、渐变、3D渲染、UI或无关文字。', true) },
     { id: 'h3-surreal', name: '超现实时尚', renderer: 'model', eta: '25s', desc: '实景道具、直闪撞色', previewBase: 'film', previewParams: { strength: 0.88, grain: 0.24 }, prompt: cloudPrompt('复古超现实时尚摄影：真实布景和大道具，鲜艳撞色，直闪加自然光，胶片颗粒，低角度广角；主体保留身份、姿态、服装和构图；只加入一个超现实但物理可信的道具或空间关系，与主体发生真实接触、遮挡和接触阴影；像实拍的复古时尚大片，不要卡通、CG、塑料感或新增人物。') },
-    { id: 'h3-sacred', name: '圣光暗童话', renderer: 'model', eta: '25s', desc: '冷银蓝、圣光剪影', previewBase: 'film', previewParams: {'strength': 0.9, 'grain': 0.2}, prompt: cloudRefPrompt('CG数字插画/暗黑童话概念艺术：深炭黑背景、去饱和银灰与幽灵蓝冷光；主体呈戏剧化剪影，披风与衣褶形成大面积暗形；圣光从上方或背后穿过尘雾，边缘冷光、面部少量暖光；精细painterly纹理、电影舞台光、心理悬疑与“天真/禁忌力量”的象征物；保留主体身份、姿态、服装轮廓和构图；不要照片、塑料3D、霓虹、可爱化或新增角色。') },
-    { id: 'h3-mystic', name: '玄黄奇境', renderer: 'model', eta: '25s', desc: '青金、巨物云涡', previewBase: 'duotone', previewParams: {'ink': 'indigo'}, prompt: cloudSceneRefPrompt('玄幻/科幻奇境概念艺术：超广角，主体成为渺小而孤独的旅人（保留身份、姿态、服装），站在发光黄橙地貌上；深青星空、板岩蓝巨岩、右侧巨崖、中央向上翻卷的黄色云涡或洞口，上空一弯发光新月；深青、石板灰、明黄、火橙，体积云与空气透视，宏大尺度；不要普通风景照、卡通、UI或文字。') },
+    { id: 'h3-sacred', name: '圣光暗童话', renderer: 'model', eta: '25s', desc: '白石雕塑、黑底光环', previewBase: 'film', previewParams: {'strength': 0.9, 'grain': 0.2}, prompt: cloudRefPrompt('白色大理石/石膏雕塑摄影，暗黑神圣与天光：把图1主体转成纯白大理石或石膏雕塑，保留主体身份、数量、姿态、朝向、服装或外形轮廓和构图；石材表面有凿痕、石粉、细裂纹和柔和冷光，衣褶与结构呈硬质雕刻；主体置于纯黑虚空，背后一圈极细的白色霓虹光环，下方由云团或石台承托；冷银灰单色，几乎没有环境色，最多一点冷蓝边缘光；像博物馆雕塑或高级暗黑童话封面；不要活体毛发、森林、树叶、照片、3D游戏、彩色、复杂背景、可爱化或新增角色。图2只作白石雕像、黑底光环、冷银材质的参考，不复制图2的雕像人物。') },
+    { id: 'h3-mystic', name: '玄黄奇境', renderer: 'model', eta: '25s', desc: '黄青版画、硬边剪影', previewBase: 'duotone', previewParams: {'ink': 'indigo'}, prompt: cloudSceneRefPrompt('2D丝网印刷/木刻版画海报，不是3D概念场景：把图1主体压缩成深青色硬边剪影，保留主体身份、数量、姿态、朝向和关键轮廓，不画真实毛发、皮肤或体积；深青、墨蓝、明黄、琥珀四色平涂；巨大黄色日轮或月轮占据上方，云层像木刻龙形卷云，背景加同心圆和细线装饰；纸纹、套色偏移、边缘颗粒、少量旧印刷磨损；强对比、几乎无渐变、无景深；图2只作黄青平涂、硬边剪影、木刻云纹和版画颗粒的参考，不复制其中的人物、龙、建筑、文字或构图；不要写实风景、照片、体积云、3D、景深、霓虹、UI或文字。') },
     { id: 'h3-observer', name: '旁观者视角', renderer: 'model', eta: '25s', desc: '宽景、背影、粉彩', previewBase: 'film', previewParams: {'strength': 0.7, 'grain': 0.12}, prompt: cloudSceneRefPrompt('宽景数字插画，旁观者视角：主体在前景或中景，以背影、侧背朝向镜头，成为观众代入的那个瞬间；远处是超现实粉彩地形、白色道路轨迹、小车辆、巨型粉彩云柱和明亮太阳，蓝天留出白色航迹；前景米色岩石、深灰巨石、低矮荒漠植物形成框架；大色块、清晰地平线、空气透视、电影感静止瞬间；保留主体身份、姿态和服装；不要正面肖像、普通风景或过度细节。') },
     { id: 'h3-west1960', name: '1960 西部动画', renderer: 'model', eta: '25s', desc: '正午硬光、手绘西部', previewBase: 'film', previewParams: {'strength': 0.85, 'grain': 0.3}, prompt: cloudSceneRefPrompt('1960西部电影×日系手绘数字动画：宽银幕中近景，主体在干旱灌木平原、木屋或马匹旁；正午硬光、深阴影、地面暖反光、踢起的尘土薄雾；低饱和青绿、赭黄、暗红，手绘动画线稿、纸纹与胶片颗粒；保留主体身份、姿态、服装轮廓与电影式构图；不要现代摄影、3D、海报字体或UI。') },
     { id: 'h3-blackgold', name: '暗金圣骑', renderer: 'model', eta: '25s', desc: '黑金甲胄、圣光', previewBase: 'riso', previewParams: {'ink': 'ink'}, prompt: cloudSceneRefPrompt('暗黑奇幻/巴洛克圣骑士壁纸：黑金高对比，主体重铸为黑钢与暗金ornate甲胄，披风、月牙或圣徽、细密金线、尖刺与层叠甲片；体积圣光与尘雾，深黑虚空，金属高光与磨损；保留主体身份、面部关键特征和姿态；像一张完成的角色海报，不要塑料3D、游戏UI、文字或水印。') },
@@ -2583,7 +2583,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.21.0',
+        version: '0.22.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3853,7 +3853,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.21.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.22.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');

@@ -33,8 +33,8 @@
 | `h3-infographic` | 信息图 | Instruction Following · infographic | 扁平矢量、清晰分区、细箭头/短标签、有限色板、可读 |
 | `h3-cad` | 工程蓝图 | Instruction Following · blueprint / CAD | 蓝底白线、正交三视图、尺寸线、剖面线、短标签 |
 | `h3-surreal` | 超现实时尚 | Surreal Worlds · surreal fashion | 实景大道具、鲜艳撞色、直闪、胶片颗粒、低角度广角 |
-| `h3-sacred` | 圣光暗童话 | 用户参考 · 诺皮克 NovaPix（神圣光影） | 炭黑/银灰/幽灵蓝、戏剧剪影、圣光尘雾、暗童话 |
-| `h3-mystic` | 玄黄奇境 | 用户参考 · 诺皮克 NovaPix（Sref 玄幻） | 深青/明黄/火橙、巨崖云涡、渺小旅人、新月 |
+| `h3-sacred` | 圣光暗童话 | 用户参考 · 诺皮克 NovaPix（神圣光影） | 白石/石膏雕塑、纯黑虚空、细光环、冷银单色、硬质雕刻 |
+| `h3-mystic` | 玄黄奇境 | 用户参考 · 诺皮克 NovaPix（Sref 玄幻） | 2D 丝网/木刻、黄青平涂、硬边剪影、巨日/龙形云、同心圆 |
 | `h3-observer` | 旁观者视角 | 用户参考 · 诺皮克 NovaPix（旁观者构图） | 宽景、背影、粉彩超现实地形、巨型云柱 |
 | `h3-west1960` | 1960 西部动画 | 用户参考 · 诺皮克 NovaPix（《蛮山野侠》） | 正午硬光、尘土、宽银幕、日系手绘动画 |
 | `h3-blackgold` | 暗金圣骑 | 用户参考 · 真（抖音） | 黑金甲胄、巴洛克金线、圣光虚空、角色海报 |
