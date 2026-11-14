@@ -375,7 +375,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .print{ position: relative; background: #fff; }
 .iw-root .print img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .iw-root .print .result{ z-index: 1; }
-.iw-root .print .base{ z-index: 2; }
+.iw-root .print .base{ z-index: 2; object-position: 50% 62%; }
 .iw-root .print .base{ clip-path: inset(0 calc(100% - var(--split, 50%)) 0 0); display: none; }
 .iw-root .print.compare .base{ display: block; }
 .iw-root .print.original-only .result{ display: none; }
@@ -2175,7 +2175,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.10.1',
+        version: '0.10.2',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3138,7 +3138,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.10.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.10.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
