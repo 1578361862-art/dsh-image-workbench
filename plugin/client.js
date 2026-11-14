@@ -552,6 +552,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .preview-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
 .iw-root .preview-foot .ghost-btn{ height: 24px; min-width: 28px; font-size: 15px; line-height: 1; }
 .iw-root .preview-foot .ghost-btn:disabled{ opacity: .3; cursor: default; }
+.iw-root .result-layer{ position: fixed; inset: 0; z-index: 79; display: none; }
+.iw-root .result-layer.open{ display: block; }
+.iw-root .result-layer .drawer-backdrop{ position: absolute; inset: 0; background: rgba(15,14,12,.82); }
+.iw-root .result-dialog{ position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: min(1380px, calc(100vw - 32px)); max-height: calc(100vh - 32px); display: flex; flex-direction: column; background: var(--p-paper-2); border: 1px solid var(--p-hair); box-shadow: 0 30px 100px rgba(0,0,0,.35); }
+.iw-root .result-head{ display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 16px 8px; border-bottom: 1px solid var(--p-hair); }
+.iw-root .result-head h2{ margin: 0; font-family: var(--p-serif); font-size: 20px; font-weight: 600; letter-spacing: var(--pk-ls-title); }
+.iw-root .result-head span{ display: block; margin-top: 2px; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .result-stage{ flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 10px; background: #1b1915; overflow: auto; }
+.iw-root .result-stage img{ display: block; max-width: 100%; max-height: calc(100vh - 190px); width: auto; height: auto; object-fit: contain; }
+.iw-root .result-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px 12px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .pcard-zoom{ position:absolute; top:4px; left:4px; z-index:2; width:34px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-ui); line-height:1; padding:0; }
+.iw-root .pcard-zoom:hover{ color:var(--p-signal); border-color:var(--p-signal); }
+.iw-root .pcard-zoom:focus-visible{ outline:2px solid var(--p-focus); outline-offset:1px; }
 .iw-root .drawer-layer{ position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .iw-root .drawer-backdrop{ position: absolute; inset: 0; background: var(--p-overlay); opacity: 0; transition: opacity .18s var(--p-ease); }
 .iw-root .drawer{
@@ -1147,6 +1160,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="ghost-btn" id="historyLoadMore" hidden>加载更多</button>
     </footer>
   </section>
+</div>
+
+<div class="result-layer" id="resultLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-result-close></div>
+  <figure class="result-dialog" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <header class="result-head">
+      <div><h2 id="resultTitle">结果</h2><span id="resultMeta"></span></div>
+      <button class="icon-btn" data-result-close aria-label="关闭大图"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="result-stage"><img id="resultBig" alt=""></div>
+    <footer class="result-foot">
+      <span id="resultInfo"></span>
+      <button class="ghost-btn" id="resultDownload">下载原图</button>
+    </footer>
+  </figure>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
@@ -2315,6 +2343,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       '<img src="' + r.url + '" alt="">' +
       '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>' + (r.cloud ? '云端' : '本机') + '</span></span>' +
       '</button>' +
+      '<button class="pcard-zoom" data-result-zoom="' + r.id + '" title="查看大图" aria-label="查看 ' + s.name + ' 大图">放大</button>' +
       '<button class="pcard-dl" data-download="' + r.id + '" title="下载这一版" aria-label="下载 ' + s.name + '">下载</button>' +
       '</div>';
   }
@@ -2384,7 +2413,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.14.0',
+        version: '0.14.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3237,8 +3266,45 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function (err) { toast(err.message || '检查 Key 失败'); });
   }
 
+  /* ————— 结果大图 ————— */
+  var resultReturnFocus = null;
+  var resultCurrentId = null;
+
+  function openResultBig(id) {
+    var r = null;
+    for (var i = 0; i < state.results.length; i++) if (state.results[i].id === id) r = state.results[i];
+    if (!r || r.error) return;
+    resultCurrentId = id;
+    resultReturnFocus = document.activeElement;
+    var layer = $('#resultLayer');
+    if (!layer) return;
+    var s = styleById(id) || { name: id };
+    $('#resultTitle').textContent = s.name;
+    $('#resultMeta').textContent = (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h;
+    $('#resultBig').src = r.url;
+    $('#resultBig').alt = s.name + ' 结果大图';
+    $('#resultInfo').textContent = '原图尺寸 · ' + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
+    layer.inert = false;
+    layer.classList.add('open');
+    layer.setAttribute('aria-hidden', 'false');
+    $('.result-head .icon-btn', layer).focus();
+  }
+
+  function closeResultBig() {
+    var layer = $('#resultLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.setAttribute('aria-hidden', 'true');
+    layer.inert = true;
+    $('#resultBig').removeAttribute('src');
+    if (resultReturnFocus && resultReturnFocus.isConnected) resultReturnFocus.focus();
+    resultReturnFocus = null;
+    resultCurrentId = null;
+  }
+
   /* ————— 示例放大 ————— */
   var previewReturnFocus = null;
+  var previewRenderToken = 0;
   var previewIds = [];
   var previewIndex = 0;
 
@@ -3264,8 +3330,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     };
     img.src = previewFullSrc(id);
     img.alt = s.name + ' 示例';
+    var inspiration = ['h3-sacred', 'h3-mystic', 'h3-observer', 'h3-west1960', 'h3-blackgold', 'h3-ramayana', 'h3-cosmic'].indexOf(id) >= 0;
     $('#previewTitle').textContent = s.name;
-    $('#previewMeta').textContent = (s.renderer === 'model' ? '官方示例' : '当前预览') + ' · ' + (previewIndex + 1) + ' / ' + previewIds.length;
+    $('#previewMeta').textContent = (inspiration ? '参考示例' : s.renderer === 'model' ? '官方示例' : '当前预览') + ' · ' + (previewIndex + 1) + ' / ' + previewIds.length;
+    if (s.renderer !== 'model') {
+      var token = ++previewRenderToken;
+      var w = 1600;
+      var h = Math.round(w * frameRatio());
+      renderStyleAsync(id, w, h).then(function (c) {
+        if (!c || token !== previewRenderToken || previewIds[previewIndex] !== id) return;
+        img.onerror = null;
+        img.src = c.toDataURL('image/jpeg', 0.92);
+      }).catch(function () {});
+    }
     $('#previewPrev').disabled = previewIndex <= 0;
     $('#previewNext').disabled = previewIndex >= previewIds.length - 1;
   }
@@ -3438,7 +3515,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.14.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.14.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3491,11 +3568,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#proofGrid').addEventListener('click', function (e) {
       var retry = e.target.closest('[data-retry]');
       if (retry) { retryCloud(retry.dataset.retry); return; }
+      var zoom = e.target.closest('[data-result-zoom]');
+      if (zoom) { openResultBig(zoom.dataset.resultZoom); return; }
       var dl = e.target.closest('[data-download]');
       if (dl) { downloadOne(dl.dataset.download); return; }
       var el = e.target.closest('[data-result]');
       if (el) showResult(el.dataset.result);
     });
+    $$('[data-result-close]').forEach(function (el) { el.addEventListener('click', closeResultBig); });
+    $('#resultDownload').addEventListener('click', function () { if (resultCurrentId) downloadOne(resultCurrentId); });
 
     $('#historyList').addEventListener('click', function (e) {
       var del = e.target.closest('[data-history-del]');
@@ -3791,6 +3872,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && $('#resultLayer')?.classList.contains('open')) { closeResultBig(); return; }
       if (e.key === 'Escape' && $('#historyLayer')?.classList.contains('open')) { closeHistoryModal(); return; }
       if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
       if (($('#previewLayer')?.classList.contains('open')) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
