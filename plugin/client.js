@@ -641,6 +641,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-preview img{ display:block; max-width:100%; max-height:calc(100vh - 250px); object-fit:contain; }
 .iw-root .refine-form{ display:flex; flex-direction:column; min-width:0; }
 .iw-root .refine-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .refine-form textarea:focus{ outline:none; border-color:var(--p-hair); box-shadow:none; }
 .iw-root .refine-form textarea{ width:100%; min-height:170px; margin-top:6px; padding:10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.6; resize:vertical; }
 .iw-root .refine-note{ margin:8px 0 0; font-size:10px; line-height:1.5; color:var(--p-ink-4); }
 .iw-root .refine-cost{ margin-top:auto; padding-top:12px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
@@ -2181,7 +2182,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function filteredStyles() {
     var q = state.query.trim().toLowerCase();
     return STYLES.filter(function (s) {
-      if (styleHidden(s.id)) return false;
+      if (s.hidden || styleHidden(s.id)) return false;
       if (state.filter === 'local' && s.renderer === 'model') return false;
       if (state.filter === 'cloud' && s.renderer !== 'model') return false;
       if (q && (s.name + s.desc).toLowerCase().indexOf(q) < 0) return false;
@@ -2703,7 +2704,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.26.0',
+        version: '0.27.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4050,7 +4051,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function openRefine() {
     if (!bigState || !bigState.url) return;
-    refine = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0, busy: false, result: null };
+    var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
+    closeResultBig();
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, busy: false, result: null };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
@@ -4363,7 +4366,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.26.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.27.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
