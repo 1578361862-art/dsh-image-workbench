@@ -1,6 +1,6 @@
 # dsh-image-workbench · P1–P5
 
-DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本机风格与工作流，P2 加模板文字、单版参数、原图导出、ZIP 打包与持久历史；P3 云端 H3 已验证；P4 增加 Agent 工具、批量矩阵、预设风格包导入、Context-IR 预览；P5 增加 90 天清理、云端失败重试、真实页面验收与 4K 价格提示。云端风格扩到 11 个，新增风格归纳自 MiniMax-H3-Image 官方 showcase，见 `docs/CLOUD-STYLES.md`。
+DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本机风格与工作流，P2 加模板文字、单版参数、原图导出、ZIP 打包与持久历史；P3 云端 H3 已验证；P4 增加 Agent 工具、批量矩阵、预设风格包导入、Context-IR 预览；P5 增加 90 天清理、云端失败重试、真实页面验收与 4K 价格提示。云端风格扩到 21 个，新增风格归纳自 MiniMax-H3-Image 官方 showcase，见 `docs/CLOUD-STYLES.md`。
 
 源码：`~/Code/dsh-image-workbench`（git）。安装：`plugin_manager install_bundle` 指向本目录；已安装时对 `include:image-workbench` 禁用再启用可重载 Host。
 
@@ -18,7 +18,7 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - P2：`POST /assets`、`GET /asset/:id`、`POST /batches`、`GET /history?limit=20`、`DELETE /batch/:id`、`GET /result/:batch/:style.jpg`、`POST /export`、`GET /storage`、`POST /cleanup`
 - P4：`GET/POST /styles`；P4.4：`POST /cloud/context-ir`
 - P3（保存 Key 后启用）：`POST /cloud/jobs`、`GET /cloud/jobs/:id`、`POST /cloud/jobs/:id/cancel`、`POST /cloud/key-test`（如实 501，不伪造）、`GET /usage`
-- 云端风格：`h3-illus / h3-silver / h3-oil / h3-impression / h3-manuscript / h3-dunhuang / h3-gongbi / h3-collage / h3-pixel / h3-film / h3-concept`；prompt 摘要见 `docs/CLOUD-STYLES.md`
+- 云端风格：`h3-illus / h3-silver / h3-oil / h3-impression / h3-manuscript / h3-dunhuang / h3-gongbi / h3-collage / h3-pixel / h3-film / h3-concept / h3-shadow / h3-eastern / h3-oldphone / h3-flashfilm / h3-dv / h3-sticker / h3-sheet / h3-infographic / h3-cad / h3-surreal`；prompt 摘要见 `docs/CLOUD-STYLES.md`
 - P5：`POST /cleanup`（90 天）、失败重试走客户端重发 cloud job
 
 ## 数据与隐私
