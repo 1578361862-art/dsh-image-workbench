@@ -289,6 +289,24 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   color: var(--p-ink-3); text-align: right; white-space: nowrap;
 }
 .iw-root .stamp b{ font-weight: 500; color: var(--p-ink-2); }
+.iw-root .view-tabs{ display:flex; align-items:center; gap:14px; margin-top:2px; border-bottom:1px solid var(--p-hair); }
+.iw-root .view-tabs button{ height:30px; padding:0 2px; border:0; border-bottom:2px solid transparent; background:none; font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-label); text-transform:uppercase; color:var(--p-ink-4); cursor:pointer; }
+.iw-root .view-tabs button.on{ color:var(--p-ink); border-bottom-color:var(--p-ink); }
+.iw-root .view-tabs button span{ margin-left:4px; color:var(--p-ink-4); }
+.iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
+.iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
+.iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
+.iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
+.iw-root .recent-head span{ display:block; margin-top:3px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+.iw-root .recent-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.iw-root .recent-card{ min-width:0; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper-2); text-align:left; cursor:pointer; }
+.iw-root .recent-card:hover{ border-color:var(--p-ink-3); }
+.iw-root .recent-card img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--p-sunken); }
+.iw-root .recent-card .rc-style{ display:block; margin-top:5px; font-family:var(--p-serif); font-size:13px; color:var(--p-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .recent-card .rc-meta{ display:block; margin-top:2px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .recent-empty{ grid-column:1 / -1; padding:42px 12px; text-align:center; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+@media (max-width:1100px){.iw-root .recent-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (max-width:760px){.iw-root .recent-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .iw-root .work{
   flex: 1 0 auto;
   display: grid; grid-template-columns: 228px minmax(0, 1fr) 224px;
@@ -905,6 +923,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </div>
   </header>
 
+  <nav class="wrap view-tabs" id="viewTabs" aria-label="页面切换">
+    <button data-view="studio" class="on">工作台</button>
+    <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
+  </nav>
+
   <main class="wrap work">
     <aside class="rail">
       <div class="seg" role="group" aria-label="按渲染位置筛选">
@@ -919,10 +942,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </label>
       <div class="sec-head"><h2>风格库</h2><span class="count" id="styleCount">08</span></div>
       <div class="styles" id="styleGrid"></div>
-      <div class="history" id="historyBox" hidden>
-        <div class="history-head"><b>最近</b><div class="history-head-right"><span class="count" id="historyCount">00</span><button class="history-more" id="historyMore" hidden>查看更多</button></div></div>
-        <div class="history-list" id="historyList"></div>
-      </div>
     </aside>
 
     <section class="stage-col">
@@ -1009,7 +1028,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <div class="prompt-actions">
             <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
           </div>
-          <p class="scope-hint">默认提示词在新增风格时一次性固化；生成时不再单独调用 Context-IR。</p>
         </div>
       </details>
 
@@ -1077,9 +1095,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </aside>
   </main>
 
-  <footer class="wrap foot">
-    <span>DSH · IMAGE STUDIO / P1–P5</span>
-  </footer>
+  <section class="wrap recent-page" id="recentPage" hidden>
+    <div class="recent-head">
+      <div><h2>最近生成</h2><span id="recentMeta"></span></div>
+      <button class="ghost-btn" id="recentRefresh">刷新</button>
+    </div>
+    <div class="recent-grid" id="recentGrid"></div>
+  </section>
 </div>
 
 <div class="matrix-layer" id="matrixLayer" aria-hidden="true" inert>
@@ -1200,21 +1222,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="ghost-btn" id="previewNext" aria-label="下一个示例">›</button>
     </footer>
   </figure>
-</div>
-
-<div class="history-layer" id="historyLayer" aria-hidden="true" inert>
-  <div class="drawer-backdrop" data-history-close></div>
-  <section class="history-dialog" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
-    <header class="history-dialog-head">
-      <div><h2 id="historyTitle">历史记录</h2><span id="historyModalCount"></span></div>
-      <button class="icon-btn" data-history-close aria-label="关闭历史记录"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
-    </header>
-    <div class="history-grid" id="historyModalList"></div>
-    <footer class="history-dialog-foot">
-      <span>最近默认显示 3 条，这里可查看全部</span>
-      <button class="ghost-btn" id="historyLoadMore" hidden>加载更多</button>
-    </footer>
-  </section>
 </div>
 
 <div class="crop-layer" id="cropLayer" aria-hidden="true" inert>
@@ -1346,6 +1353,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var hostHistoryReady = false;
   var historyTotal = 0;
   var historyReturnFocus = null;
+  var recentLoaded = false;
+  var recentLoading = false;
   var historyLoadingMore = false;
 
   var CLOUD_EDIT_HEAD = '图1是唯一参考图与构图来源。先读图1：锁定主体数量、身份、姿态、朝向、手部动作、服装轮廓、关键配饰、前中后景关系、镜头高度、裁切范围，以及原文字的位置与排版。成图逐项保持这些关系；不新增、删除或替换主体，不改变动作、视线与空间关系。只改变画种、介质、光线、色彩、边缘与表面质感。最终必须像一张真正完成的完整作品，而不是原图加滤镜。';
@@ -2160,7 +2169,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function renderChips() {
     if (!state.selected.length) {
-      $('#chips').innerHTML = '<div class="chips-empty">还没有选风格，先从左边的风格库挑一个。</div>';
+      $('#chips').innerHTML = '<div class="chips-empty">未选择风格</div>';
       return;
     }
     $('#chips').innerHTML = state.selected.map(function (id) {
@@ -2484,7 +2493,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!state.results.length) {
       grid.innerHTML = state.selected.length
         ? '<div class="proof-empty">点「生成 ' + state.selected.length + ' 版」，试印会出现在这里。</div>'
-        : '<div class="proof-empty">还没有选风格，先从左边风格库挑一个。</div>';
+        : '<div class="proof-empty">未选择风格</div>';
       return;
     }
     grid.innerHTML = state.results.map(proofCard).join('');
@@ -2644,7 +2653,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.24.0',
+        version: '0.25.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3110,6 +3119,97 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function () { renderHistory(); });
   }
 
+  function recentItems() {
+    var items = [];
+    currentHistory().forEach(function (entry) {
+      (entry.results || []).forEach(function (r) { items.push({ entry: entry, result: r }); });
+    });
+    return items;
+  }
+
+  function renderRecentPage() {
+    var grid = $('#recentGrid');
+    if (!grid) return;
+    var items = recentItems();
+    $('#recentTabCount').textContent = String(items.length);
+    $('#recentMeta').textContent = recentLoading ? '载入中…' : (items.length ? items.length + ' 张 · ' + currentHistory().length + ' 次生成' : '');
+    if (!items.length) {
+      grid.innerHTML = '<div class="recent-empty">' + (recentLoading ? '载入中…' : '还没有生成记录') + '</div>';
+      return;
+    }
+    grid.innerHTML = items.map(function (item, i) {
+      var r = item.result;
+      var s = styleById(r.id) || { name: r.id || '生成图片' };
+      return '<button class="recent-card" data-recent="' + i + '">'
+        + '<img loading="lazy" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
+        + '<span class="rc-style">' + escapeHTML(s.name) + '</span>'
+        + '<span class="rc-meta">' + escapeHTML(dateTimeLabel(item.entry.at)) + ' · ' + r.w + ' × ' + r.h + (r.cloud ? ' · 云端' : ' · 本机') + '</span>'
+        + '</button>';
+    }).join('');
+  }
+
+  function loadAllHistory(force) {
+    if (recentLoading) return Promise.resolve();
+    if (recentLoaded && !force) { renderRecentPage(); return Promise.resolve(); }
+    recentLoading = true;
+    renderRecentPage();
+    var all = [];
+    var total = 0;
+    function page(offset) {
+      return apiFetch('/history?limit=100&offset=' + offset, { cache: 'no-store' }).then(function (res) {
+        return res.ok ? res.json() : null;
+      }).then(function (data) {
+        if (!data || !Array.isArray(data.entries)) throw new Error('历史加载失败');
+        total = Number.isFinite(Number(data.total)) ? Number(data.total) : data.entries.length;
+        all = all.concat(data.entries.map(fromHost));
+        if (data.entries.length && all.length < total) return page(all.length);
+      });
+    }
+    return page(0).then(function () {
+      hostHistory = all;
+      historyTotal = total;
+      hostHistoryReady = true;
+      recentLoaded = true;
+    }).catch(function () {
+      recentLoaded = true;
+      if (!all.length) toast('历史加载失败');
+    }).then(function () {
+      recentLoading = false;
+      renderRecentPage();
+    });
+  }
+
+  function openRecentImage(index) {
+    var item = recentItems()[index];
+    if (!item) return;
+    var r = item.result;
+    var s = styleById(r.id) || { name: r.id || '生成图片' };
+    openBig({
+      key: resultKey(r),
+      url: r.url,
+      title: s.name,
+      meta: dateTimeLabel(item.entry.at) + ' · ' + (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h,
+      info: '历史生成 · ' + r.w + ' × ' + r.h,
+      w: r.w,
+      h: r.h,
+      border: 'none',
+      resultId: null,
+      styleId: r.id,
+      cloud: !!r.cloud,
+    });
+  }
+
+  function switchView(view) {
+    var recent = view === 'recent';
+    $('.work').hidden = recent;
+    $('#recentPage').hidden = !recent;
+    $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
+    if (recent) {
+      renderRecentPage();
+      if (!recentLoaded) loadAllHistory();
+    }
+  }
+
   function currentHistory() {
     return hostHistoryReady ? hostHistory : readHistory();
   }
@@ -3154,6 +3254,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var list = readHistory();
     list.unshift(entry);
     writeHistory(list.slice(0, 3));
+    recentLoaded = false;
     renderHistory();
     if (state.assetId && !state.results.some(function (r) { return r.cloud; })) {
       apiFetch('/batches', {
@@ -4065,7 +4166,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.24.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.25.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4160,24 +4261,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (open) openFavorite(Number(open.dataset.favoriteOpen));
     });
 
-    $('#historyList').addEventListener('click', function (e) {
-      var del = e.target.closest('[data-history-del]');
-      if (del) { deleteHistory(Number(del.dataset.historyDel)); return; }
-      var el = e.target.closest('[data-history]');
-      if (el) restoreHistory(Number(el.dataset.history));
+    $('#viewTabs').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-view]');
+      if (b) switchView(b.dataset.view);
     });
-    $('#historyMore').addEventListener('click', openHistoryModal);
-    $$('[data-history-close]').forEach(function (el) { el.addEventListener('click', closeHistoryModal); });
-    $('#historyLoadMore').addEventListener('click', loadMoreHistory);
-    $('#historyModalList').addEventListener('click', function (e) {
-      var del = e.target.closest('[data-history-delete]');
-      if (del) { deleteHistory(Number(del.dataset.historyDelete)); return; }
-      var el = e.target.closest('[data-history-restore]');
-      if (el) {
-        var index = Number(el.dataset.historyRestore);
-        closeHistoryModal();
-        restoreHistory(index);
-      }
+    $('#recentRefresh').addEventListener('click', function () { loadAllHistory(true); });
+    $('#recentGrid').addEventListener('click', function (e) {
+      var card = e.target.closest('[data-recent]');
+      if (card) openRecentImage(Number(card.dataset.recent));
     });
 
     $$('#sizeGroup button').forEach(function (el) {
@@ -4422,8 +4513,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           hostHistoryReady = true;
           historyTotal = 0;
           try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
-          renderHistory();
-          renderHistoryModal();
+          recentLoaded = false;
+          renderRecentPage();
           toast('历史已清空');
         });
       }).catch(function (err) { toast(err.message || '清空失败'); });
@@ -4439,8 +4530,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           hostHistory = [];
           historyTotal = 0;
           try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
-          renderHistory();
-          loadHostHistory();
+          recentLoaded = false;
+          loadAllHistory(true);
           loadUsage();
           toast('已清理 ' + (data.batches || 0) + ' 批 · ' + (data.assets || 0) + ' 原图');
         });
@@ -4472,7 +4563,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (e.key === 'Escape' && $('#favoritesLayer')?.classList.contains('open')) { closeFavorites(); return; }
       if (e.key === 'Escape' && $('#cropLayer')?.classList.contains('open')) { closeCrop(); return; }
       if (e.key === 'Escape' && $('#resultLayer')?.classList.contains('open')) { closeResultBig(); return; }
-      if (e.key === 'Escape' && $('#historyLayer')?.classList.contains('open')) { closeHistoryModal(); return; }
       if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
       if (($('#previewLayer')?.classList.contains('open')) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault(); moveStylePreview(e.key === 'ArrowLeft' ? -1 : 1); return;
@@ -4538,7 +4628,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     renderHistory();
     loadSettings();
     loadStyles();
-    loadHostHistory();
+    loadAllHistory();
     loadSampleThumbs();
     applyFrame();
     if (typeof ResizeObserver === 'function') {
