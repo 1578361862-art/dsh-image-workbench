@@ -457,37 +457,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .chip .x:hover{ color: var(--p-signal); }
 .iw-root .chips-empty{ padding: 10px 0; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-4); }
-.iw-root .ins-tools{ display: flex; align-items: center; gap: 6px; }
-.iw-root .ins-add{ height: 22px; padding: 0 7px; border: 1px solid var(--p-hair); background: transparent; font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-mono); color: var(--p-ink-3); }
-.iw-root .ins-add:hover{ color: var(--p-ink); background: var(--p-sunken); }
-.iw-root .ins-group{ margin-top: 8px; border-top: 1px solid var(--p-hair); padding-top: 4px; }
-.iw-root .ins-group>summary{ list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 6px; padding-bottom: 2px; }
+.iw-root .ins-group{ margin-top: 10px; border: 1px solid var(--p-hair); background: var(--p-paper-2); }
+.iw-root .ins-group>summary{ list-style: none; cursor: pointer; display: flex; align-items: center; gap: 7px; padding: 8px; background: var(--p-sunken); color: var(--p-ink-2); }
 .iw-root .ins-group>summary::-webkit-details-marker{ display: none; }
-.iw-root .ins-group>summary::before{ content: "+"; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-4); }
-.iw-root .ins-group[open]>summary::before{ content: "−"; }
-.iw-root .ins-group>summary span:first-of-type{ font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label); text-transform: uppercase; color: var(--p-ink-3); }
-.iw-root .ins-group-hint{ margin-left: auto; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-4); }
-.iw-root .style-menu-layer{ position: fixed; inset: 0; z-index: 45; display: none; }
-.iw-root .style-menu-layer.open{ display: block; }
-.iw-root .style-menu-backdrop{ position: absolute; inset: 0; background: rgba(27,24,19,.12); }
-.iw-root .style-menu{ position: fixed; width: 420px; max-width: calc(100vw - 24px); max-height: min(70vh, 560px); display: flex; flex-direction: column; background: var(--p-paper-2); border: 1px solid var(--p-hair); box-shadow: 0 24px 70px rgba(0,0,0,.2); }
-.iw-root .style-menu-head{ display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--p-hair); }
-.iw-root .style-menu-head b{ font-family: var(--p-serif); font-size: 16px; font-weight: 600; }
-.iw-root .style-menu-body{ display: flex; min-height: 0; flex: 1; }
-.iw-root .style-menu-cats{ width: 106px; flex: none; overflow: auto; padding: 4px; border-right: 1px solid var(--p-hair); }
-.iw-root .style-menu-cat{ display: block; width: 100%; padding: 6px 7px; border: 0; background: transparent; text-align: left; font-family: var(--p-mono); font-size: 10px; line-height: 1.3; color: var(--p-ink-3); }
-.iw-root .style-menu-cat:hover{ color: var(--p-ink); background: var(--p-sunken); }
-.iw-root .style-menu-cat.on{ color: var(--p-ink); background: var(--p-signal-plate); }
-.iw-root .style-menu-list{ flex: 1; min-width: 0; overflow: auto; padding: 4px; }
-.iw-root .style-menu-item{ display: flex; align-items: center; gap: 7px; width: 100%; padding: 4px; border: 0; background: transparent; text-align: left; color: var(--p-ink-2); }
-.iw-root .style-menu-item:hover{ background: var(--p-sunken); }
-.iw-root .style-menu-item img{ width: 32px; height: 24px; object-fit: cover; flex: none; border: 1px solid var(--p-hair); background: var(--p-sunken); }
-.iw-root .style-menu-item .nm{ min-width: 0; flex: 1; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.iw-root .style-menu-item .tag{ font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); flex: none; }
-.iw-root .style-menu-item .ok{ width: 14px; flex: none; font-family: var(--p-mono); font-size: 11px; color: var(--p-signal); text-align: center; }
-.iw-root .style-menu-item.on{ background: var(--p-signal-plate); }
-.iw-root .style-menu-foot{ display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-4); }
-@media (max-width: 760px){.iw-root .style-menu{width: calc(100vw - 24px); max-height: 72vh;}}
+.iw-root .ins-group>summary::before{ content: "▸"; font-size: 10px; color: var(--p-ink-3); }
+.iw-root .ins-group[open]>summary::before{ content: "▾"; }
+.iw-root .ins-group>summary span:first-of-type{ font-family: var(--p-mono); font-size: 11px; font-weight: 500; letter-spacing: var(--pk-ls-label); color: var(--p-ink-2); }
+.iw-root .ins-group-hint{ margin-left: auto; font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); }
+.iw-root .ins-group>summary:hover{ background: var(--p-signal-plate); }
+.iw-root .ins-group[open]>summary{ border-bottom: 1px solid var(--p-hair); }
+.iw-root .ins-group[open]{ padding-bottom: 8px; }
+.iw-root .ins-group > .scope-row, .iw-root .ins-group > .scope-hint, .iw-root .ins-group > .field, .iw-root .ins-group > .note-link{ margin-left: 8px; margin-right: 8px; }
 .iw-root .field{ margin-top: 8px; }
 .iw-root .field .lab{
   display: flex; justify-content: space-between; align-items: baseline;
@@ -773,7 +753,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
 .iw-root .p3-field .mini-seg,.iw-root .p3-field .num{pointer-events:none}
 @media (min-width: 1021px) {
-.iw-root .inspector{max-height:calc(100vh - 150px);overflow:hidden;padding-bottom:8px}
+.iw-root .inspector{height:calc(100vh - 150px); max-height:calc(100vh - 150px);overflow:hidden;padding-bottom:8px}
 .iw-root .ins-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:0}
 .iw-root .inspector .go{flex:none;margin-top:8px}
 }
@@ -907,7 +887,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
     <aside class="inspector">
       <div class="ins-scroll">
-      <div class="ins-head"><h2>已选风格</h2><div class="ins-tools"><span class="count" id="selCount">3 版</span><button class="ins-add" id="addStyleBtn" aria-haspopup="dialog" aria-expanded="false">＋ 添加</button></div></div>
+      <div class="ins-head"><h2>已选风格</h2><span class="count" id="selCount">3 版</span></div>
       <div class="chips" id="chips"></div>
       <details class="ins-group" open>
         <summary><span>调整</span><span class="ins-group-hint">强度 · 油墨 · 颗粒</span></summary>
@@ -991,21 +971,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <footer class="wrap foot">
     <span>DSH · IMAGE STUDIO / P1–P5</span>
   </footer>
-</div>
-
-<div class="style-menu-layer" id="styleMenuLayer" hidden>
-  <div class="style-menu-backdrop" data-style-menu-close></div>
-  <section class="style-menu" role="dialog" aria-modal="true" aria-label="添加风格">
-    <header class="style-menu-head">
-      <b>添加风格</b>
-      <button class="icon-btn" data-style-menu-close aria-label="关闭添加风格"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
-    </header>
-    <div class="style-menu-body">
-      <div class="style-menu-cats" id="styleMenuCats"></div>
-      <div class="style-menu-list" id="styleMenuList"></div>
-    </div>
-    <footer class="style-menu-foot"><span id="styleMenuHint"></span><button class="ghost-btn" id="styleMenuDone">完成</button></footer>
-  </section>
 </div>
 
 <div class="matrix-layer" id="matrixLayer" aria-hidden="true" inert>
@@ -1852,83 +1817,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
-  /* ————— 分类添加菜单 ————— */
-  var STYLE_GROUPS = [
-    { id: 'print', name: '本机印刷', ids: ['halftone', 'duotone', 'riso', 'cyanotype', 'film', 'poster'] },
-    { id: 'cloud-illus', name: '云端插画', ids: ['h3-illus', 'h3-silver'] },
-    { id: 'cloud-art', name: '云端绘画', ids: ['h3-oil', 'h3-impression', 'h3-manuscript', 'h3-dunhuang', 'h3-gongbi', 'h3-eastern', 'h3-shadow'] },
-    { id: 'cloud-photo', name: '云端摄影', ids: ['h3-film', 'h3-oldphone', 'h3-flashfilm', 'h3-dv'] },
-    { id: 'cloud-graphic', name: '云端平面', ids: ['h3-collage', 'h3-pixel', 'h3-sticker', 'h3-surreal'] },
-    { id: 'cloud-scene', name: '云端场景', ids: ['h3-concept'] },
-    { id: 'cloud-build', name: '游戏与工程', ids: ['h3-sheet', 'h3-infographic', 'h3-cad'] },
-  ];
-  var styleMenuGroup = 'print';
-  var styleMenuReturnFocus = null;
-
-  function menuGroups() {
-    var groups = STYLE_GROUPS.map(function (g) { return { id: g.id, name: g.name, ids: g.ids.slice() }; });
-    var assigned = {};
-    groups.forEach(function (g) { g.ids.forEach(function (id) { assigned[id] = true; }); });
-    var presetIds = STYLES.filter(function (s) { return s.renderer === 'preset'; }).map(function (s) { return s.id; });
-    if (presetIds.length) groups.push({ id: 'packs', name: '预设包', ids: presetIds });
-    presetIds.forEach(function (id) { assigned[id] = true; });
-    var other = STYLES.filter(function (s) { return !assigned[s.id]; }).map(function (s) { return s.id; });
-    if (other.length) groups.push({ id: 'other', name: '其他', ids: other });
-    return groups.map(function (g) {
-      return { id: g.id, name: g.name, styles: g.ids.map(styleById).filter(Boolean) };
-    }).filter(function (g) { return g.styles.length; });
-  }
-
-  function renderStyleMenu() {
-    var groups = menuGroups();
-    if (!groups.length) return;
-    if (!groups.some(function (g) { return g.id === styleMenuGroup; })) styleMenuGroup = groups[0].id;
-    var active = groups.filter(function (g) { return g.id === styleMenuGroup; })[0] || groups[0];
-    $('#styleMenuCats').innerHTML = groups.map(function (g) {
-      return '<button class="style-menu-cat' + (g.id === active.id ? ' on' : '') + '" data-style-cat="' + g.id + '">' + escapeHTML(g.name) + '</button>';
-    }).join('');
-    $('#styleMenuList').innerHTML = active.styles.map(function (s) {
-      var on = state.selected.indexOf(s.id) >= 0;
-      var tag = s.renderer === 'model' ? '云端' : s.renderer === 'preset' ? '预设' : s.renderer === 'html' ? '模板' : '本机';
-      return '<button class="style-menu-item' + (on ? ' on' : '') + '" data-menu-style="' + s.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
-        '<img src="' + (state.thumbs[s.id] || s.preview || '') + '" alt="">' +
-        '<span class="nm">' + escapeHTML(s.name) + '</span><span class="tag">' + tag + '</span><span class="ok">' + (on ? '✓' : '') + '</span>' +
-        '</button>';
-    }).join('');
-    $('#styleMenuHint').textContent = '已选 ' + state.selected.length + ' 版 · 本类 ' + active.styles.length + ' 个';
-  }
-
-  function openStyleMenu() {
-    var layer = $('#styleMenuLayer');
-    if (!layer) return;
-    var btn = $('#addStyleBtn');
-    styleMenuReturnFocus = document.activeElement;
-    layer.hidden = false;
-    layer.classList.add('open');
-    if (btn) btn.setAttribute('aria-expanded', 'true');
-    var menu = $('.style-menu', layer);
-    if (menu && btn) {
-      var rect = btn.getBoundingClientRect();
-      var maxH = Math.min(560, window.innerHeight * 0.7);
-      var top = Math.min(rect.bottom + 6, window.innerHeight - maxH - 12);
-      menu.style.top = Math.max(12, top) + 'px';
-      menu.style.right = Math.max(12, window.innerWidth - rect.right) + 'px';
-    }
-    renderStyleMenu();
-    var first = $('#styleMenuCats .style-menu-cat');
-    if (first) first.focus();
-  }
-
-  function closeStyleMenu() {
-    var layer = $('#styleMenuLayer');
-    if (!layer) return;
-    layer.classList.remove('open');
-    layer.hidden = true;
-    $('#addStyleBtn')?.setAttribute('aria-expanded', 'false');
-    if (styleMenuReturnFocus && styleMenuReturnFocus.isConnected) styleMenuReturnFocus.focus();
-    styleMenuReturnFocus = null;
-  }
-
   /* ————— 界面 ————— */
   function renderGrid() {
     var list = filteredStyles();
@@ -2287,7 +2175,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.10.0',
+        version: '0.10.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3250,7 +3138,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.10.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.10.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3295,25 +3183,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $$('[data-preview-close]').forEach(function (el) { el.addEventListener('click', closeStylePreview); });
     $('#previewPrev').addEventListener('click', function () { moveStylePreview(-1); });
     $('#previewNext').addEventListener('click', function () { moveStylePreview(1); });
-    $('#addStyleBtn').addEventListener('click', openStyleMenu);
-    $$('[data-style-menu-close]').forEach(function (el) { el.addEventListener('click', closeStyleMenu); });
-    $('#styleMenuDone').addEventListener('click', closeStyleMenu);
-    $('#styleMenuCats').addEventListener('click', function (e) {
-      var el = e.target.closest('[data-style-cat]');
-      if (!el) return;
-      styleMenuGroup = el.dataset.styleCat;
-      renderStyleMenu();
-    });
-    $('#styleMenuList').addEventListener('click', function (e) {
-      var el = e.target.closest('[data-menu-style]');
-      if (!el) return;
-      var id = el.dataset.menuStyle;
-      var s = styleById(id);
-      if (!s) return;
-      if (s.renderer === 'model' && !cloudReady()) { closeStyleMenu(); openSettings(); return; }
-      toggleStyle(id);
-      renderStyleMenu();
-    });
     $('#chips').addEventListener('click', function (e) {
       var el = e.target.closest('[data-remove]');
       if (el) removeStyle(el.dataset.remove);
@@ -3589,7 +3458,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
-      if (e.key === 'Escape' && $('#styleMenuLayer')?.classList.contains('open')) { closeStyleMenu(); return; }
       if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
       if (($('#previewLayer')?.classList.contains('open')) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault(); moveStylePreview(e.key === 'ArrowLeft' ? -1 : 1); return;
