@@ -1195,6 +1195,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var historyReturnFocus = null;
   var historyLoadingMore = false;
 
+  var CLOUD_EDIT_HEAD = '图1是唯一参考图与构图来源。先读图1：锁定主体数量、身份、姿态、朝向、手部动作、服装轮廓、关键配饰、前中后景关系、镜头高度、裁切范围，以及原文字的位置与排版。成图逐项保持这些关系；不新增、删除或替换主体，不改变动作、视线与空间关系。只改变画种、介质、光线、色彩、边缘与表面质感。最终必须像一张真正完成的完整作品，而不是原图加滤镜。';
+  var CLOUD_EDIT_TAIL = '保留原图文字的位置和图形轮廓，不生成新的可读句子；全尺寸下仍能看到材质的真实细节；不要水印、签名、UI、网页边框、平滑数字渐变或塑料感。';
+  var CLOUD_LAYOUT_HEAD = '图1是唯一设计参考与主体来源。先读图1：锁定主体数量、身份、标志性轮廓、姿态、服装或结构、关键配饰、比例与主要部件关系。成图保持主体设计和身份一致，但允许按该风格重新组织版面与视图；不新增、删除或替换主体，不改变核心结构。只改变呈现方式、介质、光线、色彩与标注体系。最终必须像一张正式完成的设计图、图解或图纸，而不是原图加滤镜。';
+  var CLOUD_LAYOUT_TAIL = '标签只描述图中可见的结构与特征，用简短、可读、不重叠的文字；不编造数据、来源或结论；不要水印、签名、UI、网页边框或无关长文。';
+  function cloudPrompt(body, layout) {
+    return (layout ? CLOUD_LAYOUT_HEAD : CLOUD_EDIT_HEAD) + body + (layout ? CLOUD_LAYOUT_TAIL : CLOUD_EDIT_TAIL);
+  }
+
   var STYLES = [
     { id: 'halftone', name: '半调网点', renderer: 'canvas', eta: '0.2s', desc: '报纸印刷的网点，适合黑白海报' },
     { id: 'duotone', name: '双色限墨', renderer: 'canvas', eta: '0.2s', desc: '两种油墨叠印，控制纸与墨的比例' },
@@ -1202,27 +1210,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'cyanotype', name: '蓝染 / 氰版', renderer: 'canvas', eta: '0.3s', desc: '普鲁士蓝单色，晒版与手工冲印的质感' },
     { id: 'film', name: '胶片褪色', renderer: 'canvas', eta: '0.2s', desc: '提黑、褪色、轻颗粒，像旧底片' },
     { id: 'poster', name: '印刷海报', renderer: 'html', eta: '2.4s', desc: '模板排版：图 + 标题 + 版式，一键出海报' },
-    { id: 'h3-illus', name: 'H3 插画化', renderer: 'model', eta: '25s', desc: '暖色插画、细颗粒', prompt: '图1是唯一参考图。转为暖色 H3 插画：保留主体身份、姿态、构图、文字和背景关系；只改变材质、光线、色彩与笔触；暖色、细颗粒、轻微光晕，不改变内容。' },
-    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '黑白银盐、柔高光', prompt: '图1是唯一参考图。转为黑白银盐写真：保留主体身份、姿态、构图、文字和背景关系；深黑、银灰、柔和高光，细颗粒与银盐层次；不改变内容。' },
-    { id: 'h3-oil', name: '古典油画', renderer: 'model', eta: '25s', desc: '明暗对照、厚涂画布', previewBase: 'film', previewParams: { strength: 0.92, grain: 0.22 }, prompt: '图1是唯一参考图与构图来源。转为17世纪欧洲古典油画：深色橄榄绿/琥珀棕背景，伦勃朗/卡拉瓦乔式明暗对照，单侧暖光从左上照亮面部与手势；可见厚涂高光、薄罩染、亚麻画布纹理、陈年清漆暖金与细裂纹。保留主体身份、姿态、牵手/举手、衣着轮廓、海边设施和布局；暗部保留层次，不整体压黑；不要摄影、CG、文字或水印。' },
-    { id: 'h3-impression', name: '印象派', renderer: 'model', eta: '25s', desc: '短笔触、晨雾海光', previewBase: 'film', previewParams: { strength: 0.58, grain: 0.1 }, prompt: '图1是唯一参考图。转为法国印象派油画：湿画法、清晰可见的猪鬃短笔触、纯色并置、晨雾与海面反光，形体在光中溶解但主体轮廓可辨；高调粉紫/灰蓝/暖金，阴影不用黑色。保留主体身份、姿态、构图、文字与海边设施；不要数字模糊、水墨或工笔。' },
-    { id: 'h3-manuscript', name: '金箔手抄本', renderer: 'model', eta: '25s', desc: '蛋彩、金箔、卷草边框', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: '图1是唯一参考图。转为中世纪泥金手抄本：平涂蛋彩、深墨线、平透视、羊皮纸底、朱红/群青/金箔、卷草纹边框与磨损金箔；主体和设施变成手抄本插画，但保留身份、姿态、构图和文字位置；金饰不遮挡主体与文字，不要写实照片。' },
-    { id: 'h3-dunhuang', name: '敦煌壁画', renderer: 'model', eta: '25s', desc: '矿物颜料、土壁颗粒', previewBase: 'duotone', previewParams: { ink: 'ink' }, prompt: '图1是唯一参考图。转为唐代敦煌土壁壁画：朱砂、石青、石绿、赭石等矿物颜料，土壁颗粒与局部剥落，细线人物、飘带与卷云纹，平涂加局部晕染；保留主体身份、姿态、构图和设施关系；不要电影光、金属反射或3D。' },
-    { id: 'h3-gongbi', name: '工笔重彩', renderer: 'model', eta: '25s', desc: '绢本细线、矿物罩染', previewBase: 'cyanotype', previewParams: { strength: 0.8, grain: 0.16 }, prompt: '图1是唯一参考图。转为中国工笔重彩绢本：细密线描、矿物色分层罩染、绢丝纹理与留白，人物衣纹和发丝用细线；保留身份、姿态、构图、文字位置；不要写意、油画笔触或照片质感。' },
-    { id: 'h3-collage', name: '剪纸拼贴', renderer: 'model', eta: '25s', desc: '色纸刀口、错位剪影', previewBase: 'riso', previewParams: { ink: 'indigo' }, prompt: '图1是唯一参考图。转为手工剪纸与旧杂志拼贴：分层色纸、清晰刀口与纸边、错位剪影、撕裂纸边、半调网点与印刷颗粒；钴蓝/米白/橙红/银灰有限色板，保留主体轮廓、姿态、构图和文字。' },
-    { id: 'h3-pixel', name: '像素海报', renderer: 'model', eta: '25s', desc: '像素格、有限调色板', previewBase: 'halftone', prompt: '图1是唯一参考图。转为复古像素海报：硬边像素格、混合像素尺度、有限调色板、有序抖动、单色小字纹理、套色偏移与低分辨率屏幕质感；保留主体身份、姿态、构图和文字可读性，不要平滑渐变或3D卡通。' },
-    { id: 'h3-film', name: '电影胶片', renderer: 'model', eta: '25s', desc: '35mm、自然光、颗粒', previewBase: 'film', previewParams: { strength: 0.98, grain: 0.18 }, prompt: '图1是唯一参考图。转为35mm电影胶片/纪实照片：自然光、浅景深、真实肤色、细颗粒、轻微 halation 与柔和高光；中低对比、克制色彩；保留主体身份、姿态、构图、文字和现场关系；不要插画、绘画或重度美颜。' },
-    { id: 'h3-concept', name: '概念场景', renderer: 'model', eta: '25s', desc: 'AAA matte painting', previewBase: 'film', previewParams: { strength: 0.72, grain: 0.16 }, prompt: '图1是唯一参考图。转为AAA游戏/电影概念场景 matte painting：前景清晰、中景有结构、远景大气透视；层次光、手绘笔触与照片纹理结合；保留主体轮廓、姿态、主要构图和设施；不要UI、字幕、水印或3D塑料感。' },
-    { id: 'h3-shadow', name: '皮影戏', renderer: 'model', eta: '25s', desc: '油灯布幕、皮革关节偶', previewBase: 'riso', previewParams: { ink: 'ink' }, prompt: '图1是唯一参考图。转为传统中国皮影戏：油灯从背后照亮米色布幕，主体变成半透明皮革关节偶，镂空纹样、细竹签控制杆、手影与红木框；保留主体身份、姿态、构图和设施，做成平面影戏，不要3D或写实照片。' },
-    { id: 'h3-eastern', name: '东方幻想线稿', renderer: 'model', eta: '25s', desc: '细线、朱砂金箔、云火纹', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: '图1是唯一参考图。转为东方幻想动画/工笔重彩线稿：细长流畅的线、朱砂/金箔/墨绿/赭石平面色块、云火纹与飘带，装饰性平面构图；保留主体身份、姿态、构图和文字位置；不要写实照片或厚涂油画。' },
-    { id: 'h3-oldphone', name: '旧手机快照', renderer: 'model', eta: '25s', desc: 'iPhone 7 直出、轻噪点', previewBase: 'film', previewParams: { strength: 0.9, grain: 0.26 }, prompt: '图1是唯一参考图。转为2017年 iPhone 7 后置直出照片：28mm、无美颜/滤镜、自然偏暖、中等饱和、动态范围有限、随手拍轻微倾斜、深景深；保留主体、姿态、构图和现场；不要电影感、HDR或专业摄影。' },
-    { id: 'h3-flashfilm', name: '闪光胶片', renderer: 'model', eta: '25s', desc: '直打硬闪、复古胶片', previewBase: 'film', previewParams: { strength: 0.96, grain: 0.3 }, prompt: '图1是唯一参考图。转为复古直打闪光 35mm 胶片时尚人像：正面硬闪、面部高光、背景压暗、细颗粒、轻微褪色、真实皮肤；保留主体身份、姿态、构图和文字；不要柔光棚拍或重度磨皮。' },
-    { id: 'h3-dv', name: 'DV 家庭录像', renderer: 'model', eta: '25s', desc: '2001 MiniDV、CCD 低清', previewBase: 'film', previewParams: { strength: 0.84, grain: 0.4 }, prompt: '图1是唯一参考图。转为2001年 MiniDV 家庭录像抽帧：4:3、CCD 低清、阴影彩色噪点、压缩块、自动白平衡偏色、高光溢出、手持轻微倾斜；保留主体、姿态、构图和现场；不要电影调色、胶片颗粒滤镜或高清锐化。' },
-    { id: 'h3-sticker', name: '贴纸残胶海报', renderer: 'model', eta: '25s', desc: '金属门、胶带、纸屑字形', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: '图1是唯一参考图。转为实验字体/贴纸残胶海报：磨损冷灰金属门、透明胶带、乳白撕纸、荧光橙标签、卷曲银膜，字形由材料真实边缘构成；保留主体作为照片碎片和识别特征，留白与手工拼贴质感，不要标准字体填充。' },
-    { id: 'h3-sheet', name: '游戏角色设定', renderer: 'model', eta: '25s', desc: '三视图、写实材质', previewBase: 'film', previewParams: { strength: 0.9, grain: 0.16 }, prompt: '图1是唯一参考图。转为AAA游戏角色设定图：同一主体正面、背面、三分之四全身三视图，比例一致，中性灰棚拍，写实服装/盔甲材质与局部特写；保留主体身份、姿态和关键配饰；不要UI、网页边框或水印。' },
-    { id: 'h3-infographic', name: '信息图', renderer: 'model', eta: '25s', desc: '科普图解、细标签', previewBase: 'poster', prompt: '图1是唯一参考图。转为编辑级信息图/科普图解：米白纸底、扁平矢量和少量照片碎片、清晰分区、细箭头与短标签、有限色板；保留主体识别特征和构图关系；文字用简短可读标签，不伪造数据，不要复杂3D。' },
-    { id: 'h3-cad', name: '工程蓝图', renderer: 'model', eta: '25s', desc: '正交视图、尺寸线', previewBase: 'cyanotype', prompt: '图1是唯一参考图。转为工程蓝图/CAD 图纸：蓝底白线或白底黑线，正交前/侧/俯视图、等距线稿、尺寸线、剖面线与短标签；保留主体结构、比例和关键部件；不要照片、阴影、渐变或3D渲染。' },
-    { id: 'h3-surreal', name: '超现实时尚', renderer: 'model', eta: '25s', desc: '实景道具、直闪撞色', previewBase: 'film', previewParams: { strength: 0.88, grain: 0.24 }, prompt: '图1是唯一参考图。转为复古超现实时尚大片：真实布景与大道具、鲜艳撞色、直闪、胶片颗粒、低角度广角；保留主体身份、姿态、构图和衣着；加入一个超现实但可信的道具/场景关系，不要卡通或CG塑料感。' },
+    { id: 'h3-illus', name: 'H3 插画化', renderer: 'model', eta: '25s', desc: '暖色插画、细颗粒', prompt: cloudPrompt('暖色叙事插画，不是照片滤镜：深棕手绘轮廓、分层平涂与少量厚涂、纸张或画布的细纹；暖琥珀、砖红、奶油白、橄榄绿，低饱和；柔侧光从左上方照到主体，暖反光、轻光晕与细颗粒；头发、织物、远景用不同密度的笔触，边缘有轻微色晕，主体与背景用空气透视分开；像一本艺术书里的完整插画，不是平滑数字渐变、3D或塑料皮肤。') },
+    { id: 'h3-silver', name: 'H3 银盐', renderer: 'model', eta: '25s', desc: '黑白银盐、柔高光', prompt: cloudPrompt('实体黑白银盐照片或暗房印相：深黑保留细节、银灰中间调、柔和高光；细颗粒与轻微 halation；侧逆光或柔侧光塑造体积，相纸纤维和轻微暗角；真实皮肤、发丝和织物纹理；像一张冲印出来的银盐作品，不是数码黑白滤镜、HDR、磨皮或残留彩色。') },
+    { id: 'h3-oil', name: '古典油画', renderer: 'model', eta: '25s', desc: '明暗对照、厚涂画布', previewBase: 'film', previewParams: { strength: 0.92, grain: 0.22 }, prompt: cloudPrompt('17世纪欧洲布面油画，老大师/卡拉瓦乔—伦勃朗传统：深橄榄绿、琥珀棕的暗部，单侧暖光从左上照到主体面部和手部；厚涂高光与薄透明罩染并用，保留可见的猪鬃笔触，保留亚麻画布纹理、陈年清漆的暖金和细裂纹；暗部有层次和大面积呼吸空间，构图稳定；像博物馆原作，不是照片、3D、统一裂纹滤镜或过厚颜料。') },
+    { id: 'h3-impression', name: '印象派', renderer: 'model', eta: '25s', desc: '短笔触、晨雾海光', previewBase: 'film', previewParams: { strength: 0.58, grain: 0.1 }, prompt: cloudPrompt('实体法国印象派布面油画，莫奈晚期方法：湿画法、粗猪鬃短笔触、纯色并置；形体在光雾中溶解但主体仍可辨；高调粉紫、灰蓝、暖金，阴影只用淡紫和蓝，不用黑；每一寸都有可数的笔触，亮部厚涂，暗部干笔，画布纹理可见；空气和雾由笔触构成，不用数字模糊、平滑渐变、水墨或工笔。') },
+    { id: 'h3-manuscript', name: '金箔手抄本', renderer: 'model', eta: '25s', desc: '蛋彩、金箔、卷草边框', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: cloudPrompt('中世纪泥金手抄本插画：羊皮纸底、平涂蛋彩、深墨线、平透视；朱红、群青、古董金，宽卷草纹边框，磨损金箔和不规则手绘；主体变成手抄本中的人物或物件，但保留身份、姿态、构图和原文字位置；金饰和边框不遮挡主体与文字；像真实手抄本页面，不是照片、数字贴金或均匀做旧。') },
+    { id: 'h3-dunhuang', name: '敦煌壁画', renderer: 'model', eta: '25s', desc: '矿物颜料、土壁颗粒', previewBase: 'duotone', previewParams: { ink: 'ink' }, prompt: cloudPrompt('唐代敦煌土壁壁画，平面壁画而不是电影场景：土黄壁面、矿物朱砂、石青、石绿、赭石，颗粒和局部剥落露出墙体；细线人物轮廓、飘带、卷云，平涂加局部晕染，重叠关系代替精确透视；保留主体数量、姿态和布局；不要体积光、金属反射、3D、照相机景深或均匀裂纹滤镜。') },
+    { id: 'h3-gongbi', name: '工笔重彩', renderer: 'model', eta: '25s', desc: '绢本细线、矿物罩染', previewBase: 'cyanotype', previewParams: { strength: 0.8, grain: 0.16 }, prompt: cloudPrompt('中国工笔重彩绢本：细密均匀的线描、矿物色分层罩染、绢丝纹理和留白；衣纹、发丝和结构边缘用细线，色块薄而多层；主体清晰，背景克制；像手绘绢本，不是写意、油画笔触、照片或数字平滑；不要厚涂、强高光和塑料质感。') },
+    { id: 'h3-collage', name: '剪纸拼贴', renderer: 'model', eta: '25s', desc: '色纸刀口、错位剪影', previewBase: 'riso', previewParams: { ink: 'indigo' }, prompt: cloudPrompt('手工剪纸与旧杂志拼贴：分层色纸、清晰刀口和纸边、撕裂边、错位剪影，半调网点和印刷颗粒；钴蓝、米白、橙红、银灰有限色板；主体处理成黑白或单色照片剪贴，轮廓外留干净白边；保留主体、姿态、构图和原文字；像平扫的真实纸拼贴，不是数字拼贴、3D或平滑插画。') },
+    { id: 'h3-pixel', name: '像素海报', renderer: 'model', eta: '25s', desc: '像素格、有限调色板', previewBase: 'halftone', prompt: cloudPrompt('实验像素艺术海报：硬边像素方块、混合像素尺度、有限调色板、有序抖动、套色偏移和低分辨率屏幕纹理；主体轮廓由方块构成，眼睛和关键细节保留少量照片信息，边缘逐渐像素化；保留构图和原文字，文字用像素字形；不要平滑渐变、抗锯齿、3D卡通或高光塑料感。') },
+    { id: 'h3-film', name: '电影胶片', renderer: 'model', eta: '25s', desc: '35mm、自然光、颗粒', previewBase: 'film', previewParams: { strength: 0.98, grain: 0.18 }, prompt: cloudPrompt('真实35mm纪实或电影胶片照片：自然光或现场现有光，不新增棚拍人工光；35—50mm标准镜头、中景深、真实肤色和材质；中低对比、克制色彩、细颗粒、轻微halation和柔和高光；保留现场光线方向和环境气氛，不添加雾、道具或人物；不要插画、绘画、重度美颜、HDR或过度锐化。') },
+    { id: 'h3-concept', name: '概念场景', renderer: 'model', eta: '25s', desc: 'AAA matte painting', previewBase: 'film', previewParams: { strength: 0.72, grain: 0.16 }, prompt: cloudPrompt('AAA游戏或电影概念场景matte painting：清晰前景、结构明确的中景和大气透视远景；写实3D材质与手绘笔触、照片纹理结合；层次光、边缘光、空气尘雾；主体和关键设施保持；只扩展环境的尺度和氛围，不新增叙事主体；不要UI、字幕、水印、塑料3D或廉价CG。') },
+    { id: 'h3-shadow', name: '皮影戏', renderer: 'model', eta: '25s', desc: '油灯布幕、皮革关节偶', previewBase: 'riso', previewParams: { ink: 'ink' }, prompt: cloudPrompt('传统中国皮影戏：油灯从背后照亮米色布幕，主体变成半透明皮革关节偶，镂空纹样、竹签控制杆和手影；红木框和流苏，暖黄光晕；平面影戏，保留主体数量、姿态和构图；不要3D、写实照片、现代灯光或塑料质感。') },
+    { id: 'h3-eastern', name: '东方幻想线稿', renderer: 'model', eta: '25s', desc: '细线、朱砂金箔、云火纹', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: cloudPrompt('东方幻想动画或工笔重彩线稿：细长流畅的墨线、朱砂、金箔、墨绿、赭石平面色块，云火纹、飘带、珠串；装饰性平面构图，长线贯穿头发、衣褶和饰物；纸纹和斑驳金箔；主体成为画面中心，保留姿态、构图和原文字位置；不要写实照片、厚涂油画、新增角色或无关文字。') },
+    { id: 'h3-oldphone', name: '旧手机快照', renderer: 'model', eta: '25s', desc: 'iPhone 7 直出、轻噪点', previewBase: 'film', previewParams: { strength: 0.9, grain: 0.26 }, prompt: cloudPrompt('2017年iPhone 7后置直出照片：28mm、12MP、无美颜、无滤镜、无编辑；自然偏暖、中等饱和、真实肤色；深景深、无人像模式；动态范围有限，高光轻微溢出、阴影有细噪点；随手拍轻微倾斜和不够完美的构图；保留现场；不要电影感、HDR、专业布光、锐化或磨皮。') },
+    { id: 'h3-flashfilm', name: '闪光胶片', renderer: 'model', eta: '25s', desc: '直打硬闪、复古胶片', previewBase: 'film', previewParams: { strength: 0.96, grain: 0.3 }, prompt: cloudPrompt('复古直打闪光35mm胶片时尚人像：单灯正面硬闪、脸部高光、背景压暗、清晰硬阴影；真实皮肤纹理、细颗粒、轻微褪色和柔光晕；中近景、实景；保留人物、姿态、构图和原文字；不要柔光棚拍、重度磨皮、HDR或胶片滤镜叠加。') },
+    { id: 'h3-dv', name: 'DV 家庭录像', renderer: 'model', eta: '25s', desc: '2001 MiniDV、CCD 低清', previewBase: 'film', previewParams: { strength: 0.84, grain: 0.4 }, prompt: cloudPrompt('2001年MiniDV家庭录像抽帧：4:3、小CCD低清、软细节、阴影彩色噪点、压缩块、自动白平衡偏色、高光溢出和轻微运动拖影；手持轻微倾斜、现场感构图；保留主体、姿态和构图；不要电影调色、胶片颗粒、VHS线、时间码或高清锐化。') },
+    { id: 'h3-sticker', name: '贴纸残胶海报', renderer: 'model', eta: '25s', desc: '金属门、胶带、纸屑字形', previewBase: 'riso', previewParams: { ink: 'vermilion' }, prompt: cloudPrompt('实验字体与贴纸残胶海报：磨损冷灰金属门、透明胶带、乳白撕纸、荧光橙标签、卷曲银膜；主体照片碎片保留轮廓和身份，与材料层叠；原文字由材料真实边缘构成，不换成标准字体；留出干净白场，手工拼贴和扫描质感；不要重3D、无关大字、水印或塑料高光。') },
+    { id: 'h3-sheet', name: '游戏角色设定', renderer: 'model', eta: '25s', desc: '三视图、写实材质', previewBase: 'film', previewParams: { strength: 0.9, grain: 0.16 }, prompt: cloudPrompt('AAA游戏角色设定图，一张完整版面：同一主体正面、背面、三分之四全身三视图，比例、姿态、服装和配饰一致；中性灰渐变棚拍，柔和顶侧光；写实金属、皮革、织物磨损和缝线；视图之间放局部材质特写；保留主体身份和关键设计；三视图必须在同一张图里，不是三张独立图；不要分屏网页、UI、文字水印或改变角色设计。', true) },
+    { id: 'h3-infographic', name: '信息图', renderer: 'model', eta: '25s', desc: '科普图解、细标签', previewBase: 'poster', prompt: cloudPrompt('编辑级信息图或科普图解，一张完整版面：米白纸底、扁平矢量加少量照片碎片、清晰分区、细箭头、短标签和比例尺；主体作为中心图示，保留识别特征；有限色板：米白、墨绿、陶土橙、灰蓝；标签只描述可见结构，文字简短、可读、不重叠；不要复杂3D、重复卡片、长文、编造数据或来源。', true) },
+    { id: 'h3-cad', name: '工程蓝图', renderer: 'model', eta: '25s', desc: '正交视图、尺寸线', previewBase: 'cyanotype', prompt: cloudPrompt('正式工程蓝图或CAD图纸：深蓝底加细网格、白色细线；同一主体正交前视、侧视、俯视和等轴测线稿，比例一致；尺寸线、剖面线、中心线、短标签和标题栏；保留主体结构、比例和关键部件；不要照片、阴影、渐变、3D渲染、UI或无关文字。', true) },
+    { id: 'h3-surreal', name: '超现实时尚', renderer: 'model', eta: '25s', desc: '实景道具、直闪撞色', previewBase: 'film', previewParams: { strength: 0.88, grain: 0.24 }, prompt: cloudPrompt('复古超现实时尚摄影：真实布景和大道具，鲜艳撞色，直闪加自然光，胶片颗粒，低角度广角；主体保留身份、姿态、服装和构图；只加入一个超现实但物理可信的道具或空间关系，与主体发生真实接触、遮挡和接触阴影；像实拍的复古时尚大片，不要卡通、CG、塑料感或新增人物。') },
   ];
 
   STYLES.forEach(function (s) {
@@ -2363,7 +2371,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.12.0',
+        version: '0.13.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3417,7 +3425,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.12.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.13.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
