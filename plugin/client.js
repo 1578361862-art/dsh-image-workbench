@@ -1029,7 +1029,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <summary><span>后处理</span><span class="ins-group-hint">边框</span></summary>
         <div class="border-options" id="borderOptions" role="group" aria-label="边框效果">
           <button data-border="none" class="on">无</button>
-          <button data-border="polaroid">宝利来</button>
+          <button data-border="polaroid">宝丽来</button>
           <button data-border="film">胶片</button>
           <button data-border="paper">留白</button>
         </div>
@@ -2211,7 +2211,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       applyFrame();
     }
     $$('#borderOptions button').forEach(function (el) { el.classList.toggle('on', el.dataset.border === state.border); });
-    var borderHints = { none: '无边框：保留原图边缘。', polaroid: '宝利来：4:5 固定比例，中心裁切，奶油白相纸与底部留白。', film: '胶片：黑色片边与齿孔。', paper: '留白：均匀白边，适合排版。' };
+    var borderHints = { none: '无边框：保留原图边缘。', polaroid: '宝丽来：4:5 固定比例，中心裁切，奶油白相纸与底部留白。', film: '胶片：黑色片边与齿孔。', paper: '留白：均匀白边，适合排版。' };
     $('#borderHint').textContent = borderHints[state.border] || borderHints.none;
     $('#localOutputFields').hidden = !hasLocal;
     $('#outputGroup').hidden = !hasLocal && !hasCloud;
@@ -2531,7 +2531,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.15.1',
+        version: '0.15.2',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3401,11 +3401,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!layer) return;
     var s = styleById(id) || { name: id };
     $('#resultTitle').textContent = s.name;
-    var ratioMeta = state.border === 'polaroid' ? ' · 宝利来 4:5' : '';
+    var ratioMeta = state.border === 'polaroid' ? ' · 宝丽来 4:5' : '';
     $('#resultMeta').textContent = (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h + ratioMeta;
     $('#resultBig').src = r.url;
     $('#resultBig').alt = s.name + ' 结果大图';
-    $('#resultInfo').textContent = (state.border === 'polaroid' ? '宝利来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
+    $('#resultInfo').textContent = (state.border === 'polaroid' ? '宝丽来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
     layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
     if (state.border !== 'none') layer.classList.add('frame-' + state.border);
     layer.inert = false;
@@ -3639,7 +3639,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
