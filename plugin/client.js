@@ -1252,6 +1252,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return CLOUD_SCENE_HEAD + body + CLOUD_SCENE_TAIL;
   }
 
+  function cloudSealPrompt(body) {
+    return body;
+  }
+
   var STYLES = [
     { id: 'halftone', name: '半调网点', renderer: 'canvas', eta: '0.2s', desc: '报纸印刷的网点，适合黑白海报' },
     { id: 'duotone', name: '双色限墨', renderer: 'canvas', eta: '0.2s', desc: '两种油墨叠印，控制纸与墨的比例' },
@@ -1287,6 +1291,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-blackgold', name: '暗金圣骑', renderer: 'model', eta: '25s', desc: '黑金甲胄、圣光', previewBase: 'riso', previewParams: {'ink': 'ink'}, prompt: cloudScenePrompt('暗黑奇幻/巴洛克圣骑士壁纸：黑金高对比，主体重铸为黑钢与暗金ornate甲胄，披风、月牙或圣徽、细密金线、尖刺与层叠甲片；体积圣光与尘雾，深黑虚空，金属高光与磨损；保留主体身份、面部关键特征和姿态；像一张完成的角色海报，不要塑料3D、游戏UI、文字或水印。') },
     { id: 'h3-ramayana', name: '罗摩衍那', renderer: 'model', eta: '25s', desc: '红金史诗、战车', previewBase: 'riso', previewParams: {'ink': 'vermilion'}, prompt: cloudScenePrompt('印度史诗《罗摩衍那》油画/古典插画：红金主色，强烈动态对角线，战车、黑马、弓与箭、飘动红披风、金色珠宝与繁复纹样；厚涂油画与古典插画质感，烟尘和夕阳；主体成为史诗英雄或神祇，保留身份、姿态、服装轮廓和关键特征；允许战车与马匹作为环境叙事元素，不替换主体；不要现代照片、3DCG、文字或UI。') },
     { id: 'h3-cosmic', name: '星河神性', renderer: 'model', eta: '25s', desc: '黑洞星云、古典油画', previewBase: 'duotone', previewParams: {'ink': 'ink'}, prompt: cloudScenePrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。') },
+    { id: 'h3-seal', name: '金石印谱', renderer: 'model', eta: '25s', desc: '3:4 双格 · 肖形印蜕', previewBase: 'poster', prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。') },
   ];
 
   STYLES.forEach(function (s) {
@@ -2566,7 +2571,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.17.0',
+        version: '0.18.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3675,7 +3680,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.17.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.18.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');

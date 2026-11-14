@@ -12,6 +12,7 @@ User-provided references were studied and turned into 7 new cloud styles. The of
 | 6 | 真 · 不说狠话，不做软事 | Black-gold high-contrast dark knight, ornate baroque armor, crescent/saint motifs, volumetric light, wallpaper | `h3-blackgold` 暗金圣骑 |
 | 7 | After · 罗摩衍那 | Indian epic illustration, red/gold, chariot and black horses, diagonal motion, ornate jewelry, classical paint | `h3-ramayana` 罗摩衍那 |
 | 8 | 热带没有巧克力 · 星河是我的脉搏 | Cosmic surreal classical oil, black and gold nebula/accretion disc, cloud sea, robed figure on a cliff, sacred scale | `h3-cosmic` 星河神性 |
+| 9 | 用户提供 · 金石印谱提示词 | 3:4 海报上下 1:1；上方原片，下半页肖形印蜕 + 边款墨拓；朱砂/墨/宣纸白，大量留白；真实篆刻材质 | `h3-seal` 金石印谱 |
 
 ## How the prompts were adapted
 
