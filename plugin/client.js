@@ -325,6 +325,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   border: 1px solid var(--p-hair); border-radius: 0; background: var(--p-paper-2);
   transition: border-color .15s var(--p-ease);
 }
+.iw-root .card-wrap{ position: relative; min-width: 0; }
+.iw-root .card-wrap .card{ width: 100%; }
+.iw-root .card-zoom{ position: absolute; top: 4px; left: 4px; z-index: 2; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--p-hair); background: var(--p-paper-2); color: var(--p-ink-3); opacity: .55; transition: opacity .12s, color .12s, border-color .12s; }
+.iw-root .card-wrap:hover .card-zoom,.iw-root .card-wrap:focus-within .card-zoom,.iw-root .card-zoom:focus{ opacity: 1; }
+.iw-root .card-zoom:hover{ color: var(--p-signal); border-color: var(--p-signal); }
+@media (hover:none){.iw-root .card-zoom{opacity:1;}}
 .iw-root .card:hover{ border-color: var(--p-ink-3); }
 .iw-root .card.on{ border-color: var(--p-ink); box-shadow: 0 0 0 1px var(--p-ink); }
 .iw-root .card img{ display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--p-sunken); }
@@ -524,6 +530,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 80;
 }
 .iw-root .toast.on{ opacity: 1; transform: translateX(-50%) translateY(0); }
+.iw-root .preview-layer{ position: fixed; inset: 0; z-index: 78; display: none; }
+.iw-root .preview-layer.open{ display: block; }
+.iw-root .preview-layer .drawer-backdrop{ position: absolute; inset: 0; background: var(--p-overlay); }
+.iw-root .preview-dialog{ position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: min(1080px, calc(100vw - 40px)); max-height: calc(100vh - 40px); display: flex; flex-direction: column; background: var(--p-paper-2); border: 1px solid var(--p-hair); box-shadow: 0 30px 90px rgba(0,0,0,.24); }
+.iw-root .preview-head{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--p-hair); }
+.iw-root .preview-head h2{ margin: 0; font-family: var(--p-serif); font-size: 18px; font-weight: 600; }
+.iw-root .preview-stage{ flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--p-sunken); }
+.iw-root .preview-stage img{ display: block; max-width: 100%; max-height: calc(100vh - 190px); object-fit: contain; box-shadow: 0 12px 36px rgba(0,0,0,.16); }
+.iw-root .preview-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .preview-foot .ghost-btn{ height: 24px; min-width: 28px; font-size: 15px; line-height: 1; }
+.iw-root .preview-foot .ghost-btn:disabled{ opacity: .3; cursor: default; }
 .iw-root .drawer-layer{ position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .iw-root .drawer-backdrop{ position: absolute; inset: 0; background: var(--p-overlay); opacity: 0; transition: opacity .18s var(--p-ease); }
 .iw-root .drawer{
@@ -1037,6 +1054,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="go" id="saveSettings">保存设置</button>
     </footer>
   </aside>
+</div>
+
+<div class="preview-layer" id="previewLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-preview-close></div>
+  <figure class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <header class="preview-head">
+      <h2 id="previewTitle">示例</h2>
+      <button class="icon-btn" id="previewClose" data-preview-close aria-label="关闭示例"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="preview-stage"><img id="previewImg" alt=""></div>
+    <footer class="preview-foot">
+      <button class="ghost-btn" id="previewPrev" aria-label="上一个示例">‹</button>
+      <span id="previewMeta"></span>
+      <button class="ghost-btn" id="previewNext" aria-label="下一个示例">›</button>
+    </footer>
+  </figure>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
@@ -1779,12 +1812,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var tag = s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : s.renderer === 'preset' ? '预设' : '本机';
       var tail = '<span>' + tag + ' · ' + s.eta + '</span>';
       if (s.renderer === 'model') tail += '<span class="price">¥' + cloudUnitPrice().toFixed(2) + '</span>';
-      return '<button class="card' + (on ? ' on' : '') + '" data-id="' + s.id + '" title="' + s.desc + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+      return '<div class="card-wrap">' +
+        '<button class="card' + (on ? ' on' : '') + '" data-id="' + s.id + '" title="' + s.desc + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
         '<img src="' + (state.thumbs[s.id] || '') + '" alt="">' +
         '<span class="tick"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.2 8.6l3 3L12.8 5"/></svg></span>' +
         '<span class="cap"><span class="nm">' + s.name + '</span>' +
         '<span class="mt">' + tail + '</span></span>' +
-        '</button>';
+        '</button>' +
+        '<button class="card-zoom" data-zoom="' + s.id + '" aria-label="放大查看 ' + escapeHTML(s.name) + ' 示例" title="放大查看示例"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"/></svg></button>' +
+        '</div>';
     }).join('');
     if (activeId) {
       var again = $('.card[data-id="' + activeId + '"]');
@@ -2122,7 +2158,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.9.0',
+        version: '0.9.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2884,6 +2920,71 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function (err) { toast(err.message || '检查 Key 失败'); });
   }
 
+  /* ————— 示例放大 ————— */
+  var previewReturnFocus = null;
+  var previewIds = [];
+  var previewIndex = 0;
+
+  function previewCardSrc(id) {
+    var s = styleById(id);
+    return (s && (s.preview || state.thumbs[id])) || '';
+  }
+
+  function previewFullSrc(id) {
+    var s = styleById(id);
+    if (s && s.renderer === 'model') return API + '/style-preview/' + id + '-full.jpg';
+    return previewCardSrc(id);
+  }
+
+  function renderStylePreview() {
+    var id = previewIds[previewIndex];
+    var s = styleById(id);
+    if (!s) return;
+    var img = $('#previewImg');
+    img.onerror = function () {
+      var fallback = previewCardSrc(id);
+      if (fallback) { this.onerror = null; this.src = fallback; }
+    };
+    img.src = previewFullSrc(id);
+    img.alt = s.name + ' 示例';
+    $('#previewTitle').textContent = s.name;
+    $('#previewMeta').textContent = (s.renderer === 'model' ? '官方示例' : '当前预览') + ' · ' + (previewIndex + 1) + ' / ' + previewIds.length;
+    $('#previewPrev').disabled = previewIndex <= 0;
+    $('#previewNext').disabled = previewIndex >= previewIds.length - 1;
+  }
+
+  function openStylePreview(id) {
+    var list = filteredStyles();
+    previewIds = list.map(function (s) { return s.id; });
+    previewIndex = previewIds.indexOf(id);
+    if (previewIndex < 0) { previewIds.unshift(id); previewIndex = 0; }
+    var layer = $('#previewLayer');
+    if (!layer) return;
+    previewReturnFocus = document.activeElement;
+    layer.inert = false;
+    layer.classList.add('open');
+    layer.setAttribute('aria-hidden', 'false');
+    renderStylePreview();
+    $('#previewClose').focus();
+  }
+
+  function closeStylePreview() {
+    var layer = $('#previewLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.setAttribute('aria-hidden', 'true');
+    layer.inert = true;
+    if (previewReturnFocus && previewReturnFocus.isConnected) previewReturnFocus.focus();
+    previewReturnFocus = null;
+  }
+
+  function moveStylePreview(delta) {
+    var next = previewIndex + delta;
+    if (next < 0 || next >= previewIds.length) return;
+    previewIndex = next;
+    renderStylePreview();
+  }
+
   /* ————— 批量矩阵 ————— */
   function openMatrix() {
     var layer = $('#matrixLayer');
@@ -3020,7 +3121,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.9.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.9.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3056,10 +3157,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#go').addEventListener('click', function () { generate(false); });
 
     $('#styleGrid').addEventListener('click', function (e) {
+      var zoom = e.target.closest('[data-zoom]');
+      if (zoom) { openStylePreview(zoom.dataset.zoom); return; }
       var el = e.target.closest('.card');
       if (el) toggleStyle(el.dataset.id);
     });
 
+    $$('[data-preview-close]').forEach(function (el) { el.addEventListener('click', closeStylePreview); });
+    $('#previewPrev').addEventListener('click', function () { moveStylePreview(-1); });
+    $('#previewNext').addEventListener('click', function () { moveStylePreview(1); });
     $('#chips').addEventListener('click', function (e) {
       var el = e.target.closest('[data-remove]');
       if (el) removeStyle(el.dataset.remove);
@@ -3334,6 +3440,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
+      }
+      if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
+      if (($('#previewLayer')?.classList.contains('open')) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault(); moveStylePreview(e.key === 'ArrowLeft' ? -1 : 1); return;
       }
       if (e.key === 'Escape' && setLayer.classList.contains('open')) closeSettings();
       if (e.key === 'Escape' && $('#matrixLayer')?.classList.contains('open')) closeMatrix();

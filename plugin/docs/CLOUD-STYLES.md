@@ -1,6 +1,6 @@
 # 云端 H3 风格 · 官方示例归纳
 
-这 21 个云端风格来自 MiniMax-H3-Image 官方仓库的 showcase 与提示词指南，不是第三方风格名。风格库缩略图已换成官方示例图（h3-illus / h3-silver 使用内置 sample 的实际 H3 输出），见 `assets/style-previews/`。官方示例是完整创作 prompt；工作台把它们**归纳成图生图改写指令**：
+这 21 个云端风格来自 MiniMax-H3-Image 官方仓库的 showcase 与提示词指南，不是第三方风格名。风格库缩略图已换成官方示例图（h3-illus / h3-silver 使用内置 sample 的实际 H3 输出），见 `assets/style-previews/`；卡片图统一 640×400，灯箱用 `<id>-full.jpg` 原始尺寸。官方示例是完整创作 prompt；工作台把它们**归纳成图生图改写指令**：
 
 1. 先声明“图 1 是唯一参考图 / 构图来源”；
 2. 保留主体身份、姿态、构图、文字与现场关系；

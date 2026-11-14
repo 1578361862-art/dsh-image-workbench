@@ -435,11 +435,14 @@ export default {
         return serveSample(req, res)
       }
       if (method === 'GET' && seg.length === 2 && seg[0] === 'style-preview') {
-        const id = seg[1].replace(/\.jpg$/i, '')
+        let id = seg[1].replace(/\.jpg$/i, '')
+        const full = id.endsWith('-full')
+        if (full) id = id.slice(0, -5)
         if (!/^[a-z0-9-]{1,63}$/.test(id) || !CLOUD_STYLES[id]) {
           return json(res, 404, { error: '风格预览不存在' })
         }
-        return serveStored(res, join(STYLE_PREVIEW_DIR, id + '.jpg'), 'image/jpeg')
+        const file = full ? join(STYLE_PREVIEW_DIR, 'full', id + '.jpg') : join(STYLE_PREVIEW_DIR, id + '.jpg')
+        return serveStored(res, file, 'image/jpeg')
       }
       if (method === 'POST' && path === 'settings') {
         const body = await readBody(req)
