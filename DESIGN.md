@@ -1,6 +1,6 @@
 # 图像风格工作台 · 设计方案 v1
 
-> 状态：P1–P5 已实现，P3 完成真实 2K 验证（`dsh-image-workbench` 0.6.0） · 2026-11-13
+> 状态：P1–P5 已实现，P3 完成真实 2K 验证（`dsh-image-workbench` 0.6.1） · 2026-11-13
 > 交付形态：DSH 插件 bundle（host + client），左栏入口 → 中央整页
 > 方案与边界见本文；P1/P2 实现在 [plugin/](plugin/)，P3 云端 UI/provider/队列/预算已落地，保存 Key 后启用
 > 详细剩余工作与验收清单：[NEXT.md](NEXT.md)

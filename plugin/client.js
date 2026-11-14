@@ -228,7 +228,7 @@ html[data-theme="dark"] {
   --p-r-control: var(--pk-control-r);
   --p-ease: cubic-bezier(0.2, 0, 0, 1);
 }
-body[data-ds-dark-theme] .iw-root .sw, html[data-ds-dark-theme] .iw-root .sw, .iw-root[data-theme="dark"] .sw{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
+body[data-ds-dark-theme] .iw-root .sw:not(.on), html[data-ds-dark-theme] .iw-root .sw:not(.on), .iw-root[data-theme="dark"] .sw:not(.on){ box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
 body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[data-theme="dark"]{
   color-scheme: dark;
 }
@@ -468,7 +468,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 }
 .iw-root .swatches{ display: flex; gap: 4px; margin-top: 4px; }
 .iw-root .sw{ width: 20px; height: 22px; padding: 0; border: 1px solid var(--p-hair); border-radius: 0; position: relative; }
-.iw-root .sw.on{ outline: 2px solid var(--p-ink); outline-offset: 1px; }
+.iw-root .sw.on{ outline: 0; box-shadow: inset 0 0 0 2px var(--p-paper-2), inset 0 0 0 3px var(--p-ink); }
 .iw-root .sw.on::after{
   content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 10px; mix-blend-mode: difference;
@@ -669,10 +669,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .history-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
 .iw-root .history-head b{font-family:var(--p-mono);font-size:10px;font-weight:500;letter-spacing:var(--pk-ls-label);text-transform:uppercase;color:var(--p-ink-3);}
 .iw-root .history-list{display:flex;gap:4px;margin-top:4px;}
-.iw-root .history-item{width:60px;padding:0;border:1px solid var(--p-hair);background:var(--p-paper-2);text-align:left;}
+.iw-root .history-slot{position:relative;width:60px;flex:none;}
+.iw-root .history-item{width:100%;padding:0;border:1px solid var(--p-hair);background:var(--p-paper-2);text-align:left;}
 .iw-root .history-item:hover{border-color:var(--p-ink-3);}
 .iw-root .history-item img{display:block;width:100%;height:38px;object-fit:cover;background:var(--p-sunken);}
 .iw-root .history-item span{display:block;padding:2px 2px;font-family:var(--p-mono);font-size:10px;line-height:1.3;color:var(--p-ink-4);white-space:nowrap;overflow:hidden;}
+.iw-root .history-del{position:absolute;top:2px;right:2px;z-index:2;width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--p-hair);background:var(--p-paper-2);color:var(--p-ink-3);font-family:var(--p-mono);font-size:11px;line-height:1;cursor:pointer;opacity:.55;transition:opacity .12s,color .12s,border-color .12s;}
+.iw-root .history-slot:hover .history-del,.iw-root .history-slot:focus-within .history-del,.iw-root .history-del:focus{opacity:1;}
+.iw-root .history-del:hover{color:var(--p-signal);border-color:var(--p-signal);}
+@media (hover:none){.iw-root .history-del{opacity:1;}}
 .iw-root .empty-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--p-paper-2);color:var(--p-ink-3);z-index:5;}
 .iw-root .empty-stage[hidden]{display:none;}
 .iw-root .empty-stage h3{margin:0;font-family:var(--p-serif);font-size:22px;font-weight:600;letter-spacing:var(--pk-ls-title);color:var(--p-ink);}
@@ -1083,6 +1088,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var previewToken = 0;
   var matrix = { sources: [], results: [] };
   var hostHistory = [];
+  var hostHistoryReady = false;
 
   var STYLES = [
     { id: 'halftone', name: '半调网点', renderer: 'canvas', eta: '0.2s', desc: '报纸印刷的网点，适合黑白海报' },
@@ -2098,7 +2104,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.6.0',
+        version: '0.6.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2371,10 +2377,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (state.selected.indexOf(id) >= 0) {
-      state.focus = id;
-      renderChips();
-      updateUI();
-      showPreview();
+      removeStyle(id);
       return;
     }
     state.selected.push(id);
@@ -2533,15 +2536,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return apiFetch('/history?limit=20', { cache: 'no-store' }).then(function (res) {
       return res.ok ? res.json() : null;
     }).then(function (data) {
-      if (data && Array.isArray(data.entries) && data.entries.length) {
+      if (data && Array.isArray(data.entries)) {
         hostHistory = data.entries.map(fromHost);
+        hostHistoryReady = true;
         renderHistory();
       }
     }).catch(function () {});
   }
 
   function currentHistory() {
-    return hostHistory.length ? hostHistory : readHistory();
+    return hostHistoryReady ? hostHistory : readHistory();
   }
 
   function readHistory() {
@@ -2599,11 +2603,45 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         })
       }).then(function (res) { return res.ok ? res.json() : null; }).then(function (data) {
         if (!data) return;
+        hostHistoryReady = true;
         hostHistory.unshift(fromHost(data));
         renderHistory();
       }).catch(function () {});
     }
   }
+  function forgetLocalHistory(urls) {
+    if (!urls || !urls.length) return;
+    var list = readHistory();
+    var next = list.filter(function (e) {
+      return !(e.results || []).some(function (r) { return urls.indexOf(r.url) >= 0; });
+    });
+    if (next.length !== list.length) writeHistory(next);
+  }
+
+  function deleteHistory(index) {
+    var list = currentHistory();
+    var e = list[index];
+    if (!e) return;
+    if (!window.confirm('删除这条最近记录？对应的 Host 结果也会一并移除，此操作不可撤销。')) return;
+    if (e.hostId) {
+      fetch(API + '/batch/' + encodeURIComponent(e.hostId), { method: 'DELETE' }).then(function (res) {
+        if (!res.ok) throw new Error('删除失败');
+        var urls = (e.results || []).map(function (r) { return r.url; });
+        hostHistory = hostHistory.filter(function (x) { return x.hostId !== e.hostId; });
+        hostHistoryReady = true;
+        forgetLocalHistory(urls);
+        renderHistory();
+        toast('已删除这条记录');
+      }).catch(function (err) { toast(err.message || '删除失败'); });
+      return;
+    }
+    var local = readHistory();
+    local.splice(index, 1);
+    writeHistory(local);
+    renderHistory();
+    toast('已删除这条记录');
+  }
+
   function renderHistory() {
     var list = currentHistory();
     var box = $('#historyBox');
@@ -2612,10 +2650,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#historyCount').textContent = ('0' + Math.min(list.length, 3)).slice(-2);
     $('#historyList').innerHTML = list.slice(0, 3).map(function (e, i) {
       var thumb = (e.results && e.results[0] && e.results[0].url) || '';
-      return '<button class="history-item" data-history="' + i + '" title="恢复 ' + timeLabel(e.at) + ' 的试印">' +
+      return '<div class="history-slot">' +
+        '<button class="history-item" data-history="' + i + '" title="恢复 ' + timeLabel(e.at) + ' 的试印">' +
         '<img src="' + thumb + '" alt="">' +
         '<span>' + timeLabel(e.at) + '</span>' +
-        '</button>';
+        '</button>' +
+        '<button class="history-del" data-history-del="' + i + '" aria-label="删除这条最近记录" title="删除记录">×</button>' +
+        '</div>';
     }).join('');
   }
   function restoreHistory(index) {
@@ -2964,7 +3005,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.6.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.6.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3019,6 +3060,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#historyList').addEventListener('click', function (e) {
+      var del = e.target.closest('[data-history-del]');
+      if (del) { deleteHistory(Number(del.dataset.historyDel)); return; }
       var el = e.target.closest('[data-history]');
       if (el) restoreHistory(Number(el.dataset.history));
     });
@@ -3224,7 +3267,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!box.hidden) $('#keyInput').focus();
     });
     $('#keySave').addEventListener('click', saveKeyOnly);
-    $('#importPack').addEventListener('click', function () { toast('导入风格包在 P2 接入'); });
     $('#clearHistory').addEventListener('click', function () {
       if (!window.confirm('清空最近的试印记录？此操作不可撤销。')) return;
       var ids = hostHistory.filter(function (e) { return e.hostId; }).map(function (e) { return e.hostId; });
@@ -3232,6 +3274,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         return fetch(API + '/batch/' + encodeURIComponent(id), { method: 'DELETE' }).catch(function () {});
       })).then(function () {
         hostHistory = [];
+        hostHistoryReady = true;
         try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
         renderHistory();
         toast('历史已清空');
