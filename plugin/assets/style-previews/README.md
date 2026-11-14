@@ -9,3 +9,5 @@ These are static 16:10 thumbnails used by the style library cards.
 - The generated images on a user's own photo are still produced live; these are only style examples.
 
 - The 7 inspiration thumbnails (`h3-sacred`, `h3-mystic`, `h3-observer`, `h3-west1960`, `h3-blackgold`, `h3-ramayana`, `h3-cosmic`) are cropped from the user-provided Douyin reference posts and are kept only as local visual style references. Rights remain with their creators: 诺皮克NovaPix, 真, After, 热带没有巧克力. Replace them with your own generated examples before redistributing the plugin.
+
+- `h3-seal` (`金石印谱`) is a **layout schematic** built from the workbench sample and drawn in PIL to show the requested 3:4 top/bottom split, seal impression and rubbing; it is not an H3 output. The live style uses the user-provided 金石印谱 prompt. Replace it with a real H3 preview when available.
