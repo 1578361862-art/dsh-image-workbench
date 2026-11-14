@@ -372,6 +372,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   border: 1px dashed var(--p-signal); background: var(--p-signal-plate);
   color: var(--p-signal-ink); font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-label);
 }
+.iw-root .print-frame{ display:flex; align-items:center; justify-content:center; max-width:calc(100% - 16px); max-height:calc(100% - 16px); }
+.iw-root .print-frame.frame-polaroid{ padding:9px 9px 32px; background:#f6efe1; box-shadow:0 8px 26px rgba(40,30,20,.16); }
+.iw-root .print-frame.frame-film{ padding:9px; background:#111; box-shadow:0 8px 26px rgba(0,0,0,.25); }
+.iw-root .print-frame.frame-paper{ padding:12px; background:#fff; box-shadow:0 8px 26px rgba(40,30,20,.14); }
 .iw-root .print{ position: relative; background: #fff; }
 .iw-root .print img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .iw-root .print .result{ z-index: 1; }
@@ -552,6 +556,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .preview-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
 .iw-root .preview-foot .ghost-btn{ height: 24px; min-width: 28px; font-size: 15px; line-height: 1; }
 .iw-root .preview-foot .ghost-btn:disabled{ opacity: .3; cursor: default; }
+.iw-root .border-options{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; margin:6px 8px 0; }
+.iw-root .border-options button{ height:24px; padding:0 4px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); cursor:pointer; }
+.iw-root .border-options button:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
+.iw-root .border-options button.on{ background:var(--p-ink); color:var(--p-paper); border-color:var(--p-ink); }
+.iw-root .pcard.frame-polaroid{ padding:7px 7px 22px; background:#f6efe1; border-color:#d9cbb5; box-shadow:0 3px 10px rgba(40,30,20,.12); }
+.iw-root .pcard.frame-polaroid img{ border:1px solid rgba(70,50,30,.12); }
+.iw-root .pcard.frame-polaroid .pcap{ color:var(--p-ink-2); }
+.iw-root .pcard.frame-film{ padding:8px 5px; background:#111; border-color:#333; }
+.iw-root .pcard.frame-film img{ border:1px solid #333; }
+.iw-root .pcard.frame-film .pcap{ color:#d9cdbd; }
+.iw-root .pcard.frame-film::before,.iw-root .pcard.frame-film::after{ content:""; position:absolute; left:3px; right:3px; height:5px; z-index:2; pointer-events:none; background:repeating-linear-gradient(90deg,#111 0 7px,#e7c472 7px 10px); }
+.iw-root .pcard.frame-film::before{ top:2px; }
+.iw-root .pcard.frame-film::after{ bottom:2px; }
+.iw-root .pcard.frame-paper{ padding:9px; background:#fff; border-color:#ddd5c8; }
+.iw-root .pcard.frame-paper img{ border:1px solid rgba(70,50,30,.08); }
 .iw-root .result-layer{ position: fixed; inset: 0; z-index: 79; display: none; }
 .iw-root .result-layer.open{ display: block; }
 .iw-root .result-layer .drawer-backdrop{ position: absolute; inset: 0; background: rgba(15,14,12,.82); }
@@ -562,6 +581,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .result-stage{ flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 10px; background: #1b1915; overflow: auto; }
 .iw-root .result-stage img{ display: block; max-width: 100%; max-height: calc(100vh - 190px); width: auto; height: auto; object-fit: contain; }
 .iw-root .result-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px 12px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .result-layer.frame-polaroid .result-stage img{ border:12px solid #f6efe1; border-bottom-width:42px; background:#f6efe1; box-shadow:0 16px 40px rgba(0,0,0,.35); box-sizing:content-box; }
+.iw-root .result-layer.frame-film .result-stage img{ border:10px solid #111; background:#111; box-shadow:inset 0 0 0 1px #333; box-sizing:content-box; }
+.iw-root .result-layer.frame-paper .result-stage img{ border:14px solid #fff; background:#fff; box-sizing:content-box; }
 .iw-root .pcard-zoom{ position:absolute; top:4px; left:4px; z-index:2; width:34px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-ui); line-height:1; padding:0; }
 .iw-root .pcard-zoom:hover{ color:var(--p-signal); border-color:var(--p-signal); }
 .iw-root .pcard-zoom:focus-visible{ outline:2px solid var(--p-focus); outline-offset:1px; }
@@ -893,6 +915,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </div>
 
       <div class="stage" id="stage">
+        <div class="print-frame" id="printFrame" hidden>
         <div class="print" id="print" style="--split: 50%">
           <div class="crops"><i></i><i></i><i></i><i></i></div>
           <img id="baseImg" class="base" alt="原图">
@@ -900,6 +923,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <span class="split" id="split" role="slider" tabindex="0" aria-label="对比分界" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></span>
           <span class="cmp-label l">原图</span>
           <span class="cmp-label r">结果</span>
+        </div>
         </div>
         <div class="empty-stage" id="emptyStage" hidden>
           <h3>把图片放到这里</h3>
@@ -998,6 +1022,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         </div>
         <div class="cloud-price-hint" id="cloudPriceHint"></div>
       </div>
+      </details>
+
+      <details class="ins-group" open id="borderGroup" hidden>
+        <summary><span>后处理</span><span class="ins-group-hint">边框</span></summary>
+        <div class="border-options" id="borderOptions" role="group" aria-label="边框效果">
+          <button data-border="none" class="on">无</button>
+          <button data-border="polaroid">宝利来</button>
+          <button data-border="film">胶片</button>
+          <button data-border="paper">留白</button>
+        </div>
+        <div class="scope-hint" id="borderHint">无边框：保留原图边缘。</div>
       </details>
 
       <details class="field text-field" id="textFields" hidden>
@@ -1291,6 +1326,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     assetId: null,
     cloudQuality: '2K',
     frame: '3:2',
+    border: 'none',
     results: [],
     activeResult: null,
     comparing: false,
@@ -1828,8 +1864,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var print = $('#print');
     if (!stage || !print) return;
     var r = frameRatio();
-    var availW = Math.max(120, stage.clientWidth - 44);
-    var availH = Math.max(120, stage.clientHeight - 40);
+    var padX = state.border === 'polaroid' ? 9 : state.border === 'paper' ? 12 : state.border === 'film' ? 9 : 0;
+    var padT = padX;
+    var padB = state.border === 'polaroid' ? 32 : padX;
+    var availW = Math.max(120, stage.clientWidth - 44 - padX * 2);
+    var availH = Math.max(120, stage.clientHeight - 40 - padT - padB);
     var h = Math.min(availH, availW * r);
     print.style.width = Math.round(h / r) + 'px';
     print.style.height = Math.round(h) + 'px';
@@ -2162,6 +2201,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var hasTemplate = selectedStyles.some(function (st) { return st.id === 'poster'; });
     $('#adjustGroup').hidden = !hasCanvas;
     $('#promptGroup').hidden = !hasCloud;
+    var hasAnyStyle = state.selected.length > 0;
+    $('#borderGroup').hidden = !hasAnyStyle;
+    var printFrame = $('#printFrame');
+    if (printFrame) {
+      printFrame.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
+      if (state.border !== 'none') printFrame.classList.add('frame-' + state.border);
+      applyFrame();
+    }
+    $$('#borderOptions button').forEach(function (el) { el.classList.toggle('on', el.dataset.border === state.border); });
+    var borderHints = { none: '无边框：保留原图边缘。', polaroid: '宝利来：奶油白相纸，底部留白更宽。', film: '胶片：黑色片边与齿孔。', paper: '留白：均匀白边，适合排版。' };
+    $('#borderHint').textContent = borderHints[state.border] || borderHints.none;
     $('#localOutputFields').hidden = !hasLocal;
     $('#outputGroup').hidden = !hasLocal && !hasCloud;
     $('#cloudQualityField').hidden = !hasCloud;
@@ -2338,8 +2388,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         '</button>' + retry +
         '</div>';
     }
+    var frameClass = state.border && state.border !== 'none' ? ' frame-' + state.border : '';
     return '<div class="pcard-wrap">' +
-      '<button class="pcard' + on + '" data-result="' + r.id + '" title="' + (r.revisedPrompt ? escapeHTML(r.revisedPrompt) : s.name) + '">' +
+      '<button class="pcard' + frameClass + on + '" data-result="' + r.id + '" title="' + (r.revisedPrompt ? escapeHTML(r.revisedPrompt) : s.name) + '">' +
       '<img src="' + r.url + '" alt="">' +
       '<span class="pcap"><b>0' + (i + 1) + ' · ' + s.name + '</b><span>' + (r.cloud ? '云端' : '本机') + '</span></span>' +
       '</button>' +
@@ -2357,6 +2408,50 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return { w: w, h: h };
   }
 
+  function loadImageUrl(url) {
+    return new Promise(function (resolve, reject) {
+      var im = new Image();
+      im.onload = function () { resolve(im); };
+      im.onerror = function () { reject(new Error('image')); };
+      im.src = url;
+    });
+  }
+
+  function triggerDownload(dataUrl, name) {
+    var a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = name;
+    a.click();
+  }
+
+  function framedCanvas(img, border) {
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    if (!w || !h || !border || border === 'none') return null;
+    var pad = border === 'polaroid' ? Math.max(20, Math.round(w * 0.055)) : border === 'paper' ? Math.max(16, Math.round(w * 0.04)) : Math.max(12, Math.round(w * 0.024));
+    var bottom = border === 'polaroid' ? Math.max(pad * 3, Math.round(w * 0.16)) : pad;
+    var c = make(w + pad * 2, h + pad + bottom), ctx = c.getContext('2d');
+    ctx.fillStyle = border === 'film' ? '#111111' : border === 'paper' ? '#fffdf7' : '#f6efe1';
+    ctx.fillRect(0, 0, c.width, c.height);
+    if (border === 'film') {
+      ctx.fillStyle = '#e7c472';
+      var hole = Math.max(4, Math.round(w * 0.007));
+      for (var x = pad; x < c.width - pad; x += hole * 3) {
+        ctx.fillRect(x, 2, hole, Math.max(3, Math.round(pad * 0.35)));
+        ctx.fillRect(x, c.height - 2 - Math.max(3, Math.round(pad * 0.35)), hole, Math.max(3, Math.round(pad * 0.35)));
+      }
+    }
+    ctx.drawImage(img, pad, pad, w, h);
+    return c;
+  }
+
+  function frameDataUrl(url, border) {
+    if (!border || border === 'none') return Promise.resolve(url);
+    return loadImageUrl(url).then(function (im) {
+      var c = framedCanvas(im, border);
+      return c ? c.toDataURL('image/jpeg', 0.94) : url;
+    });
+  }
+
   function downloadOne(id) {
     if (state.dirty) { toast('参数已修改，先重新生成再下载'); return; }
     var found = null, index = -1;
@@ -2366,21 +2461,29 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!found) return;
     if (found.error) { toast('这一版失败了，不能下载'); return; }
     if (found.cloud) {
-      var cloudA = document.createElement('a');
-      cloudA.href = found.url;
-      cloudA.download = 'cloud-' + ('0' + (index + 1)).slice(-2) + '-' + found.id + '.jpg';
-      cloudA.click();
-      toast('已发起下载 · ' + styleById(id).name + ' · 云端');
+      var cloudName = 'cloud-' + ('0' + (index + 1)).slice(-2) + '-' + found.id + '.jpg';
+      if (state.border && state.border !== 'none') {
+        toast('正在套用' + state.border + '边框…');
+        frameDataUrl(found.url, state.border).then(function (dataUrl) {
+          triggerDownload(dataUrl, cloudName);
+          toast('已发起下载 · ' + styleById(id).name + ' · 云端 · ' + state.border);
+        }).catch(function () { toast('边框处理失败，请重试'); });
+      } else {
+        var cloudA = document.createElement('a');
+        cloudA.href = found.url;
+        cloudA.download = cloudName;
+        cloudA.click();
+        toast('已发起下载 · ' + styleById(id).name + ' · 云端');
+      }
       return;
     }
     var es = exportSize();
     toast('正在导出原图…');
     renderStyleAsync(id, es.w, es.h, found.params ? Object.assign({}, found.params) : undefined).then(function (c) {
       if (!c) { toast('导出失败，请重试'); return; }
-      var a = document.createElement('a');
-      a.href = c.toDataURL('image/jpeg', 0.94);
-      a.download = 'style-' + ('0' + (index + 1)).slice(-2) + '-' + found.id + '-' + es.w + 'x' + es.h + '.jpg';
-      a.click();
+      var out = state.border && state.border !== 'none' ? framedCanvas(c, state.border) : c;
+      if (!out) out = c;
+      triggerDownload(out.toDataURL('image/jpeg', 0.94), 'style-' + ('0' + (index + 1)).slice(-2) + '-' + found.id + '-' + es.w + 'x' + es.h + '.jpg');
       toast('已发起下载 · ' + styleById(id).name + ' · ' + es.w + '×' + es.h);
     }).catch(function () { toast('导出失败，请重试'); });
   }
@@ -2400,12 +2503,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           return res.blob();
         }).then(function (blob) {
           if (!blob) return null;
-          return blobToDataURL(blob).then(function (dataUrl) { return { name: name, dataUrl: dataUrl }; });
+          return blobToDataURL(blob).then(function (dataUrl) {
+            return frameDataUrl(dataUrl, state.border).then(function (framed) { return { name: name, dataUrl: framed }; });
+          });
         }).catch(function () { return null; });
       }
       return renderStyleAsync(r.id, es.w, es.h, r.params ? Object.assign({}, r.params) : undefined).then(function (c) {
         if (!c) return null;
-        return { name: name, dataUrl: c.toDataURL('image/jpeg', 0.94) };
+        var out = state.border && state.border !== 'none' ? framedCanvas(c, state.border) : c;
+        if (!out) out = c;
+        return { name: name, dataUrl: out.toDataURL('image/jpeg', 0.94) };
       });
     });
     Promise.all(jobs).then(function (files) {
@@ -2413,10 +2520,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.14.2',
+        version: '0.15.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
+        border: state.border,
         text: state.text,
         items: state.results.filter(function (r) { return !r.error; }).map(function (r) {
           var st = styleById(r.id) || { name: r.id };
@@ -2751,6 +2859,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         $('#resultImg').removeAttribute('src');
         $('#emptyStage').hidden = true;
         $('#print').style.display = '';
+        $('#printFrame').hidden = false;
         $('#fileMeta').textContent = name + ' · ' + im.naturalWidth + ' × ' + im.naturalHeight;
         $('#sampleTag').hidden = !state.isSample;
         applyFrame();
@@ -2770,6 +2879,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     state.assetId = null;
     $('#emptyStage').hidden = false;
     $('#print').style.display = 'none';
+    $('#printFrame').hidden = true;
     $('#fileMeta').textContent = '未载入图片';
     $('#sampleTag').hidden = true;
     state.isSample = false;
@@ -3284,6 +3394,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultBig').src = r.url;
     $('#resultBig').alt = s.name + ' 结果大图';
     $('#resultInfo').textContent = '原图尺寸 · ' + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
+    layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
+    if (state.border !== 'none') layer.classList.add('frame-' + state.border);
     layer.inert = false;
     layer.classList.add('open');
     layer.setAttribute('aria-hidden', 'false');
@@ -3515,7 +3627,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.14.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.15.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3574,6 +3686,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (dl) { downloadOne(dl.dataset.download); return; }
       var el = e.target.closest('[data-result]');
       if (el) showResult(el.dataset.result);
+    });
+    $('#borderOptions').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-border]');
+      if (!b) return;
+      state.border = b.dataset.border;
+      updateUI();
+      renderProof();
+      if ($('#resultLayer') && $('#resultLayer').classList.contains('open')) openResultBig(resultCurrentId);
     });
     $$('[data-result-close]').forEach(function (el) { el.addEventListener('click', closeResultBig); });
     $('#resultDownload').addEventListener('click', function () { if (resultCurrentId) downloadOne(resultCurrentId); });
