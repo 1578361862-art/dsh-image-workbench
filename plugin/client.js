@@ -629,9 +629,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .pcard-zoom:hover{ color:var(--p-signal); border-color:var(--p-signal); }
 .iw-root .pcard-zoom:focus-visible{ outline:2px solid var(--p-focus); outline-offset:1px; }
 .iw-root .result-title-box span{ display:block; margin-top:2px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .result-feedback{ display:flex; align-items:center; gap:5px; }
-.iw-root .result-feedback .ghost-btn{ min-width:36px; height:24px; padding:0 7px; font-size:10px; }
-.iw-root .result-feedback .ghost-btn.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .result-foot{ justify-content:flex-end; }
+.iw-root .result-actions{ display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+.iw-root .result-action{ display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-2); font-family:var(--p-mono); font-size:10px; line-height:1; cursor:pointer; }
+.iw-root .result-action:hover{ border-color:var(--p-ink-3); color:var(--p-ink); }
+.iw-root .result-action.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .result-action svg{ flex:none; }
 .iw-root .refine-layer{ position:fixed; inset:0; z-index:80; display:none; }
 .iw-root .refine-layer.open{ display:block; }
 .iw-root .refine-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
@@ -650,8 +653,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-status{ min-height:14px; }
 .iw-root .refine-status.error{ color:var(--p-signal); }
 @media (max-width:760px){.iw-root .refine-body{grid-template-columns:1fr; overflow:auto;} .iw-root .refine-preview{min-height:180px;} .iw-root .refine-form textarea{min-height:110px;}}
-.iw-root .result-foot-right{ display:flex; align-items:center; gap:8px; }
-.iw-root .result-foot-right #resultInfo{ max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
 .iw-root .favorites-layer{ position:fixed; inset:0; z-index:77; display:none; }
 .iw-root .favorites-layer.open{ display:block; }
 .iw-root .favorites-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
@@ -665,7 +667,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .favorite-remove{ position:absolute; top:8px; right:8px; z-index:2; width:18px; height:18px; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); line-height:1; padding:0; }
 .iw-root .favorite-remove:hover{ color:var(--p-signal); border-color:var(--p-signal); }
 .iw-root .favorites-empty{ grid-column:1 / -1; padding:38px 16px; text-align:center; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
-@media (max-width:760px){.iw-root .favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .iw-root .result-foot-right #resultInfo{display:none;}}
+@media (max-width:760px){.iw-root .favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .iw-root .result-actions{justify-content:flex-start;} .iw-root .result-foot{justify-content:flex-start;}}
 .iw-root .drawer-layer{ position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .iw-root .drawer-backdrop{ position: absolute; inset: 0; background: var(--p-overlay); opacity: 0; transition: opacity .18s var(--p-ease); }
 .iw-root .drawer{
@@ -1282,14 +1284,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="icon-btn" data-result-close aria-label="关闭大图"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
     <div class="preview-stage"><img id="resultBig" alt=""></div>
-    <footer class="preview-foot">
-      <div class="result-feedback">
-        <button class="ghost-btn" id="resultLike" aria-pressed="false">赞</button>
-        <button class="ghost-btn" id="resultDislike" aria-pressed="false">踩</button>
-        <button class="ghost-btn" id="resultFavorite" aria-pressed="false">收藏</button>
-        <button class="ghost-btn" id="resultRefine">再次编辑</button>
+    <footer class="preview-foot result-foot">
+      <div class="result-actions">
+        <button class="result-action" id="resultLike" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 7.2 8.4 3c.3-.6 1.3-.7 1.6.1l.8 2.6h2.4c.9 0 1.5.8 1.3 1.6l-1.1 4.1c-.2.6-.7 1-1.3 1H6.2"/><path d="M6.2 7.2H3.8v5.2h2.4z"/></svg><span>赞</span></button>
+        <button class="result-action" id="resultDislike" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.8 8.8 7.6 13c-.3.6-1.3.7-1.6-.1L5.2 10.3H2.8c-.9 0-1.5-.8-1.3-1.6l1.1-4.1c.2-.6.7-1 1.3-1h7.9"/><path d="M9.8 8.8h2.4V3.6H9.8z"/></svg><span>踩</span></button>
+        <button class="result-action" id="resultFavorite" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 2.5h7.2c.6 0 1 .4 1 1v10l-4.6-2.8L3.4 13.5v-10c0-.6.4-1 1-1Z"/></svg><span>收藏</span></button>
+        <button class="result-action" id="resultRefine"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.8 2.6 2.6 2.6-6.9 6.9-3.2.6.6-3.2 6.9-6.9Z"/><path d="M9.4 4l2.6 2.6"/></svg><span>再次编辑</span></button>
+        <button class="result-action" id="resultDownload"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.8v7.1M5.2 7.2 8 10l2.8-2.8M3 12.5v1.2h10v-1.2"/></svg><span>下载</span></button>
       </div>
-      <div class="result-foot-right"><span id="resultInfo"></span><button class="ghost-btn" id="resultDownload">下载原图</button></div>
     </footer>
   </figure>
 </div>
@@ -2704,7 +2706,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.27.0',
+        version: '0.28.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3840,7 +3842,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var saved = favoriteIndex(bigState.key) >= 0;
       favorite.classList.toggle('on', saved);
       favorite.setAttribute('aria-pressed', saved ? 'true' : 'false');
-      favorite.textContent = saved ? '已收藏' : '收藏';
+      var label = favorite.querySelector('span');
+      if (label) label.textContent = saved ? '已收藏' : '收藏';
     }
     updateFavoriteCount();
   }
@@ -3855,7 +3858,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultMeta').textContent = opts.meta || '';
     $('#resultBig').src = opts.url;
     $('#resultBig').alt = (opts.title || '结果') + ' 大图';
-    $('#resultInfo').textContent = opts.info || '';
+    var infoEl = $('#resultInfo'); if (infoEl) infoEl.textContent = opts.info || '';
     var border = opts.border || 'none';
     layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
     if (border !== 'none') layer.classList.add('frame-' + border);
@@ -4366,7 +4369,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.27.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.28.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');

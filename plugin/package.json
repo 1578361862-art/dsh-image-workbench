@@ -1,6 +1,6 @@
 {
   "name": "dsh-image-workbench",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "private": true,
   "type": "module",
   "description": "图像风格工作台：本机印刷/胶片风格，一张图多版本并出；设置里保存 MiniMax Key、预算与隐私。",
