@@ -500,9 +500,11 @@ export function createStorage(root) {
     }
   }
 
-  async function listHistory(limit = 20) {
+  async function listHistory(limit = 20, offset = 0) {
     const parsed = Number(limit)
     const take = Number.isFinite(parsed) ? Math.min(100, Math.max(1, Math.floor(parsed))) : 20
+    const parsedOffset = Number(offset)
+    const skip = Number.isFinite(parsedOffset) ? Math.max(0, Math.floor(parsedOffset)) : 0
     const rows = await readIndexRows()
     const byId = new Map()
     for (const row of rows) byId.set(row.id, row)
@@ -511,10 +513,24 @@ export function createStorage(root) {
       const right = Date.parse(b.createdAt ?? '') || 0
       return right - left
     })
-    const page = ordered.slice(0, take)
+    const page = ordered.slice(skip, skip + take)
     const entries = []
     for (const row of page) entries.push(await historyEntry(row))
-    return { entries, total: ordered.length }
+    return { entries, total: ordered.length, limit: take, offset: skip }
+  }
+
+  async function clearHistory() {
+    const rows = await readIndexRows()
+    let removed = 0
+    for (const row of rows) {
+      if (!BATCH_ID_RE.test(String(row.id ?? ''))) continue
+      await rm(join(outputsRoot, row.id), { recursive: true, force: true })
+      removed += 1
+    }
+    await withIndexLock(async () => {
+      await writeIndexRows([])
+    })
+    return { ok: true, removed }
   }
 
   async function deleteBatch(id) {
@@ -636,6 +652,7 @@ export function createStorage(root) {
     listStyles,
     putStyle,
     listHistory,
+    clearHistory,
     cleanupOld,
     deleteBatch,
     resultPath,

@@ -483,7 +483,12 @@ export default {
         return json(res, 201, await storage.createBatch(body ?? {}))
       }
       if (method === 'GET' && path === 'history') {
-        return json(res, 200, await storage.listHistory(url.searchParams.get('limit') ?? 20))
+        const limit = url.searchParams.get('limit') ?? 20
+        const offset = url.searchParams.get('offset') ?? 0
+        return json(res, 200, await storage.listHistory(limit, offset))
+      }
+      if (method === 'DELETE' && path === 'history') {
+        return json(res, 200, await storage.clearHistory())
       }
       if (method === 'DELETE' && seg.length === 2 && seg[0] === 'batch') {
         return json(res, 200, await storage.deleteBatch(seg[1]))

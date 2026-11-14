@@ -707,6 +707,31 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .history-slot:hover .history-del,.iw-root .history-slot:focus-within .history-del,.iw-root .history-del:focus{opacity:1;}
 .iw-root .history-del:hover{color:var(--p-signal);border-color:var(--p-signal);}
 @media (hover:none){.iw-root .history-del{opacity:1;}}
+.iw-root .history-head-right{display:flex;align-items:baseline;gap:8px;}
+.iw-root .history-more{padding:0;border:0;background:none;font-family:var(--p-mono);font-size:10px;color:var(--p-signal-ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+.iw-root .history-more:hover{color:var(--p-signal);}
+.iw-root .history-layer{position:fixed;inset:0;z-index:72;display:none;}
+.iw-root .history-layer.open{display:block;}
+.iw-root .history-layer .drawer-backdrop{position:absolute;inset:0;background:var(--p-overlay);}
+.iw-root .history-dialog{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(860px,calc(100vw - 40px));max-height:calc(100vh - 50px);display:flex;flex-direction:column;background:var(--p-paper-2);border:1px solid var(--p-hair);box-shadow:0 30px 90px rgba(0,0,0,.24);}
+.iw-root .history-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--p-hair);}
+.iw-root .history-dialog-head h2{margin:0;font-family:var(--p-serif);font-size:22px;font-weight:600;letter-spacing:var(--pk-ls-title);}
+.iw-root .history-dialog-head span{margin-left:8px;font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3);}
+.iw-root .history-grid{flex:1;min-height:0;overflow:auto;padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;}
+.iw-root .history-card{display:flex;align-items:center;gap:8px;min-width:0;padding:6px;border:1px solid var(--p-hair);background:var(--p-paper-2);}
+.iw-root .history-thumb{width:82px;height:62px;flex:none;padding:0;border:1px solid var(--p-hair);background:var(--p-sunken);overflow:hidden;}
+.iw-root .history-thumb img{display:block;width:100%;height:100%;object-fit:cover;}
+.iw-root .history-thumb .ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:var(--p-mono);font-size:9px;color:var(--p-ink-4);}
+.iw-root .history-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;}
+.iw-root .history-info b{font-family:var(--p-mono);font-size:10px;font-weight:500;color:var(--p-ink-2);}
+.iw-root .history-info span{font-size:10px;line-height:1.35;color:var(--p-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iw-root .history-actions{flex:none;display:flex;flex-direction:column;gap:3px;}
+.iw-root .history-actions button{padding:2px 6px;border:1px solid var(--p-hair);background:var(--p-paper-2);font-family:var(--p-mono);font-size:9px;color:var(--p-ink-3);cursor:pointer;}
+.iw-root .history-actions button:hover{color:var(--p-ink);border-color:var(--p-ink-3);}
+.iw-root .history-actions [data-history-delete]:hover{color:var(--p-signal);border-color:var(--p-signal);}
+.iw-root .history-empty{grid-column:1 / -1;padding:26px;text-align:center;font-family:var(--p-mono);font-size:10px;color:var(--p-ink-4);}
+.iw-root .history-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px 12px;border-top:1px solid var(--p-hair);font-family:var(--p-mono);font-size:10px;color:var(--p-ink-4);}
+@media (max-width:760px){.iw-root .history-grid{grid-template-columns:1fr;}}
 .iw-root .empty-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--p-paper-2);color:var(--p-ink-3);z-index:5;}
 .iw-root .empty-stage[hidden]{display:none;}
 .iw-root .empty-stage h3{margin:0;font-family:var(--p-serif);font-size:22px;font-weight:600;letter-spacing:var(--pk-ls-title);color:var(--p-ink);}
@@ -843,7 +868,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div class="sec-head"><h2>风格库</h2><span class="count" id="styleCount">08</span></div>
       <div class="styles" id="styleGrid"></div>
       <div class="history" id="historyBox" hidden>
-        <div class="history-head"><b>最近</b><span class="count" id="historyCount">00</span></div>
+        <div class="history-head"><b>最近</b><div class="history-head-right"><span class="count" id="historyCount">00</span><button class="history-more" id="historyMore" hidden>查看更多</button></div></div>
         <div class="history-list" id="historyList"></div>
       </div>
     </aside>
@@ -1109,6 +1134,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </figure>
 </div>
 
+<div class="history-layer" id="historyLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-history-close></div>
+  <section class="history-dialog" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <header class="history-dialog-head">
+      <div><h2 id="historyTitle">历史记录</h2><span id="historyModalCount"></span></div>
+      <button class="icon-btn" data-history-close aria-label="关闭历史记录"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="history-grid" id="historyModalList"></div>
+    <footer class="history-dialog-foot">
+      <span>最近默认显示 3 条，这里可查看全部</span>
+      <button class="ghost-btn" id="historyLoadMore" hidden>加载更多</button>
+    </footer>
+  </section>
+</div>
+
 <input type="file" id="fileInput" accept="image/*" hidden>
 <input type="file" id="packInput" webkitdirectory multiple hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1151,6 +1191,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var matrix = { sources: [], results: [] };
   var hostHistory = [];
   var hostHistoryReady = false;
+  var historyTotal = 0;
+  var historyReturnFocus = null;
+  var historyLoadingMore = false;
 
   var STYLES = [
     { id: 'halftone', name: '半调网点', renderer: 'canvas', eta: '0.2s', desc: '报纸印刷的网点，适合黑白海报' },
@@ -2320,7 +2363,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.11.1',
+        version: '0.12.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2756,16 +2799,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     };
   }
 
-  function loadHostHistory() {
-    return apiFetch('/history?limit=20', { cache: 'no-store' }).then(function (res) {
+  function loadHostHistory(limit, offset) {
+    limit = limit || 20;
+    offset = offset || 0;
+    return apiFetch('/history?limit=' + encodeURIComponent(limit) + '&offset=' + encodeURIComponent(offset), { cache: 'no-store' }).then(function (res) {
       return res.ok ? res.json() : null;
     }).then(function (data) {
-      if (data && Array.isArray(data.entries)) {
-        hostHistory = data.entries.map(fromHost);
-        hostHistoryReady = true;
-        renderHistory();
-      }
-    }).catch(function () {});
+      if (!data || !Array.isArray(data.entries)) return;
+      var mapped = data.entries.map(fromHost);
+      hostHistory = offset > 0 ? hostHistory.concat(mapped) : mapped;
+      historyTotal = Number.isFinite(Number(data.total)) ? Number(data.total) : hostHistory.length;
+      hostHistoryReady = true;
+      renderHistory();
+      renderHistoryModal();
+    }).catch(function () { renderHistory(); });
   }
 
   function currentHistory() {
@@ -2829,6 +2876,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         if (!data) return;
         hostHistoryReady = true;
         hostHistory.unshift(fromHost(data));
+        historyTotal += 1;
         renderHistory();
       }).catch(function () {});
     }
@@ -2853,8 +2901,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         var urls = (e.results || []).map(function (r) { return r.url; });
         hostHistory = hostHistory.filter(function (x) { return x.hostId !== e.hostId; });
         hostHistoryReady = true;
+        historyTotal = Math.max(0, historyTotal - 1);
         forgetLocalHistory(urls);
         renderHistory();
+        renderHistoryModal();
         toast('已删除这条记录');
       }).catch(function (err) { toast(err.message || '删除失败'); });
       return;
@@ -2862,16 +2912,31 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var local = readHistory();
     local.splice(index, 1);
     writeHistory(local);
+    historyTotal = local.length;
     renderHistory();
+    renderHistoryModal();
     toast('已删除这条记录');
+  }
+
+  function paddedCount(n) {
+    n = Number(n) || 0;
+    return n < 100 ? ('0' + n).slice(-2) : String(n);
+  }
+
+  function dateTimeLabel(at) {
+    try {
+      return new Date(at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return '--:--'; }
   }
 
   function renderHistory() {
     var list = currentHistory();
     var box = $('#historyBox');
     if (!box) return;
-    box.hidden = !list.length;
-    $('#historyCount').textContent = ('0' + Math.min(list.length, 3)).slice(-2);
+    var total = hostHistoryReady ? historyTotal : list.length;
+    box.hidden = !total;
+    $('#historyCount').textContent = paddedCount(total);
+    $('#historyMore').hidden = total <= 3;
     $('#historyList').innerHTML = list.slice(0, 3).map(function (e, i) {
       var thumb = (e.results && e.results[0] && e.results[0].url) || '';
       return '<div class="history-slot">' +
@@ -2882,6 +2947,89 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         '<button class="history-del" data-history-del="' + i + '" aria-label="删除这条最近记录" title="删除记录">×</button>' +
         '</div>';
     }).join('');
+    if ($('#historyLayer') && $('#historyLayer').classList.contains('open')) renderHistoryModal();
+  }
+
+  function historyStyleNames(entry) {
+    var names = (entry.styleIds || []).map(function (id) {
+      var st = styleById(id);
+      return st ? st.name : '';
+    }).filter(Boolean);
+    return names.length ? names.join(' · ') : '—';
+  }
+
+  function renderHistoryModal() {
+    var box = $('#historyModalList');
+    if (!box) return;
+    var list = currentHistory();
+    var total = hostHistoryReady ? historyTotal : list.length;
+    $('#historyModalCount').textContent = '共 ' + total + ' 条';
+    if (!list.length) {
+      box.innerHTML = '<div class="history-empty">还没有历史记录。</div>';
+    } else {
+      box.innerHTML = list.map(function (e, i) {
+        var thumb = (e.results && e.results[0] && e.results[0].url) || '';
+        var n = (e.results || []).length;
+        return '<article class="history-card">' +
+          '<button class="history-thumb" data-history-restore="' + i + '" aria-label="恢复这条记录">' +
+          (thumb ? '<img src="' + thumb + '" alt="">' : '<span class="ph">无图</span>') +
+          '</button>' +
+          '<div class="history-info">' +
+          '<b>' + escapeHTML(dateTimeLabel(e.at)) + ' · ' + n + ' 版</b>' +
+          '<span>' + escapeHTML(e.sourceName || 'history') + '</span>' +
+          '<span>' + escapeHTML(historyStyleNames(e)) + '</span>' +
+          '</div>' +
+          '<div class="history-actions">' +
+          '<button data-history-restore="' + i + '">恢复</button>' +
+          '<button data-history-delete="' + i + '">删除</button>' +
+          '</div>' +
+          '</article>';
+      }).join('');
+    }
+    var more = $('#historyLoadMore');
+    if (more) {
+      more.hidden = !hostHistoryReady || hostHistory.length >= historyTotal;
+      more.disabled = historyLoadingMore;
+      more.textContent = historyLoadingMore ? '加载中…' : '加载更多';
+    }
+  }
+
+  function openHistoryModal() {
+    var layer = $('#historyLayer');
+    if (!layer) return;
+    historyReturnFocus = document.activeElement;
+    layer.classList.add('open');
+    layer.removeAttribute('inert');
+    layer.setAttribute('aria-hidden', 'false');
+    renderHistoryModal();
+    if (hostHistoryReady && historyTotal > hostHistory.length) {
+      loadHostHistory(100, 0).then(function () { renderHistoryModal(); });
+    }
+    var close = $('.history-dialog-head .icon-btn');
+    if (close) close.focus();
+  }
+
+  function closeHistoryModal() {
+    var layer = $('#historyLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.setAttribute('inert', '');
+    layer.setAttribute('aria-hidden', 'true');
+    if (historyReturnFocus && historyReturnFocus.isConnected) historyReturnFocus.focus();
+    historyReturnFocus = null;
+  }
+
+  function loadMoreHistory() {
+    if (!hostHistoryReady || historyLoadingMore || hostHistory.length >= historyTotal) return;
+    historyLoadingMore = true;
+    renderHistoryModal();
+    loadHostHistory(100, hostHistory.length).then(function () {
+      historyLoadingMore = false;
+      renderHistoryModal();
+    }).catch(function () {
+      historyLoadingMore = false;
+      renderHistoryModal();
+    });
   }
   function restoreHistory(index) {
     var list = currentHistory();
@@ -3269,7 +3417,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.11.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.12.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3333,6 +3481,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (del) { deleteHistory(Number(del.dataset.historyDel)); return; }
       var el = e.target.closest('[data-history]');
       if (el) restoreHistory(Number(el.dataset.history));
+    });
+    $('#historyMore').addEventListener('click', openHistoryModal);
+    $$('[data-history-close]').forEach(function (el) { el.addEventListener('click', closeHistoryModal); });
+    $('#historyLoadMore').addEventListener('click', loadMoreHistory);
+    $('#historyModalList').addEventListener('click', function (e) {
+      var del = e.target.closest('[data-history-delete]');
+      if (del) { deleteHistory(Number(del.dataset.historyDelete)); return; }
+      var el = e.target.closest('[data-history-restore]');
+      if (el) {
+        var index = Number(el.dataset.historyRestore);
+        closeHistoryModal();
+        restoreHistory(index);
+      }
     });
 
     $$('#sizeGroup button').forEach(function (el) {
@@ -3554,17 +3715,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (state.results.length) state.dirty = true;
     });
     $('#clearHistory').addEventListener('click', function () {
-      if (!window.confirm('清空最近的试印记录？此操作不可撤销。')) return;
-      var ids = hostHistory.filter(function (e) { return e.hostId; }).map(function (e) { return e.hostId; });
-      Promise.all(ids.map(function (id) {
-        return fetch(API + '/batch/' + encodeURIComponent(id), { method: 'DELETE' }).catch(function () {});
-      })).then(function () {
-        hostHistory = [];
-        hostHistoryReady = true;
-        try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
-        renderHistory();
-        toast('历史已清空');
-      });
+      if (!window.confirm('清空全部历史试印记录？此操作不可撤销。')) return;
+      apiFetch('/history', { method: 'DELETE' }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || '清空失败');
+          hostHistory = [];
+          hostHistoryReady = true;
+          historyTotal = 0;
+          try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+          renderHistory();
+          renderHistoryModal();
+          toast('历史已清空');
+        });
+      }).catch(function (err) { toast(err.message || '清空失败'); });
     });
     $('#billingLink').addEventListener('click', function () { loadUsage(); toast('已刷新云端用量'); });
     $('#cleanupBtn').addEventListener('click', function () {
@@ -3575,6 +3738,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         return res.json().catch(function () { return {}; }).then(function (data) {
           if (!res.ok) throw new Error(data.error || '清理失败');
           hostHistory = [];
+          historyTotal = 0;
           try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
           renderHistory();
           loadHostHistory();
@@ -3606,6 +3770,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && $('#historyLayer')?.classList.contains('open')) { closeHistoryModal(); return; }
       if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
       if (($('#previewLayer')?.classList.contains('open')) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault(); moveStylePreview(e.key === 'ArrowLeft' ? -1 : 1); return;
