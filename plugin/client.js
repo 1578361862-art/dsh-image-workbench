@@ -597,19 +597,39 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .result-layer{ position: fixed; inset: 0; z-index: 79; display: none; }
 .iw-root .result-layer.open{ display: block; }
 .iw-root .result-layer .drawer-backdrop{ position: absolute; inset: 0; background: rgba(15,14,12,.82); }
-.iw-root .result-dialog{ position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: min(1380px, calc(100vw - 32px)); max-height: calc(100vh - 32px); display: flex; flex-direction: column; background: var(--p-paper-2); border: 1px solid var(--p-hair); box-shadow: 0 30px 100px rgba(0,0,0,.35); }
-.iw-root .result-head{ display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 16px 8px; border-bottom: 1px solid var(--p-hair); }
-.iw-root .result-head h2{ margin: 0; font-family: var(--p-serif); font-size: 20px; font-weight: 600; letter-spacing: var(--pk-ls-title); }
-.iw-root .result-head span{ display: block; margin-top: 2px; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
-.iw-root .result-stage{ flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 10px; background: #1b1915; overflow: auto; }
-.iw-root .result-stage img{ display: block; max-width: 100%; max-height: calc(100vh - 190px); width: auto; height: auto; object-fit: contain; }
-.iw-root .result-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px 12px; border-top: 1px solid var(--p-hair); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
-.iw-root .result-layer.frame-polaroid .result-stage img{ width:auto; height:min(calc(100vh - 190px), 80vh); aspect-ratio:4/5; object-fit:cover; border:12px solid #f6efe1; border-bottom-width:42px; background:#f6efe1; box-shadow:0 16px 40px rgba(0,0,0,.35); box-sizing:border-box; }
-.iw-root .result-layer.frame-film .result-stage img{ border:10px solid #111; background:#111; box-shadow:inset 0 0 0 1px #333; box-sizing:content-box; }
-.iw-root .result-layer.frame-paper .result-stage img{ border:14px solid #fff; background:#fff; box-sizing:content-box; }
+
+
+
+
+
+
+
+.iw-root .result-layer.frame-polaroid .preview-stage img{ width:auto; height:min(calc(100vh - 190px), 80vh); aspect-ratio:4/5; object-fit:cover; border:12px solid #f6efe1; border-bottom-width:42px; background:#f6efe1; box-shadow:0 16px 40px rgba(0,0,0,.35); box-sizing:border-box; }
+.iw-root .result-layer.frame-film .preview-stage img{ border:10px solid #111; background:#111; box-shadow:inset 0 0 0 1px #333; box-sizing:content-box; }
+.iw-root .result-layer.frame-paper .preview-stage img{ border:14px solid #fff; background:#fff; box-sizing:content-box; }
 .iw-root .pcard-zoom{ position:absolute; top:4px; left:4px; z-index:2; width:34px; height:22px; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-ui); line-height:1; padding:0; }
 .iw-root .pcard-zoom:hover{ color:var(--p-signal); border-color:var(--p-signal); }
 .iw-root .pcard-zoom:focus-visible{ outline:2px solid var(--p-focus); outline-offset:1px; }
+.iw-root .result-title-box span{ display:block; margin-top:2px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .result-feedback{ display:flex; align-items:center; gap:5px; }
+.iw-root .result-feedback .ghost-btn{ min-width:36px; height:24px; padding:0 7px; font-size:10px; }
+.iw-root .result-feedback .ghost-btn.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .result-foot-right{ display:flex; align-items:center; gap:8px; }
+.iw-root .result-foot-right #resultInfo{ max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.iw-root .favorites-layer{ position:fixed; inset:0; z-index:77; display:none; }
+.iw-root .favorites-layer.open{ display:block; }
+.iw-root .favorites-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
+.iw-root .favorites-dialog{ width:min(1080px,calc(100vw - 40px)); }
+.iw-root .favorites-grid{ flex:1; min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px; background:var(--p-paper-2); }
+.iw-root .favorite-card{ position:relative; min-width:0; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper-2); cursor:pointer; text-align:left; }
+.iw-root .favorite-open{ display:block; width:100%; padding:0; border:0; background:none; cursor:pointer; }
+.iw-root .favorite-card img{ display:block; width:100%; aspect-ratio:16/10; object-fit:cover; background:var(--p-sunken); }
+.iw-root .favorite-card .f-name{ display:block; margin-top:4px; font-size:10px; color:var(--p-ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .favorite-card .f-meta{ display:block; margin-top:1px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
+.iw-root .favorite-remove{ position:absolute; top:8px; right:8px; z-index:2; width:18px; height:18px; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); line-height:1; padding:0; }
+.iw-root .favorite-remove:hover{ color:var(--p-signal); border-color:var(--p-signal); }
+.iw-root .favorites-empty{ grid-column:1 / -1; padding:38px 16px; text-align:center; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
+@media (max-width:760px){.iw-root .favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .iw-root .result-foot-right #resultInfo{display:none;}}
 .iw-root .drawer-layer{ position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .iw-root .drawer-backdrop{ position: absolute; inset: 0; background: var(--p-overlay); opacity: 0; transition: opacity .18s var(--p-ease); }
 .iw-root .drawer{
@@ -942,6 +962,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <h3>试印</h3><span class="count" id="proofCount">0 / 0</span><span class="proof-status" id="proofStatus" aria-live="polite"></span>
           <div class="proof-actions">
             <button class="ghost-btn" id="compareBtn" aria-pressed="false">对比原图</button>
+            <button class="ghost-btn" id="favoritesBtn">收藏 <span id="favCount">0</span></button>
             <button class="ghost-btn" id="zipBtn">打包下载</button>
           </div>
         </div>
@@ -1228,15 +1249,34 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
 <div class="result-layer" id="resultLayer" aria-hidden="true" inert>
   <div class="drawer-backdrop" data-result-close></div>
-  <figure class="result-dialog" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-    <header class="result-head">
-      <div><h2 id="resultTitle">结果</h2><span id="resultMeta"></span></div>
+  <figure class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <header class="preview-head">
+      <div class="result-title-box"><h2 id="resultTitle">结果</h2><span id="resultMeta"></span></div>
       <button class="icon-btn" data-result-close aria-label="关闭大图"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
-    <div class="result-stage"><img id="resultBig" alt=""></div>
-    <footer class="result-foot">
-      <span id="resultInfo"></span>
-      <button class="ghost-btn" id="resultDownload">下载原图</button>
+    <div class="preview-stage"><img id="resultBig" alt=""></div>
+    <footer class="preview-foot">
+      <div class="result-feedback">
+        <button class="ghost-btn" id="resultLike" aria-pressed="false">赞</button>
+        <button class="ghost-btn" id="resultDislike" aria-pressed="false">踩</button>
+        <button class="ghost-btn" id="resultFavorite" aria-pressed="false">收藏</button>
+      </div>
+      <div class="result-foot-right"><span id="resultInfo"></span><button class="ghost-btn" id="resultDownload">下载原图</button></div>
+    </footer>
+  </figure>
+</div>
+
+<div class="favorites-layer" id="favoritesLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-favorites-close></div>
+  <figure class="preview-dialog favorites-dialog" role="dialog" aria-modal="true" aria-labelledby="favoritesTitle">
+    <header class="preview-head">
+      <div><h2 id="favoritesTitle">收藏</h2><span id="favoritesMeta"></span></div>
+      <button class="icon-btn" data-favorites-close aria-label="关闭收藏"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="favorites-grid" id="favoritesGrid"></div>
+    <footer class="preview-foot">
+      <span>收藏的生成图片会保存在本机</span>
+      <button class="ghost-btn" data-favorites-close>关闭</button>
     </footer>
   </figure>
 </div>
@@ -1269,6 +1309,26 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var HISTORY_KEY = 'dsh-image-workbench/history/v1';
   var HIDDEN_KEY = 'dsh-image-workbench/hidden-styles/v1';
   var hiddenStyles = readHiddenStyles();
+  var FEEDBACK_KEY = 'dsh-image-workbench/feedback/v1';
+  var FAVORITES_KEY = 'dsh-image-workbench/favorites/v1';
+  var feedbackStore = readJsonStore(FEEDBACK_KEY, {});
+  var favorites = readJsonStore(FAVORITES_KEY, []);
+  if (!feedbackStore || typeof feedbackStore !== 'object' || Array.isArray(feedbackStore)) feedbackStore = {};
+  if (!Array.isArray(favorites)) favorites = [];
+  function readJsonStore(key, fallback) {
+    try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; }
+  }
+  function writeJsonStore(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
+  }
+  function hashText(text) {
+    var h = 2166136261;
+    for (var i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+    return (h >>> 0).toString(36);
+  }
+  function resultKey(r) {
+    return (r.cloud ? 'cloud' : 'local') + ':' + (r.id || r.styleId || '') + ':' + hashText(String(r.url || ''));
+  }
   var INKS = { vermilion: '#a8452f', indigo: '#2b3a67', ink: '#1b1813' };
   var INK_NAMES = { vermilion: '朱红', indigo: '靛蓝', ink: '墨黑' };
   var SERIF = '"Songti SC","Iowan Old Style","Source Han Serif SC","Noto Serif SC",Georgia,serif';
@@ -2344,6 +2404,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     renderEstimate();
     renderStamp();
     renderPromptPanel();
+    updateFavoriteCount();
   }
 
   function caption(left, right) {
@@ -2583,7 +2644,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.23.0',
+        version: '0.24.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3603,31 +3664,75 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     box.addEventListener('pointercancel', function () { crop.drag = null; });
   }
 
-  /* ————— 结果大图 ————— */
+  /* ————— 结果大图 / 反馈 / 收藏 ————— */
   var resultReturnFocus = null;
-  var resultCurrentId = null;
+  var bigState = null;
+
+  function favoriteIndex(key) {
+    for (var i = 0; i < favorites.length; i++) if (favorites[i].key === key) return i;
+    return -1;
+  }
+
+  function updateFavoriteCount() {
+    var count = $('#favCount');
+    if (count) count.textContent = String(favorites.length);
+  }
+
+  function syncBigActions() {
+    if (!bigState) return;
+    var feedback = feedbackStore[bigState.key] || '';
+    var like = $('#resultLike'), dislike = $('#resultDislike'), favorite = $('#resultFavorite');
+    if (like) { like.classList.toggle('on', feedback === 'up'); like.setAttribute('aria-pressed', feedback === 'up' ? 'true' : 'false'); }
+    if (dislike) { dislike.classList.toggle('on', feedback === 'down'); dislike.setAttribute('aria-pressed', feedback === 'down' ? 'true' : 'false'); }
+    if (favorite) {
+      var saved = favoriteIndex(bigState.key) >= 0;
+      favorite.classList.toggle('on', saved);
+      favorite.setAttribute('aria-pressed', saved ? 'true' : 'false');
+      favorite.textContent = saved ? '已收藏' : '收藏';
+    }
+    updateFavoriteCount();
+  }
+
+  function openBig(opts) {
+    if (!opts || !opts.url) return;
+    bigState = opts;
+    resultReturnFocus = document.activeElement;
+    var layer = $('#resultLayer');
+    if (!layer) return;
+    $('#resultTitle').textContent = opts.title || '结果';
+    $('#resultMeta').textContent = opts.meta || '';
+    $('#resultBig').src = opts.url;
+    $('#resultBig').alt = (opts.title || '结果') + ' 大图';
+    $('#resultInfo').textContent = opts.info || '';
+    var border = opts.border || 'none';
+    layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
+    if (border !== 'none') layer.classList.add('frame-' + border);
+    layer.inert = false;
+    layer.classList.add('open');
+    layer.setAttribute('aria-hidden', 'false');
+    syncBigActions();
+    $('.preview-head .icon-btn', layer).focus();
+  }
 
   function openResultBig(id) {
     var r = null;
     for (var i = 0; i < state.results.length; i++) if (state.results[i].id === id) r = state.results[i];
     if (!r || r.error) return;
-    resultCurrentId = id;
-    resultReturnFocus = document.activeElement;
-    var layer = $('#resultLayer');
-    if (!layer) return;
     var s = styleById(id) || { name: id };
-    $('#resultTitle').textContent = s.name;
     var ratioMeta = state.border === 'polaroid' ? ' · 宝丽来 4:5' : '';
-    $('#resultMeta').textContent = (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h + ratioMeta;
-    $('#resultBig').src = r.url;
-    $('#resultBig').alt = s.name + ' 结果大图';
-    $('#resultInfo').textContent = (state.border === 'polaroid' ? '宝丽来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载';
-    layer.classList.remove('frame-polaroid', 'frame-film', 'frame-paper');
-    if (state.border !== 'none') layer.classList.add('frame-' + state.border);
-    layer.inert = false;
-    layer.classList.add('open');
-    layer.setAttribute('aria-hidden', 'false');
-    $('.result-head .icon-btn', layer).focus();
+    openBig({
+      key: resultKey(r),
+      url: r.url,
+      title: s.name,
+      meta: (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h + ratioMeta,
+      info: (state.border === 'polaroid' ? '宝丽来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载',
+      w: r.w,
+      h: r.h,
+      border: state.border,
+      resultId: id,
+      styleId: id,
+      cloud: !!r.cloud,
+    });
   }
 
   function closeResultBig() {
@@ -3639,7 +3744,112 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultBig').removeAttribute('src');
     if (resultReturnFocus && resultReturnFocus.isConnected) resultReturnFocus.focus();
     resultReturnFocus = null;
-    resultCurrentId = null;
+    bigState = null;
+  }
+
+  function toggleFeedback(kind) {
+    if (!bigState) return;
+    feedbackStore[bigState.key] = feedbackStore[bigState.key] === kind ? '' : kind;
+    writeJsonStore(FEEDBACK_KEY, feedbackStore);
+    syncBigActions();
+  }
+
+  function toggleFavoriteBig() {
+    if (!bigState) return;
+    var idx = favoriteIndex(bigState.key);
+    if (idx >= 0) {
+      var removed = favorites[idx];
+      favorites.splice(idx, 1);
+      if (!writeJsonStore(FAVORITES_KEY, favorites)) {
+        favorites.splice(idx, 0, removed);
+        toast('收藏保存失败，请重试');
+        return;
+      }
+      toast('已取消收藏');
+    } else {
+      var entry = {
+        key: bigState.key,
+        url: bigState.url,
+        title: bigState.title || '',
+        styleId: bigState.styleId || '',
+        styleName: bigState.title || '',
+        w: bigState.w || 0,
+        h: bigState.h || 0,
+        cloud: !!bigState.cloud,
+        border: bigState.border || 'none',
+        at: Date.now(),
+      };
+      favorites.unshift(entry);
+      if (favorites.length > 40) favorites.pop();
+      if (!writeJsonStore(FAVORITES_KEY, favorites)) {
+        favorites.shift();
+        toast('收藏空间不足，先删除一些收藏');
+        return;
+      }
+      toast('已收藏');
+    }
+    syncBigActions();
+    if ($('#favoritesLayer') && $('#favoritesLayer').classList.contains('open')) renderFavorites();
+  }
+
+  function favoriteTime(ms) {
+    try { return new Date(ms).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }); } catch (e) { return ''; }
+  }
+
+  function renderFavorites() {
+    var grid = $('#favoritesGrid');
+    if (!grid) return;
+    $('#favoritesMeta').textContent = favorites.length ? favorites.length + ' 张 · 本机保存' : '';
+    if (!favorites.length) {
+      grid.innerHTML = '<div class="favorites-empty">还没有收藏。打开生成结果后点底部「收藏」。</div>';
+      return;
+    }
+    grid.innerHTML = favorites.map(function (f, i) {
+      var when = f.at ? favoriteTime(f.at) : '';
+      return '<article class="favorite-card">'
+        + '<button class="favorite-open" data-favorite-open="' + i + '" aria-label="查看收藏图片"><img src="' + escapeHTML(f.url) + '" alt="' + escapeHTML(f.title || '收藏图片') + '"></button>'
+        + '<span class="f-name">' + escapeHTML(f.title || f.styleName || '收藏') + '</span>'
+        + '<span class="f-meta">' + escapeHTML(when) + (f.cloud ? ' · 云端' : ' · 本机') + '</span>'
+        + '<button class="favorite-remove" data-favorite-remove="' + i + '" aria-label="取消收藏">×</button>'
+        + '</article>';
+    }).join('');
+  }
+
+  function openFavorites() {
+    renderFavorites();
+    var layer = $('#favoritesLayer');
+    if (!layer) return;
+    layer.inert = false;
+    layer.classList.add('open');
+    layer.setAttribute('aria-hidden', 'false');
+    $('.preview-head .icon-btn', layer).focus();
+  }
+
+  function closeFavorites() {
+    var layer = $('#favoritesLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.inert = true;
+    layer.setAttribute('aria-hidden', 'true');
+  }
+
+  function openFavorite(index) {
+    var f = favorites[index];
+    if (!f) return;
+    closeFavorites();
+    openBig({
+      key: f.key,
+      url: f.url,
+      title: f.title || '收藏图片',
+      meta: '收藏 · ' + (f.at ? new Date(f.at).toLocaleString('zh-CN') : ''),
+      info: (f.w && f.h ? f.w + ' × ' + f.h + ' · ' : '') + '来自收藏',
+      w: f.w,
+      h: f.h,
+      border: f.border || 'none',
+      resultId: null,
+      styleId: f.styleId || '',
+      cloud: !!f.cloud,
+    });
   }
 
   /* ————— 示例放大 ————— */
@@ -3855,7 +4065,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.23.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.24.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3921,10 +4131,34 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       state.border = b.dataset.border;
       updateUI();
       renderProof();
-      if ($('#resultLayer') && $('#resultLayer').classList.contains('open')) openResultBig(resultCurrentId);
+      if ($('#resultLayer') && $('#resultLayer').classList.contains('open') && bigState && bigState.resultId) openResultBig(bigState.resultId);
     });
     $$('[data-result-close]').forEach(function (el) { el.addEventListener('click', closeResultBig); });
-    $('#resultDownload').addEventListener('click', function () { if (resultCurrentId) downloadOne(resultCurrentId); });
+    $('#resultDownload').addEventListener('click', function () {
+      if (!bigState) return;
+      if (bigState.resultId) downloadOne(bigState.resultId);
+      else triggerDownload(bigState.url, '收藏-' + (bigState.styleId || 'image') + '.jpg');
+    });
+    $('#resultLike').addEventListener('click', function () { toggleFeedback('up'); });
+    $('#resultDislike').addEventListener('click', function () { toggleFeedback('down'); });
+    $('#resultFavorite').addEventListener('click', toggleFavoriteBig);
+    $('#favoritesBtn').addEventListener('click', openFavorites);
+    $$('[data-favorites-close]').forEach(function (el) { el.addEventListener('click', closeFavorites); });
+    $('#favoritesGrid').addEventListener('click', function (e) {
+      var remove = e.target.closest('[data-favorite-remove]');
+      if (remove) {
+        var idx = Number(remove.dataset.favoriteRemove);
+        var snapshot = favorites.slice();
+        favorites.splice(idx, 1);
+        if (!writeJsonStore(FAVORITES_KEY, favorites)) { favorites = snapshot; toast('取消收藏失败'); return; }
+        renderFavorites();
+        if (bigState && favoriteIndex(bigState.key) < 0) syncBigActions();
+        updateFavoriteCount();
+        return;
+      }
+      var open = e.target.closest('[data-favorite-open]');
+      if (open) openFavorite(Number(open.dataset.favoriteOpen));
+    });
 
     $('#historyList').addEventListener('click', function (e) {
       var del = e.target.closest('[data-history-del]');
@@ -4235,6 +4469,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && $('#favoritesLayer')?.classList.contains('open')) { closeFavorites(); return; }
       if (e.key === 'Escape' && $('#cropLayer')?.classList.contains('open')) { closeCrop(); return; }
       if (e.key === 'Escape' && $('#resultLayer')?.classList.contains('open')) { closeResultBig(); return; }
       if (e.key === 'Escape' && $('#historyLayer')?.classList.contains('open')) { closeHistoryModal(); return; }
