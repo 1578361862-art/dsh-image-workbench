@@ -734,6 +734,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .matrix-dialog .drawer-foot .ins-note{flex:1;margin:0;font-size:10px}
 .iw-root .cloud-price-hint{margin-top:4px;font-family:var(--p-mono);font-size:10px;line-height:1.45;color:var(--p-ink-4)}
 .iw-root .prompt-preview{margin-top:4px;padding:4px 8px;border-left:2px solid var(--p-hair);background:var(--p-sunken);font-family:var(--p-mono);font-size:10px;line-height:1.5;color:var(--p-ink-3);max-height:100px;overflow:auto;white-space:pre-wrap}
+.iw-root .prompt-select{ width:100%; height:24px; margin-top:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; color:var(--p-ink-2); }
+.iw-root .prompt-textarea{ width:100%; box-sizing:border-box; margin-top:4px; padding:6px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; line-height:1.55; color:var(--p-ink-2); resize:vertical; min-height:92px; }
+.iw-root .prompt-textarea:focus{ outline:none; border-color:var(--p-ink-3); }
+.iw-root .prompt-actions{ display:flex; gap:10px; margin-top:4px; }
+.iw-root .prompt-actions .ghost-btn{ height:auto; padding:0; color:var(--p-signal-ink); text-decoration:underline; text-underline-offset:2px; }
 .iw-root .matrix-body{padding:12px 16px;overflow:auto;min-height:120px}
 .iw-root .matrix-note{font-family:var(--p-mono);font-size:10px;line-height:1.5;color:var(--p-ink-3);margin:0 0 8px}
 .iw-root .matrix-pick-row{display:flex;align-items:center;gap:8px}
@@ -889,7 +894,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div class="ins-scroll">
       <div class="ins-head"><h2>已选风格</h2><span class="count" id="selCount">3 版</span></div>
       <div class="chips" id="chips"></div>
-      <details class="ins-group" open>
+      <details class="ins-group" open id="adjustGroup">
         <summary><span>调整</span><span class="ins-group-hint">强度 · 油墨 · 颗粒</span></summary>
       <div class="scope-row"><span>参数作用</span><div class="mini-seg" id="scopeGroup" role="group" aria-label="参数作用范围"><button data-scope="shared" class="on">共用</button><button data-scope="style">当前风格</button></div></div>
       <div class="scope-hint" id="scopeHint"></div>
@@ -915,8 +920,24 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </div>
       </details>
 
-      <details class="ins-group" open>
+      <details class="ins-group" open id="promptGroup" hidden>
+        <summary><span>提示词</span><span class="ins-group-hint">云端 H3</span></summary>
+        <div class="field">
+          <div class="lab"><span id="promptStyleName">云端风格</span><span class="val" id="promptState">默认</span></div>
+          <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格"></select>
+          <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
+          <div class="prompt-actions">
+            <button class="ghost-btn" id="cloudPromptOptimize">优化提示词</button>
+            <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
+          </div>
+          <div class="prompt-preview" id="promptPreview" hidden></div>
+          <button class="note-link" id="applyPrompt" hidden>应用改写</button>
+        </div>
+      </details>
+
+      <details class="ins-group" open id="outputGroup">
         <summary><span>输出</span><span class="ins-group-hint">尺寸 · 画幅 · 画质</span></summary>
+      <div id="localOutputFields">
       <div class="field">
         <div class="lab"><span>输出长边</span><span class="val" id="sizeVal">960 px</span></div>
         <div class="size" id="sizeGroup" role="group" aria-label="输出长边">
@@ -930,15 +951,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <button data-frame="原图">原图</button><button data-frame="3:2" class="on">3:2</button><button data-frame="4:5">4:5</button><button data-frame="3:4">3:4</button>
         </div>
       </div>
+      </div>
 
       <div class="field" id="cloudQualityField" hidden>
         <div class="lab"><span>云端画质</span><span class="val" id="cloudQualityVal">2K</span></div>
         <div class="size" id="cloudQualityGroup" role="group" aria-label="云端画质">
           <button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button>
         </div>
-        <button class="note-link" id="contextPreview">预览模型改写</button>
         <div class="cloud-price-hint" id="cloudPriceHint"></div>
-        <div class="prompt-preview" id="promptPreview" hidden></div>
       </div>
       </details>
 
@@ -1173,6 +1193,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     focus: 'riso',
     params: { strength: 0.86, ink: 'vermilion', grain: 0.32, size: '960' },
     overrides: {},
+    promptOverrides: {},
     scope: 'shared',
     text: { variant: 'poster', title: '静物研究', subtitle: '光与纸的第二次曝光', date: '2026.11', handle: '@IMAGE STUDIO' },
     assetId: null,
@@ -1899,6 +1920,119 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
 
+  function selectedCloudIds() {
+    return state.selected.filter(function (id) {
+      var st = styleById(id);
+      return st && st.renderer === 'model';
+    });
+  }
+
+  function currentCloudStyleId() {
+    var ids = selectedCloudIds();
+    if (!ids.length) return '';
+    var sel = $('#cloudPromptSelect') ? $('#cloudPromptSelect').value : '';
+    if (sel && ids.indexOf(sel) >= 0) return sel;
+    if (state.focus && ids.indexOf(state.focus) >= 0) return state.focus;
+    return ids[0];
+  }
+
+  function defaultPrompt(id) {
+    var st = styleById(id);
+    return (st && st.prompt) || '';
+  }
+
+  function promptFor(id) {
+    return state.promptOverrides[id] !== undefined ? state.promptOverrides[id] : defaultPrompt(id);
+  }
+
+  var pendingPrompt = null;
+
+  function renderPromptPanel() {
+    var ids = selectedCloudIds();
+    var group = $('#promptGroup');
+    if (!group) return;
+    group.hidden = !ids.length;
+    if (!ids.length) return;
+    var select = $('#cloudPromptSelect');
+    if (select) {
+      select.innerHTML = ids.map(function (id) {
+        var st = styleById(id);
+        return '<option value="' + id + '">' + escapeHTML(st ? st.name : id) + '</option>';
+      }).join('');
+      select.hidden = ids.length <= 1;
+    }
+    var id = currentCloudStyleId();
+    if (!id) return;
+    if (select) select.value = id;
+    var st = styleById(id);
+    var name = $('#promptStyleName');
+    if (name) name.textContent = (st && st.name) || '云端风格';
+    var area = $('#cloudPrompt');
+    if (area && document.activeElement !== area) area.value = promptFor(id);
+    var stateEl = $('#promptState');
+    if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '已改写' : '默认';
+    if (!pendingPrompt || pendingPrompt.id !== id) {
+      $('#promptPreview').hidden = true;
+      $('#applyPrompt').hidden = true;
+    }
+  }
+
+  function optimizePrompt() {
+    var id = currentCloudStyleId();
+    if (!id) { toast('先选一个云端风格'); return; }
+    if (!cloudReady()) { toast('先在设置里保存 API Key'); openSettings(); return; }
+    var prompt = $('#cloudPrompt') ? $('#cloudPrompt').value : promptFor(id);
+    var box = $('#promptPreview');
+    box.hidden = false;
+    box.textContent = '正在请求 Context-IR…';
+    $('#applyPrompt').hidden = true;
+    fetch(API + '/cloud/context-ir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || 'Context-IR 失败');
+        var text = data.revisedPrompt || '';
+        if (!text) throw new Error('Context-IR 没有返回改写');
+        pendingPrompt = { id: id, text: text };
+        box.textContent = text + (data.aspectRatio ? '\n\naspect: ' + data.aspectRatio : '');
+        $('#applyPrompt').hidden = false;
+      });
+    }).catch(function (err) {
+      pendingPrompt = null;
+      box.textContent = err.message || 'Context-IR 失败';
+    });
+  }
+
+  function applyPrompt() {
+    if (!pendingPrompt) return;
+    state.promptOverrides[pendingPrompt.id] = pendingPrompt.text;
+    var area = $('#cloudPrompt');
+    if (area) area.value = pendingPrompt.text;
+    $('#promptState').textContent = '已改写';
+    $('#promptPreview').hidden = true;
+    $('#applyPrompt').hidden = true;
+    pendingPrompt = null;
+    if (state.results.length) state.dirty = true;
+    updateUI();
+    toast('提示词已应用');
+  }
+
+  function resetPrompt() {
+    var id = currentCloudStyleId();
+    if (!id) return;
+    delete state.promptOverrides[id];
+    var area = $('#cloudPrompt');
+    if (area) area.value = defaultPrompt(id);
+    $('#promptState').textContent = '默认';
+    $('#promptPreview').hidden = true;
+    $('#applyPrompt').hidden = true;
+    pendingPrompt = null;
+    if (state.results.length) state.dirty = true;
+    toast('已恢复默认提示词');
+  }
+
   function updateUI() {
     var n = state.selected.length;
     $('#selCount').textContent = n ? n + ' 版' : '未选';
@@ -1929,11 +2063,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       : (state.scope === 'style' ? '只改当前风格；其他风格不变。' : '');
     $('#sizeVal').textContent = state.params.size + ' px';
     $('#frameVal').textContent = state.frame;
-    var hasCloud = state.selected.some(function (id) {
-      var st = styleById(id);
-      return st && st.renderer === 'model';
-    });
+    var selectedStyles = state.selected.map(styleById).filter(Boolean);
+    var hasCloud = selectedStyles.some(function (st) { return st.renderer === 'model'; });
+    var hasLocal = selectedStyles.some(function (st) { return st.renderer !== 'model'; });
+    var hasCanvas = selectedStyles.some(function (st) { return st.renderer === 'canvas' || st.renderer === 'preset'; });
+    var hasTemplate = selectedStyles.some(function (st) { return st.id === 'poster'; });
+    $('#adjustGroup').hidden = !hasCanvas;
+    $('#promptGroup').hidden = !hasCloud;
+    $('#localOutputFields').hidden = !hasLocal;
+    $('#outputGroup').hidden = !hasLocal && !hasCloud;
     $('#cloudQualityField').hidden = !hasCloud;
+    var outputHint = hasLocal && hasCloud ? '尺寸 · 画幅 · 画质' : hasCloud ? '画质' : '尺寸 · 画幅';
+    var outputHintEl = $('#outputGroup .ins-group-hint');
+    if (outputHintEl) outputHintEl.textContent = outputHint;
     $('#cloudQualityVal').textContent = state.cloudQuality;
     $$('#cloudQualityGroup button').forEach(function (el) {
       el.classList.toggle('on', el.dataset.quality === state.cloudQuality);
@@ -1941,7 +2083,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var promo = Date.now() < new Date('2026-11-18T00:00:00+08:00').getTime();
     $('#cloudPriceHint').textContent = promo ? '4K 促销 ¥0.2404/张 · 11/18 后 ¥0.4809' : '4K ¥0.4809/张';
     $$('#scopeGroup button').forEach(function (el) { el.classList.toggle('on', el.dataset.scope === state.scope); });
-    var isTemplate = focusId === 'poster';
+    var isTemplate = hasTemplate;
     $('#textFields').hidden = !isTemplate;
     $('#resetOverride').addEventListener('click', function () {
       if (!state.focus) return;
@@ -2006,6 +2148,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $$('.seg button').forEach(function (el) { el.setAttribute('aria-pressed', el.classList.contains('on') ? 'true' : 'false'); });
     renderEstimate();
     renderStamp();
+    renderPromptPanel();
   }
 
   function caption(left, right) {
@@ -2175,7 +2318,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.10.2',
+        version: '0.11.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2233,7 +2376,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var body = {
       assetId: assetId,
       styleId: id,
-      prompt: style.prompt,
+      prompt: promptFor(id),
       size: state.cloudQuality,
       params: effective(id)
     };
@@ -2765,27 +2908,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   /* ————— 设置 ————— */
   var setLayer = $('#settingsLayer');
   var settingsReturnFocus = null;
-  function previewPrompt() {
-    var box = $('#promptPreview');
-    var style = styleById(state.focus || '');
-    if (!box) return;
-    if (!style || style.renderer !== 'model') { toast('先选一个云端风格'); return; }
-    if (!cloudReady()) { toast('先在设置里保存 API Key'); return; }
-    box.hidden = false;
-    box.textContent = '正在请求 Context-IR…';
-    fetch(API + '/cloud/context-ir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: style.prompt }),
-    }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) throw new Error(data.error || 'Context-IR 失败');
-        var text = (data.revisedPrompt || '') + (data.aspectRatio ? '\n\naspect: ' + data.aspectRatio : '');
-        box.textContent = text || '没有返回改写';
-      });
-    }).catch(function (err) { box.textContent = err.message || 'Context-IR 失败'; });
-  }
-
   function loadUsage() {
     var today = $('#usageToday');
     var month = $('#usageMonth');
@@ -3138,7 +3260,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.10.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.11.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3269,7 +3391,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
     $('#importPack').addEventListener('click', importPack);
     $('#packInput').addEventListener('change', function (e) { readPackFiles(e.target.files); e.target.value = ''; });
-    $('#contextPreview').addEventListener('click', previewPrompt);
     $('#matrixBtn').addEventListener('click', openMatrix);
     $$('[data-matrix-close]').forEach(function (el) { el.addEventListener('click', closeMatrix); });
     $('#matrixPick').addEventListener('click', function () { $('#matrixInput').click(); });
@@ -3405,6 +3526,24 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!box.hidden) $('#keyInput').focus();
     });
     $('#keySave').addEventListener('click', saveKeyOnly);
+    $('#cloudPromptOptimize').addEventListener('click', optimizePrompt);
+    $('#cloudPromptReset').addEventListener('click', resetPrompt);
+    $('#applyPrompt').addEventListener('click', applyPrompt);
+    $('#cloudPromptSelect').addEventListener('change', function (e) {
+      state.focus = e.target.value;
+      renderChips();
+      updateUI();
+    });
+    $('#cloudPrompt').addEventListener('input', function () {
+      var id = currentCloudStyleId();
+      if (!id) return;
+      var val = this.value;
+      if (val.trim() === defaultPrompt(id).trim()) delete state.promptOverrides[id];
+      else state.promptOverrides[id] = val;
+      var stateEl = $('#promptState');
+      if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '已改写' : '默认';
+      if (state.results.length) state.dirty = true;
+    });
     $('#clearHistory').addEventListener('click', function () {
       if (!window.confirm('清空最近的试印记录？此操作不可撤销。')) return;
       var ids = hostHistory.filter(function (e) { return e.hostId; }).map(function (e) { return e.hostId; });
