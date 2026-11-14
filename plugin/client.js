@@ -572,6 +572,28 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .pcard.frame-film::after{ bottom:2px; }
 .iw-root .pcard.frame-paper{ padding:9px; background:#fff; border-color:#ddd5c8; }
 .iw-root .pcard.frame-paper img{ border:1px solid rgba(70,50,30,.08); }
+.iw-root .crop-layer{ position: fixed; inset: 0; z-index: 76; display: none; }
+.iw-root .crop-layer.open{ display: block; }
+.iw-root .crop-layer .drawer-backdrop{ position: absolute; inset: 0; background: rgba(15,14,12,.8); }
+.iw-root .crop-dialog{ position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: min(960px,calc(100vw - 28px)); max-height: calc(100vh - 28px); display: flex; flex-direction: column; background: var(--p-paper-2); border: 1px solid var(--p-hair); box-shadow: 0 30px 100px rgba(0,0,0,.32); }
+.iw-root .crop-head{ display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 16px 8px; border-bottom: 1px solid var(--p-hair); }
+.iw-root .crop-head h2{ margin: 0; font-family: var(--p-serif); font-size: 20px; font-weight: 600; }
+.iw-root .crop-head span{ display: block; margin-top: 2px; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .crop-ratios{ display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 16px; border-bottom: 1px solid var(--p-hair); }
+.iw-root .crop-ratios button{ height: 24px; padding: 0 8px; border: 1px solid var(--p-hair); background: var(--p-paper-2); font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); cursor: pointer; }
+.iw-root .crop-ratios button.on{ background: var(--p-ink); color: var(--p-paper); border-color: var(--p-ink); }
+.iw-root .crop-stage{ position: relative; flex: 1; min-height: 0; height: min(58vh, 560px); display: flex; align-items: center; justify-content: center; background: #1b1915; overflow: hidden; }
+.iw-root .crop-stage img{ display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; user-select: none; pointer-events: none; }
+.iw-root .crop-box{ position: absolute; border: 1px solid #fff; box-shadow: 0 0 0 9999px rgba(0,0,0,.56); cursor: move; touch-action: none; }
+.iw-root .crop-box::before,.iw-root .crop-box::after{ content:""; position:absolute; pointer-events:none; background:rgba(255,255,255,.55); }
+.iw-root .crop-box::before{ left:33.33%; right:33.33%; top:0; bottom:0; border-left:1px solid rgba(255,255,255,.4); border-right:1px solid rgba(255,255,255,.4); background:transparent; }
+.iw-root .crop-box::after{ top:33.33%; bottom:33.33%; left:0; right:0; border-top:1px solid rgba(255,255,255,.4); border-bottom:1px solid rgba(255,255,255,.4); background:transparent; }
+.iw-root .crop-hint{ position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); padding: 2px 6px; background: rgba(0,0,0,.55); color: #fff; font-family: var(--p-mono); font-size: 9px; white-space: nowrap; pointer-events: none; }
+.iw-root .crop-foot{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px 12px; border-top: 1px solid var(--p-hair); }
+.iw-root .crop-foot>span{ font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-3); }
+.iw-root .crop-actions{ display: flex; align-items: center; gap: 6px; }
+.iw-root .crop-actions .go{ width: auto; height: 32px; margin: 0; padding: 0 14px; }
+@media (max-width: 760px){.iw-root .crop-dialog{width:calc(100vw - 20px);} .iw-root .crop-actions{flex-wrap:wrap;justify-content:flex-end;}}
 .iw-root .result-layer{ position: fixed; inset: 0; z-index: 79; display: none; }
 .iw-root .result-layer.open{ display: block; }
 .iw-root .result-layer .drawer-backdrop{ position: absolute; inset: 0; background: rgba(15,14,12,.82); }
@@ -886,7 +908,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <section class="stage-col">
       <div class="stage-bar">
         <span class="file-meta"><span id="fileMeta">未载入图片</span><span id="sampleTag" class="p3" hidden>示例</span></span>
-        <span class="r"><span id="frameHint">3:2 裁切</span><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
+        <span class="r"><span id="frameHint">原图比例</span><button class="ghost-btn" id="cropBtn" disabled>裁切</button><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
       </div>
 
       <div class="stage" id="stage">
@@ -981,9 +1003,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </div>
 
       <div class="field">
-        <div class="lab"><span>画幅</span><span class="val" id="frameVal">3:2</span></div>
+        <div class="lab"><span>画幅</span><span class="val" id="frameVal">原图</span></div>
         <div class="size" id="frameGroup" role="group" aria-label="画幅">
-          <button data-frame="原图">原图</button><button data-frame="3:2" class="on">3:2</button><button data-frame="4:5">4:5</button><button data-frame="3:4">3:4</button>
+          <button data-frame="原图" class="on">原图</button><button data-frame="3:2">3:2</button><button data-frame="4:5">4:5</button><button data-frame="3:4">3:4</button>
         </div>
       </div>
       </div>
@@ -1174,6 +1196,36 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </section>
 </div>
 
+<div class="crop-layer" id="cropLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-crop-close></div>
+  <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+    <header class="crop-head">
+      <div><h2 id="cropTitle">裁切图片</h2><span id="cropMeta"></span></div>
+      <button class="icon-btn" data-crop-close aria-label="关闭裁切"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </header>
+    <div class="crop-ratios" id="cropRatios" role="group" aria-label="裁切比例">
+      <button data-crop-ratio="原图" class="on">原图</button>
+      <button data-crop-ratio="1:1">1:1</button>
+      <button data-crop-ratio="4:5">4:5</button>
+      <button data-crop-ratio="3:4">3:4</button>
+      <button data-crop-ratio="16:9">16:9</button>
+      <button data-crop-ratio="3:2">3:2</button>
+    </div>
+    <div class="crop-stage" id="cropStage">
+      <img id="cropImg" alt="待裁切图片">
+      <div class="crop-box" id="cropBox"><span class="crop-hint">拖动调整位置</span></div>
+    </div>
+    <footer class="crop-foot">
+      <span id="cropInfo"></span>
+      <div class="crop-actions">
+        <button class="ghost-btn" id="cropReset">重置</button>
+        <button class="ghost-btn" id="cropRestore">恢复原图</button>
+        <button class="go" id="cropApply">应用裁切</button>
+      </div>
+    </footer>
+  </section>
+</div>
+
 <div class="result-layer" id="resultLayer" aria-hidden="true" inert>
   <div class="drawer-backdrop" data-result-close></div>
   <figure class="result-dialog" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
@@ -1318,7 +1370,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     text: { variant: 'poster', title: '静物研究', subtitle: '光与纸的第二次曝光', date: '2026.11', handle: '@IMAGE STUDIO' },
     assetId: null,
     cloudQuality: '2K',
-    frame: '3:2',
+    frame: '原图',
     border: 'none',
     results: [],
     activeResult: null,
@@ -1326,6 +1378,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     generating: false,
     dirty: false,
     source: { name: '', w: 720, h: 860, url: '' },
+    originalSource: null,
     isSample: false,
     thumbs: {},
     settings: null
@@ -2167,6 +2220,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var n = state.selected.length;
     $('#selCount').textContent = n ? n + ' 版' : '未选';
     $('#go').disabled = state.generating || !state.source.url;
+    $('#cropBtn').disabled = !state.source.url || state.generating;
     $('#go').hidden = !state.source.url;
     var proofEl = document.querySelector('.proof');
     if (proofEl) proofEl.hidden = !state.source.url;
@@ -2529,7 +2583,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.20.0',
+        version: '0.21.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2865,7 +2919,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         if (disposed) return resolve();
         SRC = im;
         state.source = { name: name, w: im.naturalWidth, h: im.naturalHeight, url: url };
+        state.originalSource = { name: name, w: im.naturalWidth, h: im.naturalHeight, url: url };
         state.isSample = !!isSample;
+        state.frame = '原图';
+        state.assetId = null;
         state.results = [];
         state.activeResult = null;
         $('#baseImg').src = url;
@@ -2896,6 +2953,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#fileMeta').textContent = '未载入图片';
     $('#sampleTag').hidden = true;
     state.isSample = false;
+    state.originalSource = null;
+    state.frame = '原图';
     $('#baseImg').removeAttribute('src');
     $('#resultImg').removeAttribute('src');
     renderGrid();
@@ -3390,6 +3449,158 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function (err) { toast(err.message || '检查 Key 失败'); });
   }
 
+  /* ————— 图片裁切 ————— */
+  var crop = { img: null, natW: 0, natH: 0, ratio: '原图', box: { x: 0, y: 0, w: 0, h: 0 }, scale: 1, drag: null, returnFocus: null };
+
+  function cropRatioValue(ratio) {
+    if (ratio === '原图') return 0;
+    var parts = ratio.split(':');
+    return Number(parts[0]) / Number(parts[1]);
+  }
+
+  function cropBoxForRatio(ratio) {
+    var r = cropRatioValue(ratio);
+    var w = crop.natW, h = crop.natH;
+    if (r) { w = Math.min(crop.natW, crop.natH * r); h = w / r; }
+    return { x: Math.round((crop.natW - w) / 2), y: Math.round((crop.natH - h) / 2), w: Math.round(w), h: Math.round(h) };
+  }
+
+  function renderCropBox() {
+    var img = $('#cropImg'), stage = $('#cropStage'), box = $('#cropBox');
+    if (!img || !stage || !box || !crop.img) return;
+    var ir = img.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    if (!ir.width || !ir.height) return;
+    crop.scale = ir.width / crop.natW;
+    var left = ir.left - sr.left + crop.box.x * crop.scale;
+    var top = ir.top - sr.top + crop.box.y * crop.scale;
+    box.style.left = left + 'px';
+    box.style.top = top + 'px';
+    box.style.width = (crop.box.w * crop.scale) + 'px';
+    box.style.height = (crop.box.h * crop.scale) + 'px';
+    $('#cropInfo').textContent = Math.round(crop.box.w) + ' × ' + Math.round(crop.box.h) + ' px · ' + crop.ratio;
+  }
+
+  function setCropRatio(ratio) {
+    crop.ratio = ratio;
+    crop.box = cropBoxForRatio(ratio);
+    $$('#cropRatios button').forEach(function (b) { b.classList.toggle('on', b.dataset.cropRatio === ratio); });
+    renderCropBox();
+  }
+
+  function openCrop() {
+    if (!state.source.url) { toast('先选择图片'); return; }
+    var src = (state.originalSource && state.originalSource.url) ? state.originalSource : state.source;
+    var layer = $('#cropLayer');
+    crop.returnFocus = document.activeElement;
+    crop.ratio = '原图';
+    crop.drag = null;
+    layer.classList.add('open');
+    layer.inert = false;
+    layer.setAttribute('aria-hidden', 'false');
+    $('#cropMeta').textContent = src.name + ' · ' + src.w + ' × ' + src.h;
+    $('#cropBox').hidden = true;
+    var img = $('#cropImg');
+    img.onload = function () {
+      crop.img = img;
+      crop.natW = img.naturalWidth;
+      crop.natH = img.naturalHeight;
+      $('#cropBox').hidden = false;
+      $$('#cropRatios button').forEach(function (b) { b.classList.toggle('on', b.dataset.cropRatio === '原图'); });
+      crop.box = cropBoxForRatio('原图');
+      renderCropBox();
+      $('.crop-head .icon-btn', layer).focus();
+    };
+    img.onerror = function () { toast('图片无法读取'); };
+    img.src = src.url;
+  }
+
+  function closeCrop() {
+    var layer = $('#cropLayer');
+    if (!layer) return;
+    layer.classList.remove('open');
+    layer.inert = true;
+    layer.setAttribute('aria-hidden', 'true');
+    crop.drag = null;
+    $('#cropImg').removeAttribute('src');
+    crop.img = null;
+    if (crop.returnFocus && crop.returnFocus.isConnected) crop.returnFocus.focus();
+    crop.returnFocus = null;
+  }
+
+  function applyCrop() {
+    if (!crop.img || !crop.box.w || !crop.box.h) return;
+    var w = Math.max(1, Math.round(crop.box.w));
+    var h = Math.max(1, Math.round(crop.box.h));
+    var c = make(w, h);
+    c.getContext('2d').drawImage(crop.img, crop.box.x, crop.box.y, crop.box.w, crop.box.h, 0, 0, w, h);
+    var data = c.toDataURL('image/jpeg', 0.94);
+    closeCrop();
+    applyCroppedSource(data, w, h);
+  }
+
+  function applyCroppedSource(url, w, h) {
+    var im = new Image();
+    im.onload = function () {
+      if (disposed) return;
+      var baseName = (state.originalSource && state.originalSource.name) || state.source.name || 'image';
+      state.source = { name: baseName, w: w, h: h, url: url };
+      state.frame = '原图';
+      state.assetId = null;
+      state.results = [];
+      state.activeResult = null;
+      state.dirty = false;
+      SRC = im;
+      $('#baseImg').src = url;
+      $('#resultImg').removeAttribute('src');
+      $('#emptyStage').hidden = true;
+      $('#print').style.display = '';
+      $('#printFrame').hidden = false;
+      $('#print').classList.add('original-only');
+      $('#fileMeta').textContent = baseName + ' · 裁切 · ' + w + ' × ' + h;
+      $('#sampleTag').hidden = !state.isSample;
+      applyFrame();
+      updateUI();
+      renderGrid();
+      renderChips();
+      renderProof();
+      showOriginal();
+      caption('<b>裁切</b> · ' + baseName, w + ' × ' + h + ' · 原图比例');
+      toast('已裁切 · ' + w + ' × ' + h);
+    };
+    im.onerror = function () { toast('裁切图片读取失败'); };
+    im.src = url;
+  }
+
+  function restoreOriginalSource() {
+    var src = state.originalSource;
+    if (!src || !src.url) { toast('没有可恢复的原图'); return; }
+    closeCrop();
+    setSource(src.url, src.name, state.isSample).then(function () {
+      if (!disposed) toast('已恢复原图');
+    }).catch(function () { toast('恢复原图失败'); });
+  }
+
+  function bindCropDrag() {
+    var box = $('#cropBox');
+    if (!box) return;
+    box.addEventListener('pointerdown', function (e) {
+      if (!crop.img) return;
+      crop.drag = { x: e.clientX, y: e.clientY, bx: crop.box.x, by: crop.box.y };
+      box.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    box.addEventListener('pointermove', function (e) {
+      if (!crop.drag) return;
+      var dx = (e.clientX - crop.drag.x) / crop.scale;
+      var dy = (e.clientY - crop.drag.y) / crop.scale;
+      crop.box.x = Math.max(0, Math.min(crop.natW - crop.box.w, crop.drag.bx + dx));
+      crop.box.y = Math.max(0, Math.min(crop.natH - crop.box.h, crop.drag.by + dy));
+      renderCropBox();
+    });
+    box.addEventListener('pointerup', function () { crop.drag = null; });
+    box.addEventListener('pointercancel', function () { crop.drag = null; });
+  }
+
   /* ————— 结果大图 ————— */
   var resultReturnFocus = null;
   var resultCurrentId = null;
@@ -3642,7 +3853,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.20.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.21.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -3796,6 +4007,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
 
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
+    $('#cropBtn').addEventListener('click', openCrop);
+    $$('[data-crop-close]').forEach(function (el) { el.addEventListener('click', closeCrop); });
+    $('#cropRatios').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-crop-ratio]');
+      if (b) setCropRatio(b.dataset.cropRatio);
+    });
+    $('#cropReset').addEventListener('click', function () { setCropRatio(crop.ratio); });
+    $('#cropRestore').addEventListener('click', restoreOriginalSource);
+    $('#cropApply').addEventListener('click', applyCrop);
+    bindCropDrag();
     $('#libList').addEventListener('click', function (e) {
       var del = e.target.closest('[data-hide-style]');
       if (del) hideStyleFromLibrary(del.dataset.hideStyle);
@@ -4012,6 +4233,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && $('#cropLayer')?.classList.contains('open')) { closeCrop(); return; }
       if (e.key === 'Escape' && $('#resultLayer')?.classList.contains('open')) { closeResultBig(); return; }
       if (e.key === 'Escape' && $('#historyLayer')?.classList.contains('open')) { closeHistoryModal(); return; }
       if (e.key === 'Escape' && $('#previewLayer')?.classList.contains('open')) { closeStylePreview(); return; }
