@@ -728,6 +728,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-options input[type="text"]{ width:100%; height:28px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-sans); font-size:10px; }
 .iw-root .refine-layer-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; max-height:150px; overflow:auto; }
 .iw-root .refine-layer-grid[hidden]{ display:none; }
+.iw-root .refine-preview{ position:relative; }
+.iw-root .refine-preview.masking{ cursor:crosshair; }
+.iw-root .refine-mask-box{ position:absolute; border:2px solid #d23b2e; background:rgba(210,59,46,.12); pointer-events:none; }
+.iw-root .refine-mask-box[hidden]{ display:none; }
+.iw-root .refine-region-row{ display:flex; gap:4px; }
+.iw-root .refine-region-row input{ flex:1; }
+.iw-root .refine-region-row button{ flex:none; }
+.iw-root .refine-options .refine-max{ display:flex; align-items:center; gap:4px; }
+.iw-root .refine-options input[type="number"]{ width:52px; height:24px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-mono); font-size:10px; padding:0 4px; }
+.iw-root #refineLayerZip{ margin-top:6px; }
 .iw-root .refine-layer-grid img{ width:100%; aspect-ratio:1; object-fit:contain; background:#fff; border:1px solid var(--p-hair); cursor:pointer; }
 .iw-root .refine-cost{ margin-top:auto; padding-top:12px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
 .iw-root .refine-foot{ gap:12px; }
@@ -1428,16 +1438,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="icon-btn" data-refine-close aria-label="关闭再次编辑"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
     <div class="refine-body">
-      <div class="refine-preview"><img id="refineSource" alt="待二次编辑的图片"></div>
+      <div class="refine-preview" id="refinePreview"><img id="refineSource" alt="待二次编辑的图片"><div class="refine-mask-box" id="refineMaskBox" hidden></div></div>
       <div class="refine-form">
         <label class="refine-label" for="refinePrompt">编辑要求</label>
         <textarea id="refinePrompt" rows="7" spellcheck="false" placeholder="输入下一轮编辑要求…"></textarea>
         <p class="refine-note" id="refineNote">MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
         <div class="refine-options">
           <label><input type="checkbox" id="refineLayers"> 图层拆分（Seedream）</label>
-          <input type="text" id="refineRegion" placeholder="只修改位置，如：左上角招牌 / 人物右手">
+          <label class="refine-max">最多 <input type="number" id="refineLayerMax" min="2" max="100" value="30"> 层</label>
+          <div class="refine-region-row"><input type="text" id="refineRegion" placeholder="位置说明，如：左上角招牌 / 人物右手"><button class="ghost-btn" id="refineRegionPick">框选</button></div>
         </div>
         <div class="refine-layer-grid" id="refineLayerGrid" hidden></div>
+        <button class="ghost-btn" id="refineLayerZip" hidden>下载全部图层 ZIP</button>
         <div class="model-seg" id="refineModel"><span>模型</span><button data-refine-model="minimax" class="on">MiniMax H3</button><button data-refine-model="seedream">Seedream 5.5</button></div>
         <div class="refine-cost" id="refineCost"></div>
       </div>
@@ -2895,7 +2907,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.8',
+        version: '0.36.9',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3418,7 +3430,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         var st = styleById(r.styleId);
         return { id: r.styleId, url: r.url, w: r.w, h: r.h, cost: Number(r.costYuan) || 0, cloud: !!(st && st.renderer === 'model') };
       }),
-      hostId: entry.id
+      hostId: entry.id,
+      archived: entry.archived === true
     };
   }
 
@@ -3449,9 +3462,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     for (var i = 0; i < archived.length; i++) if (archived[i] === key) return i;
     return -1;
   }
+  function isItemArchived(item) {
+    return item.entry.archived === true || archivedIndex(resultKey(item.result)) >= 0;
+  }
   function recentItems() {
     return allRecentItems().filter(function (item) {
-      var isArch = archivedIndex(resultKey(item.result)) >= 0;
+      var isArch = isItemArchived(item);
       return showArchived ? isArch : !isArch;
     });
   }
@@ -3471,7 +3487,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!grid) return;
     var items = recentItems();
     var allItems = allRecentItems();
-    var archCount = archived.length;
+    var archCount = allItems.filter(isItemArchived).length;
     $('#recentTabCount').textContent = String(items.length);
     $('#archiveCount').textContent = String(archCount);
     var toggle = $('#recentArchiveToggle');
@@ -3493,7 +3509,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var key = resultKey(r);
       var fb = feedbackStore[key] || '';
       var fav = favoriteIndex(key) >= 0;
-      var isArch = archivedIndex(key) >= 0;
+      var isArch = isItemArchived(item);
       return '<article class="recent-card">'
         + '<button class="recent-open" data-recent-open="' + i + '" aria-label="查看 ' + escapeHTML(s.name) + '"><img loading="lazy" data-recent-key="' + escapeHTML(key) + '" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
         + '<span class="rc-style">' + escapeHTML(s.name) + '</span>'
@@ -3516,7 +3532,25 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!writeJsonStore(ARCHIVE_KEY, archived)) { toast('归档保存失败'); return false; }
     return idx < 0;
   }
-  function recentAction(action, index) {
+  async function setItemArchived(item, flag) {
+    if (item.entry.hostId) {
+      try {
+        var res = await apiFetch('/history/archive', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: item.entry.hostId, archived: flag }),
+        });
+        if (!res.ok) throw new Error('归档保存失败');
+        item.entry.archived = flag;
+        var localKey = resultKey(item.result);
+        var idx = archivedIndex(localKey);
+        if (idx >= 0) { archived.splice(idx, 1); writeJsonStore(ARCHIVE_KEY, archived); }
+        return flag;
+      } catch (err) { toast(err.message || '归档保存失败'); return null; }
+    }
+    return toggleArchiveKey(resultKey(item.result));
+  }
+
+  async function recentAction(action, index) {
     var item = recentItems()[index];
     if (!item) return;
     var r = item.result;
@@ -3552,9 +3586,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (action === 'archive') {
-      var added = toggleArchiveKey(key);
-      if (added) toast('已归档，文件仍保留在本机');
-      else toast('已取消归档');
+      var archivedNow = await setItemArchived(item, !isItemArchived(item));
+      if (archivedNow === null) return;
+      toast(archivedNow ? '已归档，文件仍保留在本机' : '已取消归档');
       renderRecentPage();
       return;
     }
@@ -3616,6 +3650,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       styleId: r.id,
       cloud: !!r.cloud,
       archiveKey: resultKey(r),
+      hostId: item.entry.hostId,
+      archived: item.entry.archived === true,
     });
   }
 
@@ -4475,7 +4511,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (archive) {
       var canArchive = !!bigState.archiveKey;
       archive.hidden = !canArchive;
-      var savedArchive = canArchive && archivedIndex(bigState.archiveKey) >= 0;
+      var savedArchive = canArchive && (bigState.archived === true || archivedIndex(bigState.archiveKey) >= 0);
       archive.classList.toggle('on', savedArchive);
       var archiveLabel = archive.querySelector('span');
       if (archiveLabel) archiveLabel.textContent = savedArchive ? '取消归档' : '归档';
@@ -4721,6 +4757,31 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return { url: job.output.url, w: job.output.w, h: job.output.h, styleId: styleId, cloud: true, cost: cloudUnitPrice() };
   }
 
+  async function generateMultiScene(images, styleId) {
+    var styleBodyText = styleBody(styleId);
+    var prompt = images.length + ' 张参考图是同一场景的不同角度/元素；保留每张图中的主体身份、数量、关键特征和相互空间关系，融合成一张完整场景；只改变画种、介质、光线、色彩、边缘与表面质感：' + styleBodyText;
+    if (state.genModel === 'seedream') {
+      var sr = await apiFetch('/seedream/edit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, size: textTargetSize('1:1', state.cloudQuality), imageDataUrls: images.map(function (im) { return im.url; }), model: 'doubao-seedream-5-5-261028' }),
+      });
+      var sd = await sr.json().catch(function () { return {}; });
+      if (!sr.ok) throw cloudError(sd.error || 'Seedream 失败', sd.code);
+      return { url: sd.url, w: sd.w, h: sd.h, styleId: styleId, cloud: true, cost: 0.28 };
+    }
+    var ids = [];
+    for (var i = 0; i < images.length; i++) ids.push(await uploadMultiAsset(images[i]));
+    var startedRes = await apiFetch('/cloud/jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assetIds: ids, styleId: styleId, prompt: prompt, size: textTargetSize('1:1', state.cloudQuality), params: {} }),
+    });
+    var started = await startedRes.json().catch(function () { return {}; });
+    if (!startedRes.ok) throw cloudError(started.error || '云端任务创建失败', started.code);
+    var job = await waitCloudJob(started.id);
+    if (job.status !== 'succeeded' || !job.output) throw cloudError((job.error && job.error.message) || '生成失败', job.status);
+    return { url: job.output.url, w: job.output.w, h: job.output.h, styleId: styleId, cloud: true, cost: cloudUnitPrice() };
+  }
+
   async function startMulti() {
     if (multiState.busy) return;
     var styles = selectedCloudIds();
@@ -4732,17 +4793,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var results = [];
     try {
       if (multiState.mode === 'scene') {
-        var c = document.createElement('canvas');
-        c.width = 1200; c.height = 1200;
-        var ctx = c.getContext('2d'); ctx.fillStyle = '#f4eddf'; ctx.fillRect(0, 0, 1200, 1200);
-        images.forEach(function (im, i) {
-          var col = i % 2, row = Math.floor(i / 2);
-          ctx.drawImage(im.el, col * 600, row * 600, 600, 600);
-        });
-        var scene = { url: c.toDataURL('image/jpeg', 0.92), w: 1200, h: 1200, name: 'scene.jpg' };
         for (var si = 0; si < styles.length; si++) {
-          var scenePrompt = '将参考图中的多组人物与场景融合成一张完整构图，保留每组主体的身份和关键特征；' + promptFor(styles[si]);
-          results.push(await generateMultiImage(scene, styles[si], scenePrompt));
+          results.push(await generateMultiScene(images, styles[si]));
         }
       } else {
         for (var i = 0; i < images.length; i++) {
@@ -4867,14 +4919,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
     var sourceModel = sourceStyle === 'seedream' ? 'seedream' : 'minimax';
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [] };
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [], mask: null, maskMode: false };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
     $('#refineLayerGrid').hidden = true;
     $('#refineLayerGrid').innerHTML = '';
+    $('#refineLayerZip').hidden = true;
     $('#refineRegion').value = '';
     $('#refineLayers').checked = false;
+    refine.mask = null;
+    refine.maskMode = false;
+    $('#refineMaskBox').hidden = true;
+    $('#refinePreview').classList.remove('masking');
+    $('#refineRegionPick').classList.remove('on');
     renderRefineThread();
     $('#refineStatus').textContent = '';
     $('#refineStatus').className = 'refine-status';
@@ -4900,6 +4958,62 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineSource').removeAttribute('src');
   }
 
+  async function downloadLayerZip() {
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('#refineLayerGrid img'));
+    if (!imgs.length) return;
+    try {
+      var files = [];
+      for (var i = 0; i < imgs.length; i++) {
+        var res = await fetch(imgs[i].src);
+        var blob = await res.blob();
+        var dataUrl = await new Promise(function (resolve) {
+          var r = new FileReader(); r.onload = function () { resolve(r.result); }; r.readAsDataURL(blob);
+        });
+        files.push({ name: 'layer-' + String(i + 1).padStart(2, '0') + '.png', dataUrl: dataUrl });
+      }
+      var zr = await apiFetch('/export', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: files, manifest: { kind: 'seedream-layers', count: files.length, createdAt: new Date().toISOString() } }),
+      });
+      if (!zr.ok) throw new Error('打包失败');
+      var zblob = await zr.blob();
+      var url = URL.createObjectURL(zblob);
+      var a = document.createElement('a'); a.href = url; a.download = 'seedream-layers-' + Date.now() + '.zip'; a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+      toast('图层 ZIP 已下载');
+    } catch (err) { toast(err.message || '图层打包失败'); }
+  }
+
+  function renderRefineMaskBox() {
+    var box = $('#refineMaskBox');
+    var img = $('#refineSource');
+    if (!box || !img) return;
+    if (!refine.mask) { box.hidden = true; return; }
+    var w = img.clientWidth, h = img.clientHeight;
+    box.hidden = false;
+    box.style.left = (refine.mask.x * w) + 'px';
+    box.style.top = (refine.mask.y * h) + 'px';
+    box.style.width = (refine.mask.w * w) + 'px';
+    box.style.height = (refine.mask.h * h) + 'px';
+  }
+
+  async function annotateRefineRegion(dataUrl) {
+    if (!refine.mask) return dataUrl;
+    var img = await new Promise(function (resolve, reject) {
+      var im = new Image(); im.onload = function () { resolve(im); }; im.onerror = reject; im.src = dataUrl;
+    });
+    var c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var x = refine.mask.x * c.width, y = refine.mask.y * c.height;
+    var w = refine.mask.w * c.width, h = refine.mask.h * c.height;
+    ctx.fillStyle = 'rgba(210,59,46,.10)'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#d23b2e'; ctx.lineWidth = Math.max(4, Math.round(c.width / 250));
+    ctx.strokeRect(x, y, w, h);
+    return c.toDataURL('image/jpeg', 0.94);
+  }
+
   async function startRefine() {
     if (refine.busy) return;
     var seedream = refine.model === 'seedream';
@@ -4919,13 +5033,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         var src = await refineDataUrl(refine.url);
         var lr = await apiFetch('/seedream/decompose', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageDataUrl: src, maxImages: 30 }),
+          body: JSON.stringify({ imageDataUrl: src, maxImages: Number($('#refineLayerMax').value) || 30 }),
         });
         var ld = await lr.json().catch(function () { return {}; });
         if (!lr.ok) throw cloudError(ld.error || '图层拆分失败', ld.code);
         $('#refineLayerGrid').hidden = false;
+        $('#refineLayerZip').hidden = false;
         $('#refineLayerGrid').innerHTML = ld.images.map(function (im) {
-          return '<img src="' + escapeHTML(im.url) + '" alt="' + escapeHTML(im.name || '图层') + '" data-layer-url="' + escapeHTML(im.url) + '">';
+          var ocr = im.textRecognition && im.textRecognition.text ? ' · OCR: ' + im.textRecognition.text.slice(0, 40) : '';
+          return '<img src="' + escapeHTML(im.url) + '" alt="' + escapeHTML(im.name || '图层') + '" title="' + escapeHTML((im.name || '图层') + ocr) + '" data-layer-url="' + escapeHTML(im.url) + '">';
         }).join('');
         $('#refineStatus').textContent = '已拆出 ' + ld.images.length + ' 层';
         toast('图层拆分完成');
@@ -4938,7 +5054,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (region) prompt = '只修改指定位置：' + region + '；其余区域保持像素不变。' + prompt;
+    if (refine.mask) prompt = '只修改图片中红框标出的区域；红框只是选区标记，不要在结果中保留红框；其余区域保持像素不变。' + prompt;
     if (seedream) prompt = '参考图1是底图。' + prompt;
+    var sourceData = await refineDataUrl(refine.url);
+    if (refine.mask) sourceData = await annotateRefineRegion(sourceData);
     var size = refineTargetSize(refine.w, refine.h);
     refine.thread.push({ role: 'user', text: prompt });
     renderRefineThread();
@@ -4950,7 +5069,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineStatus').className = 'refine-status';
     try {
       if (seedream) {
-        var dataUrl = await refineDataUrl(refine.url);
+        var dataUrl = sourceData;
         var sr = await apiFetch('/seedream/edit', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: prompt, size: size, imageDataUrl: dataUrl, model: 'doubao-seedream-5-5-261028' }),
@@ -4960,7 +5079,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         finishRefineResult(sd);
         return;
       }
-      var assetId = await uploadRefineSource(refine.url);
+      var assetId = await uploadRefineSource(sourceData);
       $('#refineStatus').textContent = '上传完成，提交作业…';
       var body = {
         assetId: assetId,
@@ -5216,7 +5335,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.8', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.9', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5293,12 +5412,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultLike').addEventListener('click', function () { toggleFeedback('up'); });
     $('#resultDislike').addEventListener('click', function () { toggleFeedback('down'); });
     $('#resultFavorite').addEventListener('click', toggleFavoriteBig);
-    $('#resultArchive').addEventListener('click', function () {
+    $('#resultArchive').addEventListener('click', async function () {
       if (!bigState || !bigState.archiveKey) return;
-      var added = toggleArchiveKey(bigState.archiveKey);
+      var item = allRecentItems().find(function (x) { return resultKey(x.result) === bigState.archiveKey; });
+      if (!item) return;
+      var archivedNow = await setItemArchived(item, !isItemArchived(item));
+      if (archivedNow === null) return;
+      bigState.archived = archivedNow;
       syncBigActions();
       renderRecentPage();
-      toast(added ? '已归档，文件仍保留在本机' : '已取消归档');
+      toast(archivedNow ? '已归档，文件仍保留在本机' : '已取消归档');
     });
     $$('[data-multi-close]').forEach(function (el) { el.addEventListener('click', function () { $('#multiLayer').classList.remove('open'); $('#multiLayer').inert = true; $('#multiLayer').setAttribute('aria-hidden', 'true'); }); });
     $('#multiMode').addEventListener('click', function (e) {
@@ -5318,7 +5441,33 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#resultRefine').addEventListener('click', openRefine);
     $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
+    $('#refineRegionPick').addEventListener('click', function () {
+      refine.maskMode = !refine.maskMode;
+      $('#refinePreview').classList.toggle('masking', refine.maskMode);
+      this.classList.toggle('on', refine.maskMode);
+    });
+    (function () {
+      var preview = $('#refinePreview'); var drag = null;
+      preview.addEventListener('pointerdown', function (e) {
+        if (!refine.maskMode || !$('#refineSource').src) return;
+        var r = preview.getBoundingClientRect();
+        drag = { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
+        refine.mask = { x: drag.x, y: drag.y, w: 0, h: 0 };
+        renderRefineMaskBox(); preview.setPointerCapture(e.pointerId); e.preventDefault();
+      });
+      preview.addEventListener('pointermove', function (e) {
+        if (!drag) return;
+        var r = preview.getBoundingClientRect();
+        var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        var y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+        refine.mask = { x: Math.min(drag.x, x), y: Math.min(drag.y, y), w: Math.abs(x - drag.x), h: Math.abs(y - drag.y) };
+        renderRefineMaskBox();
+      });
+      preview.addEventListener('pointerup', function () { drag = null; });
+      preview.addEventListener('pointercancel', function () { drag = null; });
+    })();
     $('#refineStart').addEventListener('click', startRefine);
+    $('#refineLayerZip').addEventListener('click', downloadLayerZip);
     $('#refineLayerGrid').addEventListener('click', function (e) {
       var img = e.target.closest('[data-layer-url]');
       if (!img) return;

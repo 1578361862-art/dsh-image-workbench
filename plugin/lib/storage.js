@@ -484,6 +484,7 @@ export function createStorage(root) {
         source: await sourceFor(batch.assetId ?? row.assetId, row.sourceName),
         text,
         frame: typeof batch.frame === 'string' && batch.frame ? batch.frame : '3:2',
+        archived: row.archived === true,
         results: Array.isArray(batch.results) ? batch.results : [],
       }
     }
@@ -502,8 +503,21 @@ export function createStorage(root) {
       source: await sourceFor(row.assetId, row.sourceName),
       text: '',
       frame: typeof row.frame === 'string' && row.frame ? row.frame : '3:2',
+      archived: row.archived === true,
       results,
     }
+  }
+
+  async function setArchived(id, archivedFlag) {
+    if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) fail('历史 id 无效')
+    return withIndexLock(async () => {
+      const rows = await readIndexRows()
+      const row = rows.find((r) => r.id === id)
+      if (!row) fail('历史不存在', 404)
+      row.archived = archivedFlag === true
+      await writeIndexRows(rows)
+      return { id, archived: row.archived }
+    })
   }
 
   async function listHistory(limit = 20, offset = 0) {
@@ -590,6 +604,7 @@ export function createStorage(root) {
       const keep = []
       const referenced = new Set()
       for (const row of rows) {
+        if (row.archived === true) { keep.push(row); continue }
         const at = Date.parse(row.createdAt ?? '')
         if (Number.isFinite(at) && at < cutoff) {
           const dir = join(outputsRoot, row.id)
@@ -659,6 +674,7 @@ export function createStorage(root) {
     putStyle,
     deleteStyle,
     listHistory,
+    setArchived,
     clearHistory,
     cleanupOld,
     deleteBatch,

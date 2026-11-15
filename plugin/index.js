@@ -562,15 +562,54 @@ export default {
         createdAt: new Date().toISOString(),
         assetId: '',
         styleIds: ['seedream'],
-        results: [{ styleId: 'seedream', url, w: size ? Number(size[1]) : 0, h: size ? Number(size[2]) : 0 }],
+        results: [{ styleId: 'seedream', url, w: size ? Number(size[1]) : 0, h: size ? Number(size[2]) : 0, costYuan: 0.28 }],
+      }).catch(() => {})
+      await cloud.ledger.append({
+        at: new Date().toISOString(),
+        jobId: id,
+        provider: 'seedream',
+        styleId: 'seedream',
+        model: result.rawMeta?.model || 'doubao-seedream-5-5-261028',
+        size: result.rawMeta?.size || '',
+        estimatedYuan: 0.28,
+        costYuan: 0.28,
+        requestId: result.rawMeta?.requestId || null,
       }).catch(() => {})
       return {
         url,
         w: size ? Number(size[1]) : 0,
         h: size ? Number(size[2]) : 0,
-        costYuan: 0.2,
+        costYuan: 0.28,
         model: result.rawMeta?.model || null,
       }
+    }
+
+    async function saveSeedreamLayers(result) {
+      const id = `layer_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
+      const dir = join(ROOT, 'outputs', id)
+      await mkdir(dir, { recursive: true })
+      const images = []
+      for (let i = 0; i < result.images.length; i++) {
+        const im = result.images[i]
+        let buffer
+        try {
+          const rr = await fetch(im.url)
+          if (!rr.ok) continue
+          buffer = Buffer.from(await rr.arrayBuffer())
+        } catch { continue }
+        const file = `layer-${i}.png`
+        await writeFile(join(dir, file), buffer, { mode: 0o644 })
+        images.push({
+          url: `/image-workbench/layer/${id}/${file}`,
+          name: im.name || `图层 ${i + 1}`,
+          index: im.index,
+          description: im.description || '',
+          textRecognition: im.textRecognition || null,
+          w: im.w || 0,
+          h: im.h || 0,
+        })
+      }
+      return { id, images, count: images.length, remote: result.images.length }
     }
 
     const route = async (req, res) => {
@@ -644,11 +683,20 @@ export default {
         const offset = url.searchParams.get('offset') ?? 0
         return json(res, 200, await storage.listHistory(limit, offset))
       }
+      if (method === 'POST' && path === 'history/archive') {
+        const body = await readBody(req, MAX_BODY)
+        if (typeof body?.id !== 'string') return json(res, 400, { error: 'id 无效' })
+        return json(res, 200, await storage.setArchived(body.id, body.archived === true))
+      }
       if (method === 'DELETE' && path === 'history') {
         return json(res, 200, await storage.clearHistory())
       }
       if (method === 'DELETE' && seg.length === 2 && seg[0] === 'batch') {
         return json(res, 200, await storage.deleteBatch(seg[1]))
+      }
+      if (method === 'GET' && seg.length === 3 && seg[0] === 'layer' && /\.png$/i.test(seg[2])) {
+        if (!/^layer_[a-z0-9]+$/i.test(seg[1]) || !/^layer-\d+\.png$/.test(seg[2])) return json(res, 404, { error: '图层不存在' })
+        return serveStored(res, join(ROOT, 'outputs', seg[1], seg[2]), 'image/png')
       }
       if (method === 'GET' && seg.length === 3 && seg[0] === 'result' && /\.jpg$/i.test(seg[2])) {
         const file = storage.resultPath(seg[1], seg[2].slice(0, -4))
@@ -710,7 +758,7 @@ export default {
             model: 'doubao-seedream-5-5-261028',
             baseUrl: SEEDREAM_DEFAULT_BASE,
           })
-          return json(res, 200, result)
+          return json(res, 200, await saveSeedreamLayers(result))
         }
         if (method === 'POST' && path === 'seedream/text') {
           const body = await readBody(req, MAX_SEEDREAM_BODY)
@@ -729,13 +777,14 @@ export default {
           const body = await readBody(req, MAX_SEEDREAM_BODY)
           const key = await readSeedreamKeyValue(ctx)
           if (!key) fail('还没有保存 Seedream API Key', 400)
-          if (typeof body?.imageDataUrl !== 'string' || !body.imageDataUrl.startsWith('data:image/')) {
-            fail('图片数据无效')
-          }
+          const images = Array.isArray(body?.imageDataUrls)
+            ? body.imageDataUrls.filter((u) => typeof u === 'string' && u.startsWith('data:image/'))
+            : (typeof body?.imageDataUrl === 'string' && body.imageDataUrl.startsWith('data:image/') ? [body.imageDataUrl] : [])
+          if (!images.length || images.length > 10) fail('图片数据无效（1–10 张）')
           const result = await generateSeedream({
             prompt: body?.prompt,
             size: body?.size,
-            images: [body.imageDataUrl],
+            images,
             key,
             model: SEEDREAM_MODELS.includes(body?.model) ? body.model : ((await readConfig()).seedreamModel || 'doubao-seedream-5-5-261028'),
             baseUrl: SEEDREAM_DEFAULT_BASE,
@@ -762,7 +811,7 @@ export default {
         }
         if (method === 'POST' && path === 'cloud/jobs') {
           const body = await readBody(req, MAX_CLOUD_BODY)
-          const reference = await styleReferenceFor(body?.styleId)
+          const reference = Array.isArray(body?.assetIds) && body.assetIds.length > 1 ? null : await styleReferenceFor(body?.styleId)
           return json(res, 202, await cloud.createJob(body ?? {}, config, { reference }))
         }
         if (method === 'POST' && path === 'cloud/text-jobs') {

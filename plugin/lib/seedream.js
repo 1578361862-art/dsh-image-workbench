@@ -166,6 +166,7 @@ export async function decomposeSeedream({
       name: x.name || ('图层 ' + (i + 1)),
       index: x.z_index ?? i,
       description: x.description || '',
+      textRecognition: x.text_recognition || null,
       w: x.size ? Number(String(x.size).split('x')[0]) : 0,
       h: x.size ? Number(String(x.size).split('x')[1]) : 0,
     }

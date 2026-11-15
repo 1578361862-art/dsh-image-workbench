@@ -119,11 +119,13 @@ export function createCloud({
     return { output }
   }
 
-  async function runJob(job, { config, key, asset, estimated, reference }) {
+  async function runJob(job, { config, key, asset, extraAssets = [], estimated, reference }) {
     jobs.update(job.id, { status: 'preparing' })
     let imageBuffer
+    let extraBuffers = []
     try {
       imageBuffer = await readFile(asset.path)
+      extraBuffers = await Promise.all(extraAssets.map((a) => readFile(a.path)))
     } catch (err) {
       jobs.failBeforeRequest(job.id, Object.assign(err, { code: 'asset_read_failed' }))
       return job
@@ -135,6 +137,7 @@ export function createCloud({
         mime: asset.meta.mime,
         referenceBuffer: reference?.buffer,
         referenceMime: reference?.mime,
+        extraBuffers: extraBuffers,
         prompt: current.prompt,
         size: current.size,
         key,
@@ -156,7 +159,9 @@ export function createCloud({
     if (!body || typeof body !== 'object' || Array.isArray(body)) fail('请求内容无效')
 
     const { assetId, styleId, prompt, size, params } = body
-    if (typeof assetId !== 'string' || !assetId) fail('assetId 无效')
+    const assetIds = Array.isArray(body.assetIds) ? body.assetIds.filter((id) => typeof id === 'string' && id) : []
+    const primaryId = assetId || assetIds[0]
+    if (typeof primaryId !== 'string' || !primaryId) fail('assetId 无效')
     if (typeof styleId !== 'string' || !STYLE_ID_RE.test(styleId)) fail('styleId 无效')
     if (typeof prompt !== 'string' || !prompt.trim()) fail('prompt 不能为空')
     if (prompt.length > 32000) fail('prompt 太长')
@@ -165,8 +170,14 @@ export function createCloud({
       fail('params 无效')
     }
 
-    const asset = await storage.getAsset(assetId)
+    const asset = await storage.getAsset(primaryId)
     if (!asset) fail('原图不存在', 404)
+    const extraAssets = []
+    for (const id of assetIds.slice(1)) {
+      const a = await storage.getAsset(id)
+      if (!a) fail('参考图不存在', 404)
+      extraAssets.push(a)
+    }
 
     const key = await readKey()
     if (!key) fail('还没有保存 API Key', 400)
@@ -197,7 +208,7 @@ export function createCloud({
 
     const cleanPrompt = prompt.trim()
     const job = jobs.create({
-      assetId,
+      assetId: primaryId,
       styleId,
       prompt: cleanPrompt,
       size,
@@ -208,7 +219,7 @@ export function createCloud({
 
     // 异步执行；错误全部收敛到 job.status，不会冒泡成未处理异常。
     setImmediate(() => {
-      runJob(job, { config, key, asset, estimated, reference: extras.reference }).catch((err) => {
+      runJob(job, { config, key, asset, extraAssets, estimated, reference: extras.reference }).catch((err) => {
         jobs.failBeforeRequest(job.id, err)
       })
     })

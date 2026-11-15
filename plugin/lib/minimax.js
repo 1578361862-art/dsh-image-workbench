@@ -123,6 +123,7 @@ export async function generateEdit({
   mime = 'image/jpeg',
   referenceBuffer,
   referenceMime,
+  extraBuffers = [],
   prompt,
   size = '2K',
   key,
@@ -165,6 +166,12 @@ export async function generateEdit({
   form.append('output_format', 'jpeg')
   form.append('n', '1')
   form.append('image', new Blob([imageBuffer], { type: mime }), `source.${extForMime(mime)}`)
+  for (let i = 0; i < extraBuffers.length; i++) {
+    const buf = extraBuffers[i]
+    if (!Buffer.isBuffer(buf) || !buf.length) continue
+    const mime = sniffMime(buf)
+    form.append('image', new Blob([buf], { type: mime }), `reference-${i + 2}.${extForMime(mime)}`)
+  }
   if (Buffer.isBuffer(referenceBuffer) && referenceBuffer.length) {
     const refMime = referenceMime || sniffMime(referenceBuffer)
     form.append('image', new Blob([referenceBuffer], { type: refMime }), `reference.${extForMime(refMime)}`)
