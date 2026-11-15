@@ -337,7 +337,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
 .iw-root .recent-head span{ display:block; margin-top:3px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-4); }
 .iw-root .recent-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:12px; }
-.iw-root .recent-card{ min-width:0; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper-2); text-align:left; cursor:pointer; }
+.iw-root .recent-card{ min-width:0; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper-2); text-align:left; }
+.iw-root .recent-open{ display:block; width:100%; padding:0; border:0; background:none; text-align:left; cursor:pointer; }
+.iw-root .recent-edit{ margin-top:5px; height:22px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
+.iw-root .recent-card:hover .recent-edit{ border-color:var(--p-ink-3); color:var(--p-ink); }
 .iw-root .recent-card:hover{ border-color:var(--p-ink-3); }
 .iw-root .recent-card img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--p-sunken); }
 .iw-root .recent-card .rc-style{ display:block; margin-top:5px; font-family:var(--p-serif); font-size:13px; color:var(--p-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -436,6 +439,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .print-frame.frame-film{ padding:9px; background:#111; box-shadow:0 8px 26px rgba(0,0,0,.25); }
 .iw-root .print-frame.frame-paper{ padding:12px; background:#fff; box-shadow:0 8px 26px rgba(40,30,20,.14); }
 .iw-root .print{ position: relative; background: #fff; }
+.iw-root .print img[hidden]{ display:none; }
 .iw-root .print img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .iw-root .print .result{ z-index: 1; }
 .iw-root .print .base{ z-index: 2; object-position: 50% 62%; }
@@ -2645,6 +2649,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function showOriginal() {
     previewToken++;
+    $('#baseImg').hidden = !state.source.url;
     $('#print').classList.add('original-only');
     $('#resultImg').removeAttribute('src');
     state.activeResult = null;
@@ -2689,6 +2694,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#emptyStage').hidden = true;
     $('#print').style.display = '';
     $('#printFrame').hidden = false;
+    $('#baseImg').hidden = !state.source.url;
     $('#resultImg').src = r.url;
     applyFrame();
     caption('<b>结果 ' + ('0' + (idx + 1)).slice(-2) + '</b> · ' + s.name, r.w + ' × ' + r.h + ' · sRGB');
@@ -2870,7 +2876,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.3',
+        version: '0.36.4',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3209,6 +3215,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var target = focusResult || state.results.filter(function (r) { return !r.error; })[0] || state.results[0];
       if (target) showResult(target.id);
       updateUI();
+      loadAllHistory(true);
       if (!auto) {
         rememberBatch();
         var okCount = state.results.filter(function (r) { return !r.error; }).length;
@@ -3288,6 +3295,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         state.assetId = null;
         state.results = [];
         state.activeResult = null;
+        $('#baseImg').hidden = false;
         $('#baseImg').src = url;
         $('#resultImg').removeAttribute('src');
         $('#emptyStage').hidden = true;
@@ -3318,6 +3326,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     state.isSample = false;
     state.originalSource = null;
     state.frame = '原图';
+    $('#baseImg').hidden = true;
     $('#baseImg').removeAttribute('src');
     $('#resultImg').removeAttribute('src');
     renderGrid();
@@ -3431,11 +3440,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     grid.innerHTML = items.map(function (item, i) {
       var r = item.result;
       var s = styleById(r.id) || { name: r.id || '生成图片' };
-      return '<button class="recent-card" data-recent="' + i + '">'
-        + '<img loading="lazy" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
+      return '<article class="recent-card">'
+        + '<button class="recent-open" data-recent-open="' + i + '" aria-label="查看 ' + escapeHTML(s.name) + '"><img loading="lazy" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
         + '<span class="rc-style">' + escapeHTML(s.name) + '</span>'
-        + '<span class="rc-meta">' + escapeHTML(dateTimeLabel(item.entry.at)) + ' · ' + r.w + ' × ' + r.h + (r.cloud ? ' · 云端' : ' · 本机') + '</span>'
-        + '</button>';
+        + '<span class="rc-meta">' + escapeHTML(dateTimeLabel(item.entry.at)) + ' · ' + r.w + ' × ' + r.h + (r.cloud ? ' · 云端' : ' · 本机') + '</span></button>'
+        + '<button class="recent-edit" data-recent-edit="' + i + '">多轮编辑</button>'
+        + '</article>';
     }).join('');
   }
 
@@ -5069,7 +5079,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.3', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.4', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5292,8 +5302,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (textState.result) triggerDownload(textState.result.url, '文生图-' + Date.now() + '.jpg');
     });
     $('#recentGrid').addEventListener('click', function (e) {
-      var card = e.target.closest('[data-recent]');
-      if (card) openRecentImage(Number(card.dataset.recent));
+      var edit = e.target.closest('[data-recent-edit]');
+      if (edit) {
+        var ei = Number(edit.dataset.recentEdit);
+        openRecentImage(ei);
+        openRefine();
+        return;
+      }
+      var card = e.target.closest('[data-recent-open]');
+      if (card) openRecentImage(Number(card.dataset.recentOpen));
     });
 
     $$('#sizeGroup button').forEach(function (el) {
