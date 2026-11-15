@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>区域裁剪合成 · 浏览器验收</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC",sans-serif;background:#111;color:#eee;margin:0;padding:24px}
+  h1{font-size:18px;margin:0 0 6px}
+  #status{font-size:20px;font-weight:700;margin:12px 0}
+  #status.pass{color:#4ade80}
+  #status.fail{color:#f87171}
+  .row{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+  figure{margin:0;background:#1b1b1b;border:1px solid #2a2a2a;border-radius:8px;padding:8px}
+  figcaption{font-size:12px;color:#9aa;margin-bottom:6px}
+  canvas{display:block;image-rendering:pixelated;max-width:320px;height:auto}
+  pre{background:#1b1b1b;border:1px solid #2a2a2a;border-radius:8px;padding:12px;font-size:12px;line-height:1.6;white-space:pre-wrap}
+</style>
+</head>
+<body>
+  <h1>区域裁剪合成 · 浏览器验收</h1>
+  <p style="color:#9aa;font-size:13px;margin:0">真实 Canvas 走一遍：原图 + 蒙版 → 裁到蒙版 bbox → 模拟 provider 编辑 → 按蒙版羽化合成回原图。断言蒙版外像素逐字节保持原图。</p>
+  <div id="status">RUNNING</div>
+  <pre id="details"></pre>
+  <div class="row">
+    <figure><figcaption>原图 320×240</figcaption><canvas id="previewOriginal"></canvas></figure>
+    <figure><figcaption>蒙版 160×120（45% 红叠加）</figcaption><canvas id="previewMask"></canvas></figure>
+    <figure><figcaption>合成结果</figcaption><canvas id="previewComposite"></canvas></figure>
+  </div>
+  <script type="module">
+  import { boundsFromAlpha, normalizeBounds, regionBox, normalizeMaskAlpha } from '../../lib/mask.js'
+  import { compositeBox } from '../../lib/composite.js'
+
+  const results = []
+  const details = []
+  function check(name, ok, detail) {
+    results.push(ok)
+    details.push((ok ? 'PASS ' : 'FAIL ') + name + (detail ? ' · ' + detail : ''))
+  }
+
+  const W = 320
+  const H = 240
+  const MW = 160
+  const MH = 120
+
+  function ctxOf(canvas, readback) {
+    return canvas.getContext('2d', readback ? { willReadFrequently: true } : undefined)
+  }
+
+  // 1. 确定性的原图：逐像素渐变，任何像素变化都能被发现。
+  const originalCanvas = document.createElement('canvas')
+  originalCanvas.width = W
+  originalCanvas.height = H
+  const originalCtx = ctxOf(originalCanvas, true)
+  const seed = originalCtx.createImageData(W, H)
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4
+      seed.data[i] = (x * 7) % 256
+      seed.data[i + 1] = (y * 11) % 256
+      seed.data[i + 2] = (x * 3 + y * 5) % 256
+      seed.data[i + 3] = 255
+    }
+  }
+  originalCtx.putImageData(seed, 0, 0)
+  const original = originalCtx.getImageData(0, 0, W, H).data
+
+  // 2. 蒙版画布只有一半分辨率，模拟 client 的 4096px 缩放；笔刷 alpha 与 client 一致。
+  const maskCanvas = document.createElement('canvas')
+  maskCanvas.width = MW
+  maskCanvas.height = MH
+  const maskCtx = ctxOf(maskCanvas, true)
+  maskCtx.strokeStyle = 'rgba(210,59,46,.45)'
+  maskCtx.fillStyle = 'rgba(210,59,46,.45)'
+  maskCtx.lineWidth = 18
+  maskCtx.lineCap = 'round'
+  maskCtx.beginPath()
+  maskCtx.moveTo(42, 58)
+  maskCtx.lineTo(112, 54)
+  maskCtx.stroke()
+  maskCtx.beginPath()
+  maskCtx.arc(62, 92, 11, 0, Math.PI * 2)
+  maskCtx.fill()
+  const overlay = maskCtx.getImageData(0, 0, MW, MH).data
+  const maskAlphaRaw = new Uint8Array(MW * MH)
+  for (let i = 0; i < maskAlphaRaw.length; i++) maskAlphaRaw[i] = overlay[i * 4 + 3]
+
+  // 3. 蒙版 bbox（蒙版坐标）→ 归一化 → 原图坐标 + 12% 上下文。
+  const bounds = boundsFromAlpha(maskAlphaRaw, MW, MH)
+  check('蒙版包围盒存在', !!bounds, bounds ? JSON.stringify(bounds) : 'null')
+  const bboxNorm = normalizeBounds(bounds, MW, MH)
+  const box = regionBox(bboxNorm, W, H)
+  const rawBox = { x: (bounds.x * W) / MW, y: (bounds.y * H) / MH, w: (bounds.w * W) / MW, h: (bounds.h * H) / MH }
+  check(
+    '裁剪框包含蒙版并带上下文 padding',
+    box.x <= rawBox.x && box.y <= rawBox.y && box.x + box.w >= rawBox.x + rawBox.w && box.y + box.h >= rawBox.y + rawBox.h &&
+      box.w > rawBox.w + 2 && box.h > rawBox.h + 2,
+    `box=${JSON.stringify(box)} raw=${JSON.stringify(rawBox)}`,
+  )
+
+  // 4. 裁原图 + 裁蒙版（蒙版按分辨率比例缩放），完全复刻 client 的裁剪步骤。
+  const crop = document.createElement('canvas')
+  crop.width = box.w
+  crop.height = box.h
+  ctxOf(crop).drawImage(originalCanvas, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h)
+  const cropJpeg = crop.toDataURL('image/jpeg', 0.95)
+  check('裁剪结果是 JPEG data URL', cropJpeg.startsWith('data:image/jpeg;base64,'), cropJpeg.slice(0, 32))
+
+  const maskCrop = document.createElement('canvas')
+  maskCrop.width = box.w
+  maskCrop.height = box.h
+  const maskCropCtx = ctxOf(maskCrop, true)
+  maskCropCtx.drawImage(
+    maskCanvas,
+    (box.x * MW) / W, (box.y * MH) / H, (box.w * MW) / W, (box.h * MH) / H,
+    0, 0, box.w, box.h,
+  )
+  const maskPng = maskCrop.toDataURL('image/png')
+  check('裁剪蒙版是 PNG data URL', maskPng.startsWith('data:image/png;base64,'), maskPng.slice(0, 32))
+  const maskCropData = maskCropCtx.getImageData(0, 0, box.w, box.h).data
+  const maskAlpha = normalizeMaskAlpha(
+    (() => {
+      const raw = new Uint8Array(box.w * box.h)
+      for (let i = 0; i < raw.length; i++) raw[i] = maskCropData[i * 4 + 3]
+      return raw
+    })(),
+    box.w * box.h,
+  )
+
+  // 5. 模拟 provider 返回：整块换成纯洋红，肉眼与断言都能确认编辑只作用在蒙版内。
+  const edited = new Uint8ClampedArray(box.w * box.h * 4)
+  for (let i = 0; i < edited.length; i += 4) {
+    edited[i] = 190
+    edited[i + 1] = 30
+    edited[i + 2] = 120
+    edited[i + 3] = 255
+  }
+
+  // 6. 按蒙版羽化合成回原图。
+  const featherPx = Math.max(1, Math.min(12, Math.round(Math.min(box.w, box.h) / 8)))
+  const composed = compositeBox({
+    original,
+    edited,
+    maskAlpha,
+    imageWidth: W,
+    imageHeight: H,
+    box,
+    feather: featherPx,
+  })
+
+  // 7. 断言：框外、框内蒙版外都逐字节不变；蒙版内确实变了；羽化有中间值。
+  let outsideBox = 0
+  let outsideMask = 0
+  let changed = 0
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4
+      const same =
+        composed.data[i] === original[i] &&
+        composed.data[i + 1] === original[i + 1] &&
+        composed.data[i + 2] === original[i + 2] &&
+        composed.data[i + 3] === original[i + 3]
+      const inBox = x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h
+      const inMask = inBox && maskAlpha[(y - box.y) * box.w + (x - box.x)] > 0
+      if (!inBox && !same) outsideBox++
+      if (inBox && !inMask && !same) outsideMask++
+      if (inMask && !same) changed++
+    }
+  }
+  check('裁剪框外像素逐字节保持原图', outsideBox === 0, '变化像素 ' + outsideBox)
+  check('框内蒙版外像素逐字节保持原图', outsideMask === 0, '变化像素 ' + outsideMask)
+  check('蒙版内像素被编辑', changed > 0, '变化像素 ' + changed)
+
+  let softened = 0
+  for (let y = box.y; y < box.y + box.h; y++) {
+    for (let x = box.x; x < box.x + box.w; x++) {
+      const mi = (y - box.y) * box.w + (x - box.x)
+      const a = maskAlpha[mi]
+      if (a <= 0 || a >= 255) continue
+      const i = (y * W + x) * 4
+      if (composed.data[i] !== original[i] && composed.data[i] !== edited[mi * 4]) softened++
+    }
+  }
+  check('羽化产生半透明过渡像素', softened > 0, '过渡像素 ' + softened)
+
+  // 距离蒙版边缘超过 feather 的像素羽化系数已是最大值，合成结果必须等于编辑结果
+  // （蒙版经过 2× 缩放插值，alpha 可能有 ±2 的量化误差，所以按 ±3 比较）。
+  const radius = featherPx + 2
+  let interior = null
+  for (let y = radius; y < box.h - radius && !interior; y += 2) {
+    for (let x = radius; x < box.w - radius; x += 2) {
+      if (maskAlpha[y * box.w + x] < 250) continue
+      let solid = true
+      for (let dy = -radius; dy <= radius && solid; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (maskAlpha[(y + dy) * box.w + x + dx] < 250) { solid = false; break }
+        }
+      }
+      if (solid) { interior = { x, y }; break }
+    }
+  }
+  check('找到远离羽化边缘的蒙版内部像素', !!interior, interior ? JSON.stringify(interior) : 'none')
+  if (interior) {
+    const i = (interior.y * box.w + interior.x) * 4
+    const o = ((box.y + interior.y) * W + box.x + interior.x) * 4
+    const near = (a, b) => Math.abs(a - b) <= 3
+    check(
+      '蒙版内部像素等于编辑结果',
+      near(composed.data[o], edited[i]) && near(composed.data[o + 1], edited[i + 1]) && near(composed.data[o + 2], edited[i + 2]),
+      `out=${composed.data[o]},${composed.data[o + 1]},${composed.data[o + 2]} edited=${edited[i]},${edited[i + 1]},${edited[i + 2]} alpha=${maskAlpha[interior.y * box.w + interior.x]}`,
+    )
+  }
+
+  // 8. 预览：原图 / 蒙版 / 合成结果。
+  const previewOriginal = ctxOf(document.querySelector('#previewOriginal'))
+  previewOriginal.canvas.width = W
+  previewOriginal.canvas.height = H
+  previewOriginal.drawImage(originalCanvas, 0, 0)
+
+  const previewMask = ctxOf(document.querySelector('#previewMask'))
+  previewMask.canvas.width = MW
+  previewMask.canvas.height = MH
+  previewMask.fillStyle = '#222'
+  previewMask.fillRect(0, 0, MW, MH)
+  previewMask.drawImage(maskCanvas, 0, 0)
+  previewMask.strokeStyle = '#4ade80'
+  previewMask.lineWidth = 1
+  previewMask.strokeRect((rawBox.x * MW) / W + 0.5, (rawBox.y * MH) / H + 0.5, (rawBox.w * MW) / W - 1, (rawBox.h * MH) / H - 1)
+  previewMask.strokeStyle = '#facc15'
+  previewMask.strokeRect((box.x * MW) / W + 0.5, (box.y * MH) / H + 0.5, (box.w * MW) / W - 1, (box.h * MH) / H - 1)
+
+  const previewComposite = ctxOf(document.querySelector('#previewComposite'))
+  previewComposite.canvas.width = W
+  previewComposite.canvas.height = H
+  previewComposite.putImageData(new ImageData(composed.data, W, H), 0, 0)
+
+  const failed = results.filter((ok) => !ok).length
+  const status = document.querySelector('#status')
+  status.textContent = (failed ? 'FAIL ' : 'PASS ') + (results.length - failed) + '/' + results.length
+  status.className = failed ? 'fail' : 'pass'
+  details.push('box=' + JSON.stringify(box) + ' feather=' + featherPx)
+  document.querySelector('#details').textContent = details.join('\n')
+  window.__regionComposite = { ok: failed === 0, results, box, outsideBox, outsideMask, changed, softened }
+  </script>
+</body>
+</html>

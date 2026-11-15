@@ -15,7 +15,7 @@ import { hashParams, MAX_SEED, normalizeSeed } from './lib/jobs.js'
 const SEEDREAM_MODELS = ['doubao-seedream-5-5-261028', 'doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828']
 const SEEDREAM_COST_YUAN = 0.28
 const MAX_SEEDREAM_IMAGES = 10
-import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
+import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage, parseDataUrl } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(homedir(), 'Data', 'dsh-image-workbench')
@@ -32,6 +32,7 @@ const MAX_STYLE_BODY = 4 * 1024 * 1024
 const MAX_EXPORT_BODY = Math.ceil((MAX_EXPORT_BYTES * 4) / 3) + 8 * 1024 * 1024
 const MAX_CLOUD_BODY = 256 * 1024
 const MAX_SEEDREAM_BODY = 48 * 1024 * 1024
+const MAX_COMPOSITE_BODY = MAX_ASSET_BODY
 const DEFAULTS = Object.freeze({
   budget: 10,
   privacyConfirm: true,
@@ -694,6 +695,71 @@ export default {
       return { id, images, count: images.length, remote: result.images.length }
     }
 
+    // 区域合成：客户端已把编辑结果按蒙版合成回原图，这里只做校验、落盘与索引。
+    // 不调用任何 provider，也不写 ledger（costYuan 固定 0）。
+    async function saveCompositeRegion(body) {
+      const parsed = parseDataUrl(body?.dataUrl, {
+        maxBytes: MAX_IMAGE_BYTES,
+        allowedMimes: ['image/jpeg', 'image/png'],
+      })
+      const w = Number(body?.w)
+      const h = Number(body?.h)
+      if (!Number.isInteger(w) || !Number.isInteger(h) || w < 1 || h < 1 || w > 20000 || h > 20000) {
+        fail('w/h 需要 1–20000 的整数')
+      }
+      const entityId = (value) =>
+        typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(value) ? value : null
+      const parentId = entityId(body?.parentId)
+      const recipeId = entityId(body?.recipeId)
+      const prompt = typeof body?.prompt === 'string' ? body.prompt.slice(0, 32000) : ''
+      const id = `comp_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
+      const fileName = parsed.ext === 'png' ? 'region.png' : 'region.jpg'
+      const dir = join(ROOT, 'outputs', id)
+      await mkdir(dir, { recursive: true })
+      await writeFile(join(dir, fileName), parsed.buffer, { mode: 0o644 })
+      const url = `/image-workbench/result/${id}/${fileName}`
+      const createdAt = new Date().toISOString()
+      const size = `${w}x${h}`
+      const results = [{ styleId: 'region', params: {}, w, h, costYuan: 0, url }]
+      await writeFile(
+        join(dir, 'batch.json'),
+        JSON.stringify(
+          {
+            kind: 'cloud',
+            id,
+            assetId: '',
+            styleId: 'region',
+            prompt,
+            model: 'region-composite',
+            seed: null,
+            size,
+            params: {},
+            parentId,
+            recipeId,
+            createdAt,
+            results,
+          },
+          null,
+          2,
+        ),
+        { mode: 0o644 },
+      )
+      await storage.indexCloudJob({
+        id,
+        createdAt,
+        assetId: '',
+        styleIds: ['region'],
+        model: 'region-composite',
+        seed: null,
+        size,
+        params: {},
+        parentId,
+        recipeId,
+        results,
+      })
+      return { id, url, w, h }
+    }
+
     const route = async (req, res) => {
       const rejection = ctx.get('connection')?.requestRejection?.({ headers: req.headers })
       if (rejection) return json(res, rejection, { error: '未授权' })
@@ -756,6 +822,10 @@ export default {
         if (!asset) return json(res, 404, { error: '资源不存在' })
         return serveStored(res, asset.path, asset.meta.mime)
       }
+      if (method === 'POST' && path === 'composite') {
+        const body = await readBody(req, MAX_COMPOSITE_BODY)
+        return json(res, 201, await saveCompositeRegion(body ?? {}))
+      }
       if (method === 'POST' && path === 'batches') {
         const body = await readBody(req, MAX_BATCH_BODY)
         return json(res, 201, await storage.createBatch(body ?? {}))
@@ -780,10 +850,11 @@ export default {
         if (!/^layer_[a-z0-9]+$/i.test(seg[1]) || !/^layer-\d+\.png$/.test(seg[2])) return json(res, 404, { error: '图层不存在' })
         return serveStored(res, join(ROOT, 'outputs', seg[1], seg[2]), 'image/png')
       }
-      if (method === 'GET' && seg.length === 3 && seg[0] === 'result' && /\.jpg$/i.test(seg[2])) {
-        const file = storage.resultPath(seg[1], seg[2].slice(0, -4))
+      if (method === 'GET' && seg.length === 3 && seg[0] === 'result' && /\.(jpg|png)$/i.test(seg[2])) {
+        const ext = /\.png$/i.test(seg[2]) ? 'png' : 'jpg'
+        const file = storage.resultPath(seg[1], seg[2].replace(/\.(jpg|png)$/i, ''), ext)
         if (!file) return json(res, 404, { error: '结果不存在' })
-        return serveStored(res, file, 'image/jpeg')
+        return serveStored(res, file, ext === 'png' ? 'image/png' : 'image/jpeg')
       }
       if (method === 'GET' && path === 'storage') {
         return json(res, 200, await storage.stats())

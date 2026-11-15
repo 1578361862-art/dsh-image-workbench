@@ -15,7 +15,8 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 ## Host 路由（全部经过 `connection.requestRejection`）
 
 - P1：`GET/POST /settings`、`GET /sample`、`POST /test`、`GET /health`
-- P2：`POST /assets`、`GET /asset/:id`、`POST /batches`、`GET /history?limit=20`、`DELETE /batch/:id`、`GET /result/:batch/:style.jpg`、`POST /export`、`GET /storage`、`POST /cleanup`
+- P2：`POST /assets`、`GET /asset/:id`、`POST /batches`、`GET /history?limit=20`、`DELETE /batch/:id`、`GET /result/:batch/:style.(jpg|png)`、`POST /export`、`GET /storage`、`POST /cleanup`
+- P1.2 区域合成：`POST /composite`（`{ dataUrl, w, h, parentId?, recipeId?, prompt? }` → `{ id, url, w, h }`；只落盘与索引，不调用 provider、不记 ledger）
 - P4：`GET/POST /styles`；P4.4：`POST /cloud/context-ir`
 - P3（保存 Key 后启用）：`POST /cloud/jobs`、`GET /cloud/jobs/:id`、`POST /cloud/jobs/:id/cancel`、`POST /cloud/key-test`（如实 501，不伪造）、`GET /usage`
 - 云端风格：`h3-illus / h3-silver / h3-oil / h3-impression / h3-manuscript / h3-dunhuang / h3-gongbi / h3-collage / h3-pixel / h3-film / h3-concept / h3-shadow / h3-eastern / h3-oldphone / h3-flashfilm / h3-dv / h3-sticker / h3-sheet / h3-infographic / h3-cad / h3-surreal`；prompt 摘要见 `docs/CLOUD-STYLES.md`
@@ -30,7 +31,8 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 
 ## 验证
 
-- `node --test tests/`：16 pass / 0 fail（设置与 401、资产去重/路径穿越、批次 text 对象 + frame、历史/删除/损坏索引、ZIP + unzip、P3 开关、key-test 诚实、jobs unknown 不重试、预算/账本、mock MiniMax provider）。
+- `node --test tests/`：39 pass / 0 fail（设置与 401、资产去重/路径穿越、批次 text 对象 + frame、历史/删除/损坏索引、ZIP + unzip、P3 开关、key-test 诚实、jobs unknown 不重试、预算/账本、mock MiniMax provider、mask 几何、裁剪/羽化/合成、`/composite` 落盘与历史）。
+- 区域合成浏览器验收：`python3 -m http.server 4789 --bind 127.0.0.1`（仓库根目录）+ `dsh_verify` 跑 `specs/region-composite.json`；fixture 在真实 Canvas 里断言蒙版外像素逐字节不变。
 - 客户端：1120×860、1000、900 宽 harness 验证空态、模板、参数作用域、原图下载、ZIP、Host 历史、A/B、夜版。
 - DSH 内：带页面会话的真实侧栏/历史/设置/单张下载/ZIP 已验收；真实页面无 pageerror。
 
@@ -45,7 +47,8 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - 真实 DSH 页面（侧栏/历史/设置/单张下载/ZIP）已用登录态 Playwright 实测；拖/粘、本机 3/4、A/B、夜版、1024/900 真机仍待验。
 - P3 真实 Key 已验证：2026-11-13 H3 插画化 2K 成功（1888×2240），结果已发邮件。P4：Agent 工具 `image_workbench`（cloud estimate/start/status）、批量矩阵（本机，最多 4 图）、preset 风格包导入、Context-IR 预览。
 - 云端 job 快照持久化（重启时 running/queued 转 unknown/failed，不自动重试）；成功结果自动写 host index；有 cancel 路由；账本只记成功；90 天清理已做。
-- 结果只接受 JPEG；原图 JPEG/PNG/WebP ≤20 MB；ZIP ≤80 MB。
+- 普通结果只接受 JPEG；区域合成结果可以是 JPEG 或 PNG（透明来源）。原图 JPEG/PNG/WebP ≤20 MB；ZIP ≤80 MB。
+- 区域合成保证的是**合成像素缓冲**里蒙版外逐字节不变；写回 `region.jpg` 时仍会走一次 JPEG 编码，整图字节会变（这是 JPEG 有损编码的固有行为，不是合成越界）。透明来源走 PNG，可避免这次再编码。
 
 
 ## 最近生成与存储

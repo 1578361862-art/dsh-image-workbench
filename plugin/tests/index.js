@@ -2,3 +2,4 @@
 // 这个入口只做转发，保证文档里的命令可用；glob 方式仍直接跑各测试文件。
 import './host.test.mjs'
 import './mask.test.mjs'
+import './composite.test.mjs'

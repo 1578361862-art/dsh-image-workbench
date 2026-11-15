@@ -1612,6 +1612,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-refine', name: '二次编辑', renderer: 'model', hidden: true, eta: '25s', desc: '对已生成图片再次编辑' },
     { id: 'h3-text', name: '纯文生图', renderer: 'model', hidden: true, eta: '25s', desc: '纯提示词生成' },
     { id: 'seedream', name: 'Seedream', renderer: 'model', hidden: true, eta: '20s', desc: '火山方舟 Seedream' },
+    { id: 'region', name: '区域编辑', renderer: 'canvas', hidden: true, eta: '0s', desc: '蒙版区域合成结果' },
   ];
 
   STYLES.forEach(function (s) {
@@ -3625,7 +3626,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function resultModelName(r) {
-    return /^seedream/.test(String(r && r.id || '')) ? 'Seedream 5.5' : 'MiniMax H3';
+    var id = String(r && r.id || '');
+    if (id === 'region') return '区域合成';
+    return /^seedream/.test(id) ? 'Seedream 5.5' : 'MiniMax H3';
   }
   function openRecentImage(index) {
     var item = recentItems()[index];
@@ -4816,7 +4819,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 二次编辑 ————— */
   var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
-  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
+  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', parentId: null, busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
 
   function refineTargetSize(w, h) {
     var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[state.cloudQuality] || 4194304;
@@ -4837,7 +4840,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
-  async function uploadRefineSource(url) {
+  async function uploadRefineSource(url, width, height, name) {
     var dataUrl = url;
     if (url.indexOf('data:') !== 0) {
       var fetched = await fetch(url);
@@ -4847,7 +4850,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var res = await apiFetch('/assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dataUrl: dataUrl, name: 'refine-source.jpg', w: refine.w, h: refine.h }),
+      body: JSON.stringify({
+        dataUrl: dataUrl,
+        name: name || 'refine-source.jpg',
+        w: width || refine.w,
+        h: height || refine.h,
+      }),
     });
     var saved = await res.json().catch(function () { return null; });
     if (!res.ok || !saved || !saved.id) throw cloudError((saved && saved.error) || '二次编辑原图上传失败', 'asset_upload_failed');
@@ -4888,6 +4896,313 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var h = Number(height) || 0;
     if (!bounds || w <= 0 || h <= 0) return { x: 0, y: 0, w: 0, h: 0 };
     return { x: bounds.x / w, y: bounds.y / h, w: bounds.w / w, h: bounds.h / h };
+  }
+
+  // MIRROR:regionmath:start — 与 plugin/lib/mask.js + plugin/lib/composite.js 同步。
+  // 浏览器不能 import Host 模块，也没有构建步骤；plugin/tests/composite.test.mjs
+  // 会抽出这段代码、用同一批输入与 lib 对比，防止两份实现漂移。
+  var MASK_DISPLAY_ALPHA = 115;
+  var REGION_DIAG = Math.SQRT2;
+
+  function clampBounds(bounds, width, height) {
+    var w = Math.max(0, Number(width) || 0);
+    var h = Math.max(0, Number(height) || 0);
+    if (!bounds) return { x: 0, y: 0, w: 0, h: 0 };
+    var x = Math.min(Math.max(0, Number(bounds.x) || 0), w);
+    var y = Math.min(Math.max(0, Number(bounds.y) || 0), h);
+    var bw = Math.min(Math.max(0, Number(bounds.w) || 0), w - x);
+    var bh = Math.min(Math.max(0, Number(bounds.h) || 0), h - y);
+    return { x: x, y: y, w: bw, h: bh };
+  }
+
+  function expandBounds(bounds, pad, width, height) {
+    if (!bounds) return { x: 0, y: 0, w: 0, h: 0 };
+    var p = Math.max(0, Number(pad) || 0);
+    return clampBounds(
+      {
+        x: (Number(bounds.x) || 0) - p,
+        y: (Number(bounds.y) || 0) - p,
+        w: (Number(bounds.w) || 0) + p * 2,
+        h: (Number(bounds.h) || 0) + p * 2,
+      },
+      width,
+      height,
+    );
+  }
+
+  function maskPadding(width, height) {
+    var longest = Math.max(Math.abs(Number(width) || 0), Math.abs(Number(height) || 0));
+    if (!longest) return 16;
+    return Math.max(16, Math.min(96, Math.round(longest * 0.12)));
+  }
+
+  function ensureAspect(bounds, width, height, minAspect) {
+    var box = clampBounds(bounds, width, height);
+    if (box.w <= 0 || box.h <= 0) return box;
+    var lo = Math.max(0.02, Math.min(1, Number(minAspect) || 1 / 3));
+    var hi = 1 / lo;
+    var x = box.x;
+    var y = box.y;
+    var w = box.w;
+    var h = box.h;
+    var ratio = w / h;
+    if (ratio > hi) {
+      var nh = Math.min(height, Math.ceil(w / hi));
+      y = Math.max(0, Math.round(y - (nh - h) / 2));
+      h = nh;
+    } else if (ratio < lo) {
+      var nw = Math.min(width, Math.ceil(h * lo));
+      x = Math.max(0, Math.round(x - (nw - w) / 2));
+      w = nw;
+    }
+    return clampBounds({ x: x, y: y, w: w, h: h }, width, height);
+  }
+
+  function regionBox(bounds, width, height) {
+    var w = Math.max(0, Math.floor(Number(width) || 0));
+    var h = Math.max(0, Math.floor(Number(height) || 0));
+    if (!bounds || w <= 0 || h <= 0) return { x: 0, y: 0, w: 0, h: 0 };
+    var px = {
+      x: Math.round((Number(bounds.x) || 0) * w),
+      y: Math.round((Number(bounds.y) || 0) * h),
+      w: Math.round((Number(bounds.w) || 0) * w),
+      h: Math.round((Number(bounds.h) || 0) * h),
+    };
+    var padded = expandBounds(px, maskPadding(px.w, px.h), w, h);
+    return ensureAspect(padded, w, h, 1 / 3);
+  }
+
+  function normalizeMaskAlpha(alpha, length) {
+    var n = Math.max(0, Math.floor(Number(length) || (alpha ? alpha.length : 0)));
+    if (!alpha || n <= 0) return new Uint8Array(0);
+    var out = new Uint8Array(n);
+    for (var i = 0; i < n; i++) {
+      var v = Math.max(0, Math.min(255, Math.round(Number(alpha[i]) || 0)));
+      out[i] = v === 0 ? 0 : Math.max(1, Math.min(255, Math.round((v * 255) / MASK_DISPLAY_ALPHA)));
+    }
+    return out;
+  }
+
+  function inwardFeatherAlpha(maskAlpha, width, height, feather) {
+    var w = Math.max(0, Math.floor(Number(width) || 0));
+    var h = Math.max(0, Math.floor(Number(height) || 0));
+    if (!maskAlpha || w <= 0 || h <= 0 || maskAlpha.length < w * h) return new Uint8Array(0);
+    var ramp = Math.max(1, Math.round(Number(feather) || 1));
+    var BIG = 1e6;
+    var dist = new Float32Array(w * h);
+    var i;
+    for (i = 0; i < dist.length; i++) dist[i] = maskAlpha[i] > 0 ? BIG : 0;
+    for (var y = 0; y < h; y++) {
+      var row = y * w;
+      for (var x = 0; x < w; x++) {
+        i = row + x;
+        if (dist[i] === 0) continue;
+        var best = dist[i];
+        if (x > 0) best = Math.min(best, dist[i - 1] + 1);
+        if (y > 0) {
+          best = Math.min(best, dist[i - w] + 1);
+          if (x > 0) best = Math.min(best, dist[i - w - 1] + REGION_DIAG);
+          if (x < w - 1) best = Math.min(best, dist[i - w + 1] + REGION_DIAG);
+        }
+        dist[i] = best;
+      }
+    }
+    for (var yy = h - 1; yy >= 0; yy--) {
+      var row2 = yy * w;
+      for (var xx = w - 1; xx >= 0; xx--) {
+        i = row2 + xx;
+        if (dist[i] === 0) continue;
+        var best2 = dist[i];
+        if (xx < w - 1) best2 = Math.min(best2, dist[i + 1] + 1);
+        if (yy < h - 1) {
+          best2 = Math.min(best2, dist[i + w] + 1);
+          if (xx < w - 1) best2 = Math.min(best2, dist[i + w + 1] + REGION_DIAG);
+          if (xx > 0) best2 = Math.min(best2, dist[i + w - 1] + REGION_DIAG);
+        }
+        dist[i] = best2;
+      }
+    }
+    var out = new Uint8Array(w * h);
+    for (i = 0; i < out.length; i++) {
+      var base = maskAlpha[i];
+      if (!base) continue;
+      var t = Math.min(1, dist[i] / ramp);
+      var smooth = t * t * (3 - 2 * t);
+      out[i] = Math.max(1, Math.round(base * smooth));
+    }
+    return out;
+  }
+
+  function compositeBox(input) {
+    var original = input.original;
+    var edited = input.edited;
+    var maskAlpha = input.maskAlpha;
+    var w = Math.max(0, Math.floor(Number(input.imageWidth) || 0));
+    var h = Math.max(0, Math.floor(Number(input.imageHeight) || 0));
+    if (!original || w <= 0 || h <= 0 || original.length < w * h * 4) {
+      throw new Error('compositeBox: 原图 RGBA 数据不足');
+    }
+    var out = new Uint8ClampedArray(original.length);
+    out.set(original);
+    var b = clampBounds(input.box, w, h);
+    if (b.w <= 0 || b.h <= 0) return { data: out, box: b, changedPixels: 0 };
+    if (!edited || edited.length < b.w * b.h * 4) throw new Error('compositeBox: 编辑结果 RGBA 数据不足');
+    if (!maskAlpha || maskAlpha.length < b.w * b.h) throw new Error('compositeBox: 蒙版数据不足');
+    var alpha = inwardFeatherAlpha(maskAlpha, b.w, b.h, input.feather);
+    var changed = 0;
+    for (var y = 0; y < b.h; y++) {
+      var outRow = (b.y + y) * w;
+      var srcRow = y * b.w;
+      for (var x = 0; x < b.w; x++) {
+        var mi = srcRow + x;
+        var a = alpha[mi];
+        if (!a) continue;
+        var di = (outRow + b.x + x) * 4;
+        var si = mi * 4;
+        var f = a / 255;
+        out[di] = original[di] + (edited[si] - original[di]) * f;
+        out[di + 1] = original[di + 1] + (edited[si + 1] - original[di + 1]) * f;
+        out[di + 2] = original[di + 2] + (edited[si + 2] - original[di + 2]) * f;
+        out[di + 3] = original[di + 3] + (edited[si + 3] - original[di + 3]) * f;
+        changed++;
+      }
+    }
+    return { data: out, box: b, changedPixels: changed };
+  }
+  // MIRROR:regionmath:end
+
+  var REGION_CROP_PROMPT = '这是从原图裁出的局部区域，只修改该区域内容；不要改变画框外的构图。';
+
+  function regionFeatherPx(box) {
+    return Math.max(1, Math.min(12, Math.round(Math.min(box.w, box.h) / 8)));
+  }
+
+  function regionCanvas(width, height, readback) {
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width));
+    canvas.height = Math.max(1, Math.round(height));
+    return {
+      canvas: canvas,
+      ctx: canvas.getContext('2d', readback ? { willReadFrequently: true } : undefined),
+    };
+  }
+
+  function loadRegionImage(src) {
+    return new Promise(function (resolve, reject) {
+      var image = new Image();
+      image.onload = function () { resolve(image); };
+      image.onerror = function () { reject(new Error('区域编辑：图片读取失败')); };
+      image.src = src;
+    });
+  }
+
+  // 把原图与蒙版裁到同一个像素框；裁剪框在蒙版 bbox 基础上加 12% 上下文（16–96px）。
+  async function cropForRefineMask(sourceUrl) {
+    var bbox = refine.mask.bbox;
+    if (!refine.mask.painted || !bbox) throw new Error('蒙版为空，无法裁剪区域');
+    var image = await loadRegionImage(sourceUrl);
+    var w = image.naturalWidth || image.width;
+    var h = image.naturalHeight || image.height;
+    if (!w || !h) throw new Error('区域编辑：原图尺寸无效');
+    var box = regionBox(bbox, w, h);
+    if (box.w < 1 || box.h < 1) throw new Error('区域编辑：蒙版区域太小');
+    var crop = regionCanvas(box.w, box.h);
+    crop.ctx.drawImage(image, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
+    var maskImage = await loadRegionImage(refine.mask.dataUrl);
+    var mw = maskImage.naturalWidth || maskImage.width;
+    var mh = maskImage.naturalHeight || maskImage.height;
+    if (!mw || !mh) throw new Error('区域编辑：蒙版读取失败');
+    var maskCrop = regionCanvas(box.w, box.h, true);
+    maskCrop.ctx.drawImage(
+      maskImage,
+      (box.x * mw) / w, (box.y * mh) / h, (box.w * mw) / w, (box.h * mh) / h,
+      0, 0, box.w, box.h,
+    );
+    var overlay = maskCrop.ctx.getImageData(0, 0, box.w, box.h).data;
+    var alphaRaw = new Uint8Array(box.w * box.h);
+    for (var i = 0; i < alphaRaw.length; i++) alphaRaw[i] = overlay[i * 4 + 3];
+    return {
+      cropDataUrl: crop.canvas.toDataURL('image/jpeg', 0.95),
+      cropMaskDataUrl: maskCrop.canvas.toDataURL('image/png'),
+      bboxPx: box,
+      cropW: box.w,
+      cropH: box.h,
+      maskAlpha: normalizeMaskAlpha(alphaRaw, alphaRaw.length),
+    };
+  }
+
+  // 把 provider 返回的裁剪图按蒙版羽化合成回原图；蒙版外像素保持原图字节。
+  async function compositeRefineResult(sourceUrl, resultUrl, crop) {
+    var image = await loadRegionImage(sourceUrl);
+    var w = image.naturalWidth || image.width;
+    var h = image.naturalHeight || image.height;
+    if (!w || !h) throw new Error('区域编辑：原图尺寸无效');
+    var box = crop.bboxPx;
+    var base = regionCanvas(w, h, true);
+    base.ctx.drawImage(image, 0, 0, w, h);
+    var original = base.ctx.getImageData(0, 0, w, h);
+    var editedImage = await loadRegionImage(resultUrl);
+    var editedCanvas = regionCanvas(box.w, box.h, true);
+    editedCanvas.ctx.drawImage(editedImage, 0, 0, box.w, box.h);
+    var edited = editedCanvas.ctx.getImageData(0, 0, box.w, box.h);
+    var composed = compositeBox({
+      original: original.data,
+      edited: edited.data,
+      maskAlpha: crop.maskAlpha,
+      imageWidth: w,
+      imageHeight: h,
+      box: box,
+      feather: regionFeatherPx(box),
+    });
+    base.ctx.putImageData(new ImageData(composed.data, w, h), 0, 0);
+    var keepAlpha = /^data:image\/png/i.test(sourceUrl) || /\.png(\?|$)/i.test(sourceUrl);
+    return {
+      dataUrl: base.canvas.toDataURL(keepAlpha ? 'image/png' : 'image/jpeg', keepAlpha ? undefined : 0.95),
+      w: w,
+      h: h,
+      changedPixels: composed.changedPixels,
+    };
+  }
+
+  async function uploadComposite(composed, prompt) {
+    var res = await apiFetch('/composite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dataUrl: composed.dataUrl,
+        w: composed.w,
+        h: composed.h,
+        prompt: prompt,
+        parentId: refine.parentId || null,
+      }),
+    });
+    var saved = await res.json().catch(function () { return null; });
+    if (!res.ok || !saved || !saved.id || !saved.url) {
+      throw new Error((saved && saved.error) || '区域合成结果保存失败');
+    }
+    return saved;
+  }
+
+  async function compositeAndUpload(sourceUrl, result, crop, prompt) {
+    $('#refineStatus').textContent = '合成回原图…';
+    var composed = await compositeRefineResult(sourceUrl, result.url, crop);
+    var saved = await uploadComposite(composed, prompt);
+    refine.parentId = saved.id;
+    return { id: saved.id, url: saved.url, w: saved.w, h: saved.h };
+  }
+
+  // 区域裁剪后按裁剪比例请求尺寸；provider 只接受 1:3–3:1，极端细长图会被收窄。
+  function regionTargetSize(width, height) {
+    var size = refineTargetSize(width, height);
+    var match = /^(\d+)x(\d+)$/.exec(size);
+    if (!match) return size;
+    var nw = Number(match[1]);
+    var nh = Number(match[2]);
+    var ratio = Math.max(nw, nh) / Math.max(1, Math.min(nw, nh));
+    if (ratio <= 3) return size;
+    if (nw > nh) nh = Math.max(128, Math.round(nw / 3));
+    else nw = Math.max(128, Math.round(nh / 3));
+    return nw + 'x' + nh;
   }
 
   function refineMaskContext() {
@@ -5086,10 +5401,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function openRefine() {
     if (!bigState || !bigState.url) return;
     var sourceStyle = bigState.styleId;
+    var sourceParentId = bigState.hostId || null;
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
     var sourceModel = sourceStyle === 'seedream' ? 'seedream' : 'minimax';
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, parentId: sourceParentId, busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     resetRefineMask();
@@ -5191,32 +5507,44 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (region) prompt = '只修改指定位置：' + region + '；其余区域保持像素不变。' + prompt;
-    // Phase 1.1 keeps the brush mask client-side only; Phase 1.2 will crop/composite it.
-    if (refine.mask.painted) toast('蒙版已保存在本地；区域裁剪合成将在下一阶段接入');
-    if (seedream) prompt = '参考图1是底图。' + prompt;
-    var sourceData = await refineDataUrl(refine.url);
-    var size = refineTargetSize(refine.w, refine.h);
-    refine.thread.push({ role: 'user', text: prompt });
-    renderRefineThread();
+    var masked = refine.mask.painted === true && !!refine.mask.bbox;
     refine.busy = true;
     var startBtn = $('#refineStart');
     startBtn.disabled = true;
     startBtn.textContent = '生成中…';
-    $('#refineStatus').textContent = '读取原图…';
+    $('#refineStatus').textContent = masked ? '裁剪蒙版区域…' : '读取原图…';
     $('#refineStatus').className = 'refine-status';
+    var regionCrop = null;
     try {
+      var sourceData;
+      var size;
+      if (masked) {
+        regionCrop = await cropForRefineMask(refine.url);
+        prompt = REGION_CROP_PROMPT + prompt;
+        size = regionTargetSize(regionCrop.cropW, regionCrop.cropH);
+        sourceData = regionCrop.cropDataUrl;
+      } else {
+        sourceData = await refineDataUrl(refine.url);
+        size = refineTargetSize(refine.w, refine.h);
+      }
+      if (seedream) prompt = '参考图1是底图。' + prompt;
+      refine.thread.push({ role: 'user', text: prompt });
+      renderRefineThread();
       if (seedream) {
-        var dataUrl = sourceData;
         var sr = await apiFetch('/seedream/edit', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: prompt, size: size, imageDataUrl: dataUrl, model: 'doubao-seedream-5-5-261028' }),
+          body: JSON.stringify({ prompt: prompt, size: size, imageDataUrl: sourceData, model: 'doubao-seedream-5-5-261028' }),
         });
         var sd = await sr.json().catch(function () { return {}; });
         if (!sr.ok) throw cloudError(sd.error || ('Seedream 请求失败 ' + sr.status), sd.code);
-        finishRefineResult(sd);
+        var sdResult = sd;
+        if (regionCrop) sdResult = await compositeAndUpload(refine.url, sd, regionCrop, prompt);
+        finishRefineResult(sdResult);
         return;
       }
-      var assetId = await uploadRefineSource(sourceData);
+      var sourceW = regionCrop ? regionCrop.cropW : refine.w;
+      var sourceH = regionCrop ? regionCrop.cropH : refine.h;
+      var assetId = await uploadRefineSource(sourceData, sourceW, sourceH, regionCrop ? 'region-crop.jpg' : 'refine-source.jpg');
       $('#refineStatus').textContent = '上传完成，提交作业…';
       var body = {
         assetId: assetId,
@@ -5247,7 +5575,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (job.status !== 'succeeded' || !job.output) {
         throw cloudError((job.error && job.error.message) || ('云端作业 ' + job.status), (job.error && job.error.code) || job.status);
       }
-      finishRefineResult(job.output);
+      var output = job.output;
+      if (regionCrop) output = await compositeAndUpload(refine.url, job.output, regionCrop, prompt);
+      finishRefineResult(output);
     } catch (err) {
       $('#refineStatus').textContent = err.message || '二次优化失败';
       $('#refineStatus').className = 'refine-status error';

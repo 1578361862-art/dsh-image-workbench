@@ -241,6 +241,7 @@ test('认证守卫覆盖所有新旧路由（401 + 未授权）', async () => {
     ['/asset/0000000000000000', {}],
     ['/result/abc/halftone.jpg', {}],
     ['/assets', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
+    ['/composite', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
     ['/batches', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
     ['/export', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
     ['/batch/abc', { method: 'DELETE' }],
@@ -1298,5 +1299,78 @@ test('Phase 0.2 Seedream job：/seedream/jobs 作业合同、复现元数据、l
     assert.equal(missingCancel.status, 404)
   } finally {
     globalThis.fetch = realFetch
+  }
+})
+
+test('Phase 1.2 /composite：区域合成落盘、本地可读、历史保留 region/w/h/parentId 且不记账', async () => {
+  const parent = 'bregionparent01'
+  const created = await postJson('/composite', {
+    dataUrl: JPEG_URL,
+    w: 640,
+    h: 480,
+    parentId: parent,
+    recipeId: 'rregion1',
+    prompt: '只换掉招牌',
+  })
+  assert.equal(created.status, 201)
+  const saved = created.body
+  assert.match(saved.id, /^comp_[a-z0-9]+$/)
+  assert.equal(saved.w, 640)
+  assert.equal(saved.h, 480)
+  assert.equal(saved.url, `/image-workbench/result/${saved.id}/region.jpg`)
+
+  const file = await api(saved.url.replace('/image-workbench', ''))
+  assert.equal(file.status, 200)
+  assert.equal(file.headers.get('content-type'), 'image/jpeg')
+  assert.deepEqual(file.body, JPEG, '落盘字节必须与上传一致')
+
+  const rows = readFileSync(INDEX, 'utf8')
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line))
+  const indexed = rows.find((row) => row.id === saved.id)
+  assert.ok(indexed, 'index.jsonl 必须写入合成结果')
+  assert.deepEqual(indexed.styleIds, ['region'])
+  assert.equal(indexed.model, 'region-composite')
+  assert.equal(indexed.parentId, parent)
+  assert.equal(indexed.recipeId, 'rregion1')
+  assert.equal(indexed.size, '640x480')
+  assert.deepEqual(indexed.results.map((r) => r.costYuan), [0])
+
+  const history = await api('/history?limit=100')
+  const entry = history.body.entries.find((row) => row.id === saved.id)
+  assert.ok(entry, '/history 必须包含合成结果')
+  assert.deepEqual(entry.results.map((r) => r.styleId), ['region'])
+  assert.equal(entry.results[0].url, saved.url)
+  assert.equal(entry.results[0].w, 640)
+  assert.equal(entry.results[0].h, 480)
+  assert.equal(entry.results[0].costYuan, 0)
+  assert.equal(entry.model, 'region-composite')
+  assert.equal(entry.parentId, parent)
+  assert.equal(entry.recipeId, 'rregion1')
+
+  // PNG（带透明来源）走 .png 后缀，继续复用 /result 路由。
+  const png = await postJson('/composite', { dataUrl: PNG_URL, w: 32, h: 16 })
+  assert.equal(png.status, 201)
+  assert.equal(png.body.url, `/image-workbench/result/${png.body.id}/region.png`)
+  const pngFile = await api(png.body.url.replace('/image-workbench', ''))
+  assert.equal(pngFile.status, 200)
+  assert.equal(pngFile.headers.get('content-type'), 'image/png')
+  assert.deepEqual(pngFile.body, PNG)
+  const pngEntry = (await api('/history?limit=100')).body.entries.find((row) => row.id === png.body.id)
+  assert.equal(pngEntry.parentId, null)
+  assert.equal(pngEntry.results[0].w, 32)
+
+  // 校验：非图片 dataUrl、非法 w/h、超限尺寸全部 400。
+  assert.equal((await postJson('/composite', { dataUrl: 'data:text/plain;base64,aGVsbG8=', w: 1, h: 1 })).status, 400)
+  assert.equal((await postJson('/composite', { dataUrl: JPEG_URL, w: 0, h: 10 })).status, 400)
+  assert.equal((await postJson('/composite', { dataUrl: JPEG_URL, w: 10.5, h: 10 })).status, 400)
+  assert.equal((await postJson('/composite', { dataUrl: JPEG_URL, w: 20001, h: 10 })).status, 400)
+  assert.equal((await postJson('/composite', { w: 10, h: 10 })).status, 400)
+
+  // 区域合成不调用 provider、不产生费用。
+  const ledgerPath = join(DATA, 'ledger.jsonl')
+  if (existsSync(ledgerPath)) {
+    assert.ok(!readFileSync(ledgerPath, 'utf8').includes(saved.id), 'region 合成不能写 ledger')
   }
 })

@@ -4,8 +4,12 @@ import test from 'node:test'
 import {
   boundsFromAlpha,
   clampBounds,
+  ensureAspect,
   expandBounds,
+  maskPadding,
   normalizeBounds,
+  normalizeMaskAlpha,
+  regionBox,
 } from '../lib/mask.js'
 
 function alphaOf(width, height, points = []) {
@@ -101,4 +105,69 @@ test('mask geometry：clampBounds 把越界盒子收回画布', () => {
     w: 0,
     h: 0,
   })
+})
+
+test('mask geometry：上下文 padding 为 12%，夹在 16–96px', () => {
+  assert.equal(maskPadding(0, 0), 16)
+  assert.equal(maskPadding(100, 60), 16, '12px 不足下限，取 16')
+  assert.equal(maskPadding(400, 200), 48)
+  assert.equal(maskPadding(1600, 400), 96, '192px 超过上限，取 96')
+  assert.equal(maskPadding(-400, 0), 48, '负数按绝对长度算')
+})
+
+test('mask geometry：ensureAspect 只扩短边，保持画布内', () => {
+  assert.deepEqual(ensureAspect({ x: 100, y: 50, w: 300, h: 60 }, 800, 600), {
+    x: 100,
+    y: 30,
+    w: 300,
+    h: 100,
+  })
+  assert.deepEqual(ensureAspect({ x: 100, y: 50, w: 60, h: 300 }, 800, 600), {
+    x: 80,
+    y: 50,
+    w: 100,
+    h: 300,
+  })
+  assert.deepEqual(ensureAspect({ x: 0, y: 0, w: 600, h: 600 }, 800, 600), {
+    x: 0,
+    y: 0,
+    w: 600,
+    h: 600,
+  })
+  assert.deepEqual(ensureAspect({ x: 0, y: 0, w: 300, h: 10 }, 800, 600), {
+    x: 0,
+    y: 0,
+    w: 300,
+    h: 100,
+  })
+})
+
+test('mask geometry：regionBox 从归一化 bbox 得到加 padding 的像素框', () => {
+  // 400×300 图，中心 120×90 蒙版 → padding 16 → 152×122。
+  assert.deepEqual(regionBox({ x: 0.25, y: 0.25, w: 0.3, h: 0.3 }, 400, 300), {
+    x: 84,
+    y: 59,
+    w: 152,
+    h: 122,
+  })
+  // 贴边蒙版被夹回画布。
+  assert.deepEqual(regionBox({ x: 0, y: 0, w: 0.2, h: 0.2 }, 400, 300), {
+    x: 0,
+    y: 0,
+    w: 112,
+    h: 92,
+  })
+  assert.deepEqual(regionBox(null, 400, 300), { x: 0, y: 0, w: 0, h: 0 })
+  assert.deepEqual(regionBox({ x: 0.5, y: 0.5, w: 0, h: 0 }, 0, 0), { x: 0, y: 0, w: 0, h: 0 })
+})
+
+test('mask geometry：蒙版叠加的 45% 红色 alpha 归一化到 0–255', () => {
+  const alpha = normalizeMaskAlpha([0, 1, 57, 114, 115, 255], 6)
+  assert.equal(alpha[0], 0)
+  assert.ok(alpha[1] > 0, '非零叠加必须变成非零蒙版')
+  assert.equal(alpha[2], 126)
+  assert.equal(alpha[3], 253)
+  assert.equal(alpha[4], 255)
+  assert.equal(alpha[5], 255, '超过显示上限的值按 255 处理')
+  assert.equal(normalizeMaskAlpha(null).length, 0)
 })

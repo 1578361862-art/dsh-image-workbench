@@ -1,0 +1,11 @@
+{
+  "title": "Image Workbench — 区域裁剪合成验收",
+  "base": "http://127.0.0.1:4789",
+  "browser": "chromium",
+  "steps": [
+    { "action": "goto", "path": "/plugin/tests/fixtures/region-composite.html" },
+    { "action": "wait", "ms": 2500 },
+    { "action": "expect_text", "selector": "#status", "text": "PASS 10/10" },
+    { "action": "screenshot", "name": "region-composite" }
+  ]
+}
