@@ -535,6 +535,128 @@ test('P3 开关打开：无 Key 明确失败；key-test 不伪造成功；usage 
   assert.equal(usage.body.currency, 'CNY')
 })
 
+test('P3 cloud 复现元数据：seed/model/size/params/parentId/recipeId 经 HTTP 路由往返 /history', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  Object.assign(config, { cloudEnabled: true, base: 'cn', model: 'standard', billing: 'payg', budget: 10 })
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
+  credential = { kind: 'api-key', key: 'sk-test-abcd1234' }
+
+  // 复用现有 provider mock 方式：本地 HTTP 端点，真实 generateEdit 走 multipart 解析。
+  const provider = await startMock(async (req, res) => {
+    if (req.method === 'POST' && req.url === '/v1/images/edits') {
+      for await (const chunk of req) void chunk
+      res.setHeader('content-type', 'application/json')
+      res.end(
+        JSON.stringify({
+          data: [{ b64_json: JPEG.toString('base64'), size: '2048x2048', revised_prompt: '复现测试' }],
+          output_format: 'jpeg',
+          usage: { generated_images: 1, total_tokens: 7 },
+          request_id: 'req_meta_1',
+        }),
+      )
+      return
+    }
+    res.statusCode = 404
+    res.end('not found')
+  })
+
+  // 只把 MiniMax 域名重定向到本地 mock；其他 fetch（本测试自身调 HTTP 路由）原样放行。
+  const realFetch = globalThis.fetch
+  const providerBase = `http://127.0.0.1:${provider.address().port}`
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (typeof url === 'string' && url.startsWith('https://api.minimax.cn/')) {
+      return realFetch(url.replace('https://api.minimax.cn', providerBase), init)
+    }
+    return realFetch(input, init)
+  }
+
+  try {
+    const seed = 123456
+    const params = { strength: 0.6, source: 'metadata-test' }
+    const started = await postJson('/cloud/jobs', {
+      assetId,
+      styleId: 'h3-illus',
+      prompt: '复现元数据测试',
+      size: '2048x2048',
+      seed,
+      params,
+      parentId: 'job_parent_0001',
+      recipeId: 'recipe_meta_0001',
+    })
+    assert.equal(started.status, 202)
+    assert.match(started.body.id, /^job_/)
+    assert.equal(started.body.status, 'queued')
+
+    const terminal = new Set(['succeeded', 'failed', 'canceled', 'unknown'])
+    let job = null
+    for (let i = 0; i < 300; i += 1) {
+      const polled = await api(`/cloud/jobs/${started.body.id}`)
+      assert.equal(polled.status, 200)
+      job = polled.body
+      if (terminal.has(job.status)) break
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    assert.equal(job.status, 'succeeded')
+
+    const history = await api('/history?limit=20')
+    assert.equal(history.status, 200)
+    const entry = history.body.entries.find((item) => item.id === started.body.id)
+    assert.ok(entry, '云端作业必须出现在 /history')
+    assert.equal(entry.model, 'MiniMax-H3-Image')
+    assert.equal(entry.seed, seed)
+    assert.equal(entry.size, '2048x2048')
+    assert.deepEqual(entry.params, params)
+    assert.equal(entry.parentId, 'job_parent_0001')
+    assert.equal(entry.recipeId, 'recipe_meta_0001')
+    assert.equal(entry.results.length, 1)
+    assert.equal(entry.results[0].w, 2048)
+    assert.equal(entry.results[0].h, 2048)
+
+    const batch = JSON.parse(readFileSync(join(DATA, 'outputs', started.body.id, 'batch.json'), 'utf8'))
+    assert.equal(batch.model, 'MiniMax-H3-Image')
+    assert.equal(batch.seed, seed)
+    assert.equal(batch.size, '2048x2048')
+    assert.deepEqual(batch.params, params)
+    assert.equal(batch.parentId, 'job_parent_0001')
+    assert.equal(batch.recipeId, 'recipe_meta_0001')
+
+    const row = readFileSync(INDEX, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line))
+      .find((item) => item.id === started.body.id)
+    assert.equal(row.model, 'MiniMax-H3-Image')
+    assert.equal(row.seed, seed)
+    assert.equal(row.size, '2048x2048')
+    assert.deepEqual(row.params, params)
+    assert.equal(row.parentId, 'job_parent_0001')
+    assert.equal(row.recipeId, 'recipe_meta_0001')
+
+    // 只有显式传入 seed 才校验；非法值必须在请求发出前 400。
+    for (const badSeed of [1.5, -1, 4294967296, '123']) {
+      const invalid = await postJson('/cloud/jobs', {
+        assetId,
+        styleId: 'h3-illus',
+        prompt: 'x',
+        size: '2048x2048',
+        seed: badSeed,
+      })
+      assert.equal(invalid.status, 400, `seed=${JSON.stringify(badSeed)} 必须 400`)
+      assert.match(invalid.body.error, /seed/)
+    }
+
+    // 未传 seed 的旧调用方仍然可用：jobs.create 回落到 null，不编造 seed。
+    const { createJobs } = await import(new URL('../lib/jobs.js', import.meta.url).href)
+    const bare = createJobs().create({ assetId, styleId: 'h3-illus', prompt: 'p', size: '2048x2048' })
+    assert.equal(bare.seed, null)
+    assert.equal(bare.parentId, null)
+    assert.equal(bare.recipeId, null)
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
 test('P3 jobs：请求前落点、超时 unknown、绝不自动重试', async () => {
   const { createJobs, hashParams } = await import(new URL('../lib/jobs.js', import.meta.url).href)
   const clock = () => new Date('2026-11-13T00:00:00.000Z')

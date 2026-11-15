@@ -4,7 +4,7 @@ import { mkdir, readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { checkBudget, estimate as estimateCost } from './budget.js'
 import { fail } from './errors.js'
-import { createJobs, hashParams } from './jobs.js'
+import { createJobs, hashParams, MAX_SEED, normalizeSeed } from './jobs.js'
 import { createLedger } from './ledger.js'
 import { baseUrlFor, generateEdit, generateText, isValidSize } from './minimax.js'
 import { writeAtomic } from './storage.js'
@@ -68,6 +68,8 @@ export function createCloud({
       url: `/image-workbench/result/${job.id}/${job.styleId}.jpg`,
     }
 
+    const model = typeof result.rawMeta?.model === 'string' ? result.rawMeta.model : null
+
     await writeAtomic(
       join(dir, 'batch.json'),
       JSON.stringify(
@@ -77,8 +79,12 @@ export function createCloud({
           assetId: job.assetId,
           styleId: job.styleId,
           prompt: job.prompt,
+          model,
+          seed: job.seed ?? null,
           size: job.size,
           params: job.params,
+          parentId: job.parentId ?? null,
+          recipeId: job.recipeId ?? null,
           createdAt: job.createdAt,
           results: [{ styleId: job.styleId, params: job.params, w: width, h: height, costYuan: estimated.costYuan, url: output.url }],
         },
@@ -93,6 +99,12 @@ export function createCloud({
       createdAt: job.createdAt,
       assetId: job.assetId,
       styleIds: [job.styleId],
+      model,
+      seed: job.seed ?? null,
+      size: job.size,
+      params: job.params,
+      parentId: job.parentId ?? null,
+      recipeId: job.recipeId ?? null,
       results: [{ styleId: job.styleId, costYuan: estimated.costYuan, url: output.url }],
     }).catch(() => {})
 
@@ -158,7 +170,7 @@ export function createCloud({
     assertEnabled(config)
     if (!body || typeof body !== 'object' || Array.isArray(body)) fail('请求内容无效')
 
-    const { assetId, styleId, prompt, size, params } = body
+    const { assetId, styleId, prompt, size, params, seed, parentId, recipeId } = body
     const assetIds = Array.isArray(body.assetIds) ? body.assetIds.filter((id) => typeof id === 'string' && id) : []
     const primaryId = assetId || assetIds[0]
     if (typeof primaryId !== 'string' || !primaryId) fail('assetId 无效')
@@ -168,6 +180,9 @@ export function createCloud({
     if (typeof size !== 'string' || !isValidSize(size)) fail('size 需要 WxH 或 1K/2K/4K')
     if (params !== undefined && (params === null || typeof params !== 'object' || Array.isArray(params))) {
       fail('params 无效')
+    }
+    if (seed !== undefined && seed !== null && normalizeSeed(seed) === null) {
+      fail(`seed 需要是 0–${MAX_SEED} 的整数`)
     }
 
     const asset = await storage.getAsset(primaryId)
@@ -212,8 +227,11 @@ export function createCloud({
       styleId,
       prompt: cleanPrompt,
       size,
+      seed: normalizeSeed(seed),
       params: params ?? {},
       model: config.model,
+      parentId,
+      recipeId,
       paramsHash: hashParams({ prompt: cleanPrompt, size, params: params ?? {} }),
     })
 

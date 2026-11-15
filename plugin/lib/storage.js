@@ -105,6 +105,28 @@ function dimension(value) {
   return Math.round(n)
 }
 
+const MAX_SEED = 4294967295
+
+// 复现元数据：缺省/不合法一律回到安全值，保证旧调用方和旧历史行可读。
+function seedValue(value) {
+  return Number.isInteger(value) && value >= 0 && value <= MAX_SEED ? value : null
+}
+
+function paramsValue(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+}
+
+function reproMeta(source = {}) {
+  return {
+    model: typeof source.model === 'string' ? source.model : null,
+    seed: seedValue(source.seed),
+    size: typeof source.size === 'string' ? source.size : null,
+    params: paramsValue(source.params),
+    parentId: typeof source.parentId === 'string' && source.parentId ? source.parentId : null,
+    recipeId: typeof source.recipeId === 'string' && source.recipeId ? source.recipeId : null,
+  }
+}
+
 async function writeAtomic(path, data, mode = 0o644) {
   await mkdir(dirname(path), { recursive: true })
   const tmp = `${path}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`
@@ -345,7 +367,7 @@ export function createStorage(root) {
     }
   }
 
-  async function indexCloudJob({ id, createdAt, assetId, styleIds, results }) {
+  async function indexCloudJob({ id, createdAt, assetId, styleIds, results, model, seed, size, params, parentId, recipeId }) {
     if (typeof id !== 'string' || !BATCH_ID_RE.test(id)) fail('批次 id 无效')
     return withIndexLock(async () => {
       const rows = await readIndexRows()
@@ -356,6 +378,7 @@ export function createStorage(root) {
         assetId: typeof assetId === 'string' ? assetId : '',
         sourceName: '',
         styleIds: Array.isArray(styleIds) ? styleIds : [],
+        ...reproMeta({ model, seed, size, params, parentId, recipeId }),
         results: Array.isArray(results) ? results : [],
       })
       await writeIndexRows(rows)
@@ -381,6 +404,12 @@ export function createStorage(root) {
         createdAt: batch.createdAt,
         assetId: batch.assetId,
         styleIds: batch.results.map((item) => item.styleId).filter(Boolean),
+        model: batch.model,
+        seed: batch.seed,
+        size: batch.size,
+        params: batch.params,
+        parentId: batch.parentId,
+        recipeId: batch.recipeId,
         results: batch.results.map((item) => ({ styleId: item.styleId, url: item.url })),
       })
       if (indexed) added += 1
@@ -485,6 +514,7 @@ export function createStorage(root) {
         text,
         frame: typeof batch.frame === 'string' && batch.frame ? batch.frame : '3:2',
         archived: row.archived === true,
+        ...reproMeta(batch),
         results: Array.isArray(batch.results) ? batch.results : [],
       }
     }
@@ -504,6 +534,7 @@ export function createStorage(root) {
       text: '',
       frame: typeof row.frame === 'string' && row.frame ? row.frame : '3:2',
       archived: row.archived === true,
+      ...reproMeta(row),
       results,
     }
   }

@@ -42,6 +42,15 @@ export function hashParams(params) {
   return createHash('sha256').update(stableStringify(params ?? {})).digest('hex')
 }
 
+export const MAX_SEED = 4294967295
+
+// seed 只在客户端显式传入时存在；未传/非法一律为 null，绝不自行编造。
+export function normalizeSeed(seed) {
+  if (seed === null || seed === undefined) return null
+  if (!Number.isInteger(seed) || seed < 0 || seed > MAX_SEED) return null
+  return seed
+}
+
 export function createJobs({ clock = () => new Date(), onChange } = {}) {
   const jobs = new Map()
 
@@ -71,9 +80,12 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
       styleId: input.styleId ?? null,
       prompt: input.prompt ?? '',
       size: input.size ?? null,
+      seed: normalizeSeed(input.seed),
       params: input.params ?? {},
       paramsHash: input.paramsHash ?? hashParams(input.params ?? {}),
       model: input.model ?? 'standard',
+      parentId: typeof input.parentId === 'string' && input.parentId ? input.parentId : null,
+      recipeId: typeof input.recipeId === 'string' && input.recipeId ? input.recipeId : null,
       requestSentAt: null,
       attempts: 0,
       output: null,
@@ -190,9 +202,12 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
         styleId: typeof record.styleId === 'string' ? record.styleId : null,
         prompt: typeof record.prompt === 'string' ? record.prompt : '',
         size: typeof record.size === 'string' ? record.size : null,
+        seed: normalizeSeed(record.seed),
         params: record.params && typeof record.params === 'object' ? record.params : {},
         paramsHash: typeof record.paramsHash === 'string' ? record.paramsHash : hashParams(record.params ?? {}),
         model: typeof record.model === 'string' ? record.model : 'standard',
+        parentId: typeof record.parentId === 'string' && record.parentId ? record.parentId : null,
+        recipeId: typeof record.recipeId === 'string' && record.recipeId ? record.recipeId : null,
         requestSentAt: typeof record.requestSentAt === 'string' ? record.requestSentAt : null,
         attempts: Number.isInteger(record.attempts) ? record.attempts : 0,
         output: record.output && typeof record.output === 'object' ? record.output : null,
