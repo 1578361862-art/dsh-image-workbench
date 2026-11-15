@@ -333,26 +333,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 @media (max-width:900px){.iw-root .text-layout{grid-template-columns:1fr;} .iw-root .text-form{min-height:0;} .iw-root .text-result{min-height:320px;}}
 .iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
 .iw-root .flow-page[hidden]{ display:none; }
-.iw-root .flow-page{ margin-top:16px; padding-bottom:36px; }
+.iw-root .flow-page{ margin-top:12px; padding-bottom:18px; }
 .iw-root .flow-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding-bottom:12px; border-bottom:1px solid var(--p-hair); }
 .iw-root .flow-head h2{ margin:2px 0 4px; font-family:var(--p-serif); font-size:34px; font-weight:600; letter-spacing:var(--pk-ls-title); }
 .iw-root .flow-head p{ margin:0; font-size:11px; color:var(--p-ink-3); }
 .iw-root .flow-head-right{ display:flex; align-items:center; gap:10px; }
 .iw-root .flow-cost{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .flow-canvas{ position:relative; margin-top:14px; height:420px; background:var(--p-sunken); overflow:hidden; }
-.iw-root .flow-canvas-bar{ position:absolute; z-index:5; right:12px; top:12px; display:flex; align-items:center; gap:8px; padding:4px 5px; background:color-mix(in srgb,var(--p-paper-2) 92%,transparent); border:1px solid var(--p-hair); box-shadow:0 2px 10px rgba(0,0,0,.06); }
-.iw-root .canvas-id{ display:flex; align-items:baseline; gap:6px; padding:0 4px; }
-.iw-root .canvas-id span{ font-family:var(--p-mono); font-size:7px; letter-spacing:.12em; color:var(--p-signal); }
-.iw-root .canvas-id b{ font-family:var(--p-sans); font-size:9px; }
-.iw-root .canvas-id small{ display:none; }
+.iw-root .flow-canvas{ position:relative; margin-top:0; height:calc(100vh - 235px); min-height:380px; background:var(--p-paper); overflow:hidden; }
+.iw-root .flow-canvas-bar{ position:absolute; z-index:5; right:12px; top:12px; display:flex; align-items:center; gap:7px; padding:4px 6px; background:color-mix(in srgb,var(--p-paper-2) 92%,transparent); border:1px solid var(--p-hair); box-shadow:0 2px 10px rgba(0,0,0,.06); }
+.iw-root .flow-canvas-bar .flow-cost{ margin-left:4px; }
+.iw-root .flow-canvas-bar #flowReset{ height:20px; padding:0 6px; font-size:7px; }
+.iw-root .flow-bar-rule{ width:1px; height:14px; background:var(--p-hair); }
 .iw-root .canvas-tools{ display:flex; align-items:center; gap:3px; }
 .iw-root .canvas-tools .ghost-btn{ height:20px; padding:0 6px; font-size:7px; }
 .iw-root .canvas-tools span{ min-width:32px; text-align:center; font-family:var(--p-mono); font-size:7px; color:var(--p-ink-3); }
-.iw-root .flow-canvas-caption{ position:absolute; z-index:5; left:14px; bottom:12px; display:flex; align-items:baseline; gap:8px; padding:3px 6px; background:color-mix(in srgb,var(--p-paper-2) 88%,transparent); border:1px solid var(--p-hair); }
-.iw-root .flow-canvas-caption span{ font-family:var(--p-mono); font-size:7px; letter-spacing:.1em; color:var(--p-signal); }
-.iw-root .flow-canvas-caption small{ font-family:var(--p-mono); font-size:7px; color:var(--p-ink-4); }
-.iw-root .flow-graph{ position:absolute; left:50%; top:10px; width:1060px; height:420px; transform:translateX(-50%) scale(1); transform-origin:top center; }
-.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.7; background-image:radial-gradient(circle,var(--p-hair) 1px,transparent 1px); background-size:18px 18px; }
+.iw-root .flow-graph{ position:absolute; left:50%; top:50%; width:1060px; height:420px; transform:translate(-50%,-50%) scale(1); transform-origin:center center; }
+.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.55; background-image:radial-gradient(circle,var(--p-hair) 1px,transparent 1px); background-size:18px 18px; }
 .iw-root .flow-edges{ position:absolute; inset:0; width:1060px; height:420px; z-index:1; pointer-events:none; overflow:visible; }
 .iw-root .flow-edges path{ fill:none; stroke:var(--p-ink-4); stroke-width:1.5; }
 .iw-root .flow-node{ position:absolute; z-index:2; background:var(--p-paper); border:1px solid var(--p-hair); box-shadow:0 1px 0 var(--p-hair-2); display:flex; flex-direction:column; }
@@ -1325,14 +1321,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     </aside>
   </main>
 
-  <section class="wrap flow-page" id="flowPage" hidden>
-    <div class="flow-head">
-      <div><div class="eyebrow">Fixed Node Graph</div><h2>固定工作流</h2><p>节点和连线固定；只填写每个节点里的内容。</p></div>
-      <div class="flow-head-right"><span class="flow-cost" id="flowCost">约 ¥0.00</span><button class="ghost-btn" id="flowReset">重新开始</button></div>
-    </div>
+  <section class="wrap flow-page" id="flowPage" aria-label="固定工作流" hidden>
     <div class="flow-canvas" id="flowCanvas">
       <div class="flow-canvas-bar">
-        <div class="canvas-id"><span>NODE CANVAS</span><b>固定拓扑</b><small>节点不可拖动 · 只填内容</small></div>
+        <span class="flow-cost" id="flowCost">约 ¥0.00</span>
+        <button type="button" class="ghost-btn" id="flowReset">重新开始</button>
+        <span class="flow-bar-rule" aria-hidden="true"></span>
         <div class="canvas-tools" role="group" aria-label="画布缩放">
           <button type="button" class="ghost-btn" data-flow-zoom="fit">适应</button>
           <button type="button" class="ghost-btn" data-flow-zoom="out" aria-label="缩小画布">−</button>
@@ -1407,7 +1401,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           </div>
         </article>
       </div>
-      <div class="flow-canvas-caption"><span>FIXED · OBSIDIAN-STYLE CANVAS</span><small>五个节点 · 四条固定连接</small></div>
     </div>
   </section>
 
@@ -3201,7 +3194,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.6',
+        version: '0.37.7',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4277,7 +4270,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   function flowApplyZoom() {
     var graph = $('#flowGraph');
-    if (graph) graph.style.transform = 'translateX(-50%) scale(' + flow.zoom.toFixed(3) + ')';
+    if (graph) graph.style.transform = 'translate(-50%, -50%) scale(' + flow.zoom.toFixed(3) + ')';
     var label = $('#flowZoomValue');
     if (label) label.textContent = Math.round(flow.zoom * 100) + '%';
   }

@@ -1,11 +1,11 @@
 # 固定工作流画布 · 网页设计检查
 
-检查对象：`plugin/client.js` 的 `#flowCanvas`（0.37.6）。
+检查对象：`plugin/client.js` 的 `#flowCanvas`（0.37.7）。
 指南：Vercel Web Interface Guidelines（2026-11-15 拉取）。
 
 ## 布局
 
-- 去掉外层“画框”：画布直接铺在页面内容区，点阵背景延伸到节点之外，不再有独立的边框/滚动容器。
+- 去掉页头标题和画布外框：点阵画布直接成为页面主体，不再有「固定工作流 / Fixed Node Graph」区；只保留右上角浮动控制。
 - 单行固定拓扑，Obsidian Canvas 式浮层节点：
   `输入 → 模型 → 提示词 → 分辨率 → 输出`
 - 画布自动 fit 到可用宽高；缩放控件浮动在右上角，画布本身 `overflow:hidden`，没有内层滚动条。
