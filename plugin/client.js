@@ -719,8 +719,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .rturn img{ width:54px; height:54px; object-fit:cover; border:1px solid var(--p-hair); }
 .iw-root .refine-dialog{ width:min(1080px,calc(100vw - 40px)); max-height:calc(100vh - 40px); }
 .iw-root .refine-body{ flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.8fr); gap:16px; padding:16px; background:var(--p-paper-2); }
-.iw-root .refine-preview{ display:flex; align-items:center; justify-content:center; min-height:280px; background:var(--p-sunken); overflow:hidden; }
-.iw-root .refine-preview img{ display:block; max-width:100%; max-height:calc(100vh - 250px); object-fit:contain; }
+.iw-root .refine-preview{ display:flex; align-items:center; justify-content:center; min-height:280px; background:var(--p-sunken); overflow:hidden; position:relative; }
+.iw-root .refine-stage{ position:relative; display:inline-block; max-width:100%; max-height:calc(100vh - 250px); line-height:0; }
+.iw-root .refine-stage img{ display:block; max-width:100%; max-height:calc(100vh - 250px); object-fit:contain; }
+.iw-root #refineMaskCanvas{ position:absolute; inset:0; display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
 .iw-root .refine-form{ display:flex; flex-direction:column; min-width:0; }
 .iw-root .refine-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
 .iw-root .refine-form textarea:focus{ outline:none; border-color:var(--p-hair); box-shadow:none; }
@@ -731,13 +733,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-options input[type="text"]{ width:100%; height:28px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-sans); font-size:10px; }
 .iw-root .refine-layer-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; max-height:150px; overflow:auto; }
 .iw-root .refine-layer-grid[hidden]{ display:none; }
-.iw-root .refine-preview{ position:relative; }
-.iw-root .refine-preview.masking{ cursor:crosshair; }
-.iw-root .refine-mask-box{ position:absolute; border:2px solid #d23b2e; background:rgba(210,59,46,.12); pointer-events:none; }
-.iw-root .refine-mask-box[hidden]{ display:none; }
 .iw-root .refine-region-row{ display:flex; gap:4px; }
 .iw-root .refine-region-row input{ flex:1; }
 .iw-root .refine-region-row button{ flex:none; }
+.iw-root .refine-mask-tools{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--p-hair); font-size:10px; color:var(--p-ink-3); }
+.iw-root .refine-mask-title{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .refine-mask-tools input[type="range"]{ flex:1; min-width:88px; accent-color:var(--p-ink); }
+.iw-root .refine-mask-tools output{ min-width:42px; text-align:right; font-family:var(--p-mono); font-size:10px; }
+.iw-root .refine-mask-mode{ display:inline-flex; }
+.iw-root .refine-mask-mode button{ height:24px; padding:0 8px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; cursor:pointer; }
+.iw-root .refine-mask-mode button + button{ border-left:0; }
+.iw-root .refine-mask-mode button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .refine-mask-tools .ghost-btn{ height:24px; padding:0 8px; font-size:10px; }
+.iw-root .refine-mask-state{ display:block; margin-top:6px; font-family:var(--p-mono); font-size:10px; line-height:1.5; color:var(--p-ink-4); word-break:break-all; }
 .iw-root .refine-options .refine-max{ display:flex; align-items:center; gap:4px; }
 .iw-root .refine-options input[type="number"]{ width:52px; height:24px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-mono); font-size:10px; padding:0 4px; }
 .iw-root #refineLayerZip{ margin-top:6px; }
@@ -1414,7 +1422,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="icon-btn" data-refine-close aria-label="关闭再次编辑"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
     <div class="refine-body">
-      <div class="refine-preview" id="refinePreview"><img id="refineSource" alt="待二次编辑的图片"><div class="refine-mask-box" id="refineMaskBox" hidden></div></div>
+      <div class="refine-preview" id="refinePreview">
+        <div class="refine-stage" id="refineStage">
+          <img id="refineSource" alt="待二次编辑的图片">
+          <canvas id="refineMaskCanvas" aria-label="蒙版画布：在图片上拖动绘制蒙版"></canvas>
+        </div>
+      </div>
       <div class="refine-form">
         <label class="refine-label" for="refinePrompt">编辑要求</label>
         <textarea id="refinePrompt" rows="7" spellcheck="false" placeholder="输入下一轮编辑要求…"></textarea>
@@ -1422,7 +1435,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="refine-options">
           <label><input type="checkbox" id="refineLayers"> 图层拆分（Seedream）</label>
           <label class="refine-max">最多 <input type="number" id="refineLayerMax" min="2" max="100" value="30"> 层</label>
-          <div class="refine-region-row"><input type="text" id="refineRegion" placeholder="位置说明，如：左上角招牌 / 人物右手"><button class="ghost-btn" id="refineRegionPick">框选</button></div>
+          <div class="refine-region-row"><input type="text" id="refineRegion" placeholder="位置说明，如：左上角招牌 / 人物右手"></div>
+          <div class="refine-mask-tools">
+            <span class="refine-mask-title">蒙版</span>
+            <input type="range" id="refineBrushSize" min="4" max="96" step="1" value="32" aria-label="画笔大小">
+            <output id="refineBrushSizeValue" for="refineBrushSize">32 px</output>
+            <div class="refine-mask-mode" id="refineBrushMode" role="group" aria-label="蒙版画笔模式">
+              <button type="button" data-brush-mode="paint" class="on">画笔</button>
+              <button type="button" data-brush-mode="erase">擦除</button>
+            </div>
+            <button type="button" class="ghost-btn" id="refineMaskClear">清空</button>
+            <button type="button" class="ghost-btn" id="refineMaskInvert">反选</button>
+          </div>
+          <span class="refine-mask-state" id="refineMaskState" role="status" aria-live="polite">蒙版：空</span>
         </div>
         <div class="refine-layer-grid" id="refineLayerGrid" hidden></div>
         <button class="ghost-btn" id="refineLayerZip" hidden>下载全部图层 ZIP</button>
@@ -4791,7 +4816,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 二次编辑 ————— */
   var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
-  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null, thread: [] };
+  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
 
   function refineTargetSize(w, h) {
     var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[state.cloudQuality] || 4194304;
@@ -4836,6 +4861,180 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return blobToDataUrl(await fetched.blob());
   }
 
+  // Mirror of plugin/lib/mask.js: browser code cannot import the host Node module
+  // and there is no build step. Keep these two functions in sync with the library.
+  function maskBoundsFromAlpha(alpha, width, height) {
+    var w = Math.floor(Number(width) || 0);
+    var h = Math.floor(Number(height) || 0);
+    if (!alpha || w <= 0 || h <= 0 || alpha.length < w * h) return null;
+    var minX = w, minY = h, maxX = -1, maxY = -1;
+    for (var y = 0; y < h; y++) {
+      var row = y * w;
+      for (var x = 0; x < w; x++) {
+        if (alpha[row + x] > 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return null;
+    return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  }
+
+  function maskNormalizeBounds(bounds, width, height) {
+    var w = Number(width) || 0;
+    var h = Number(height) || 0;
+    if (!bounds || w <= 0 || h <= 0) return { x: 0, y: 0, w: 0, h: 0 };
+    return { x: bounds.x / w, y: bounds.y / h, w: bounds.w / w, h: bounds.h / h };
+  }
+
+  function refineMaskContext() {
+    var canvas = $('#refineMaskCanvas');
+    if (!canvas) return null;
+    return canvas.getContext('2d', { willReadFrequently: true });
+  }
+
+  function resetRefineMask() {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    refine.mask = { dataUrl: '', bbox: null, painted: false };
+    refine.brush = { size: 32, mode: 'paint' };
+    var size = $('#refineBrushSize');
+    if (size) size.value = '32';
+    var out = $('#refineBrushSizeValue');
+    if (out) out.textContent = '32 px';
+    $$('#refineBrushMode button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.brushMode === 'paint');
+    });
+    updateRefineMaskState();
+  }
+
+  function syncRefineCanvas() {
+    var img = $('#refineSource');
+    var canvas = $('#refineMaskCanvas');
+    if (!img || !canvas) return;
+    var nw = img.naturalWidth || 0;
+    var nh = img.naturalHeight || 0;
+    if (!nw || !nh) return;
+    var ratio = Math.min(1, 4096 / Math.max(nw, nh));
+    var cw = Math.max(1, Math.round(nw * ratio));
+    var ch = Math.max(1, Math.round(nh * ratio));
+    if (canvas.width !== cw || canvas.height !== ch) {
+      canvas.width = cw;
+      canvas.height = ch;
+    }
+    resetRefineMask();
+  }
+
+  function showEmptyRefineMask(label) {
+    if (!label) return;
+    label.textContent = '蒙版：空';
+    label.dataset.maskPainted = '0';
+    delete label.dataset.maskBbox;
+    delete label.dataset.maskDataUrlLength;
+  }
+
+  function updateRefineMaskState() {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    var label = $('#refineMaskState');
+    if (!canvas || !ctx || !canvas.width || !canvas.height) {
+      refine.mask = { dataUrl: '', bbox: null, painted: false };
+      showEmptyRefineMask(label);
+      return;
+    }
+    var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    var alpha = new Uint8Array(canvas.width * canvas.height);
+    var filled = 0;
+    for (var i = 0; i < alpha.length; i++) {
+      var a = data[i * 4 + 3];
+      alpha[i] = a;
+      if (a > 0) filled++;
+    }
+    var bounds = maskBoundsFromAlpha(alpha, canvas.width, canvas.height);
+    if (!bounds) {
+      refine.mask = { dataUrl: '', bbox: null, painted: false };
+      showEmptyRefineMask(label);
+      return;
+    }
+    var bbox = maskNormalizeBounds(bounds, canvas.width, canvas.height);
+    refine.mask = { dataUrl: canvas.toDataURL('image/png'), bbox: bbox, painted: true };
+    if (label) {
+      var pct = (filled / alpha.length) * 100;
+      label.textContent = '蒙版：已选 ' + pct.toFixed(1) + '% · 归一化 bbox ' +
+        'x ' + bbox.x.toFixed(3) + ' · y ' + bbox.y.toFixed(3) +
+        ' · w ' + bbox.w.toFixed(3) + ' · h ' + bbox.h.toFixed(3);
+      label.dataset.maskPainted = '1';
+      label.dataset.maskBbox = JSON.stringify(bbox);
+      label.dataset.maskDataUrlLength = String(refine.mask.dataUrl.length);
+    }
+  }
+
+  function refineBrushWidth(canvas) {
+    var rect = canvas.getBoundingClientRect();
+    var scale = rect.width > 0 ? canvas.width / rect.width : 1;
+    return Math.max(1, refine.brush.size * scale);
+  }
+
+  function paintRefinePoint(x, y) {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    if (!canvas || !ctx) return;
+    var erase = refine.brush.mode === 'erase';
+    ctx.save();
+    ctx.globalCompositeOperation = erase ? 'destination-out' : 'source-over';
+    ctx.fillStyle = erase ? 'rgba(0,0,0,1)' : 'rgba(210,59,46,.45)';
+    ctx.beginPath();
+    ctx.arc(x, y, refineBrushWidth(canvas) / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function strokeRefineSegment(x0, y0, x1, y1) {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    if (!canvas || !ctx) return;
+    var erase = refine.brush.mode === 'erase';
+    ctx.save();
+    ctx.globalCompositeOperation = erase ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = erase ? 'rgba(0,0,0,1)' : 'rgba(210,59,46,.45)';
+    ctx.lineWidth = refineBrushWidth(canvas);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function clearRefineMask() {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateRefineMaskState();
+  }
+
+  function invertRefineMask() {
+    var canvas = $('#refineMaskCanvas');
+    var ctx = refineMaskContext();
+    if (!canvas || !ctx || !canvas.width || !canvas.height) return;
+    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var d = img.data;
+    for (var i = 0; i < d.length; i += 4) {
+      d[i] = 210;
+      d[i + 1] = 59;
+      d[i + 2] = 46;
+      // Keep the overlay semi-transparent: invert into the same ~45% display alpha.
+      d[i + 3] = Math.round((1 - d[i + 3] / 255) * 115);
+    }
+    ctx.putImageData(img, 0, 0);
+    updateRefineMaskState();
+  }
+
   function syncRefineCost() {
     var size = refineTargetSize(refine.w, refine.h);
     var seedream = refine.model === 'seedream';
@@ -4868,6 +5067,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     refine.w = result.w;
     refine.h = result.h;
     $('#refineSource').src = result.url;
+    resetRefineMask();
     $('#refineMeta').textContent = '二次编辑 · ' + result.w + ' × ' + result.h;
     $('#refineStatus').textContent = '完成 · 已加入最近生成';
     $('#refineStatus').className = 'refine-status';
@@ -4889,20 +5089,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
     var sourceModel = sourceStyle === 'seedream' ? 'seedream' : 'minimax';
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [], mask: null, maskMode: false };
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [], mask: { dataUrl: '', bbox: null, painted: false }, brush: { size: 32, mode: 'paint' } };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
+    resetRefineMask();
+    requestAnimationFrame(syncRefineCanvas);
     $('#refinePrompt').value = REFINE_PROMPT;
     $('#refineLayerGrid').hidden = true;
     $('#refineLayerGrid').innerHTML = '';
     $('#refineLayerZip').hidden = true;
     $('#refineRegion').value = '';
     $('#refineLayers').checked = false;
-    refine.mask = null;
-    refine.maskMode = false;
-    $('#refineMaskBox').hidden = true;
-    $('#refinePreview').classList.remove('masking');
-    $('#refineRegionPick').classList.remove('on');
     renderRefineThread();
     $('#refineStatus').textContent = '';
     $('#refineStatus').className = 'refine-status';
@@ -4954,36 +5151,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     } catch (err) { toast(err.message || '图层打包失败'); }
   }
 
-  function renderRefineMaskBox() {
-    var box = $('#refineMaskBox');
-    var img = $('#refineSource');
-    if (!box || !img) return;
-    if (!refine.mask) { box.hidden = true; return; }
-    var w = img.clientWidth, h = img.clientHeight;
-    box.hidden = false;
-    box.style.left = (refine.mask.x * w) + 'px';
-    box.style.top = (refine.mask.y * h) + 'px';
-    box.style.width = (refine.mask.w * w) + 'px';
-    box.style.height = (refine.mask.h * h) + 'px';
-  }
-
-  async function annotateRefineRegion(dataUrl) {
-    if (!refine.mask) return dataUrl;
-    var img = await new Promise(function (resolve, reject) {
-      var im = new Image(); im.onload = function () { resolve(im); }; im.onerror = reject; im.src = dataUrl;
-    });
-    var c = document.createElement('canvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    var ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    var x = refine.mask.x * c.width, y = refine.mask.y * c.height;
-    var w = refine.mask.w * c.width, h = refine.mask.h * c.height;
-    ctx.fillStyle = 'rgba(210,59,46,.10)'; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = '#d23b2e'; ctx.lineWidth = Math.max(4, Math.round(c.width / 250));
-    ctx.strokeRect(x, y, w, h);
-    return c.toDataURL('image/jpeg', 0.94);
-  }
-
   async function startRefine() {
     if (refine.busy) return;
     var seedream = refine.model === 'seedream';
@@ -5024,10 +5191,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     if (region) prompt = '只修改指定位置：' + region + '；其余区域保持像素不变。' + prompt;
-    if (refine.mask) prompt = '只修改图片中红框标出的区域；红框只是选区标记，不要在结果中保留红框；其余区域保持像素不变。' + prompt;
+    // Phase 1.1 keeps the brush mask client-side only; Phase 1.2 will crop/composite it.
+    if (refine.mask.painted) toast('蒙版已保存在本地；区域裁剪合成将在下一阶段接入');
     if (seedream) prompt = '参考图1是底图。' + prompt;
     var sourceData = await refineDataUrl(refine.url);
-    if (refine.mask) sourceData = await annotateRefineRegion(sourceData);
     var size = refineTargetSize(refine.w, refine.h);
     refine.thread.push({ role: 'user', text: prompt });
     renderRefineThread();
@@ -5266,30 +5433,64 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#resultRefine').addEventListener('click', openRefine);
     $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
-    $('#refineRegionPick').addEventListener('click', function () {
-      refine.maskMode = !refine.maskMode;
-      $('#refinePreview').classList.toggle('masking', refine.maskMode);
-      this.classList.toggle('on', refine.maskMode);
+    $('#refineSource').addEventListener('load', syncRefineCanvas);
+    $('#refineBrushSize').addEventListener('input', function () {
+      refine.brush.size = Math.max(4, Math.min(96, Number(this.value) || 32));
+      var out = $('#refineBrushSizeValue');
+      if (out) out.textContent = refine.brush.size + ' px';
     });
+    $('#refineBrushMode').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-brush-mode]');
+      if (!b) return;
+      refine.brush.mode = b.dataset.brushMode;
+      $$('#refineBrushMode button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
+    $('#refineMaskClear').addEventListener('click', clearRefineMask);
+    $('#refineMaskInvert').addEventListener('click', invertRefineMask);
     (function () {
-      var preview = $('#refinePreview'); var drag = null;
-      preview.addEventListener('pointerdown', function (e) {
-        if (!refine.maskMode || !$('#refineSource').src) return;
-        var r = preview.getBoundingClientRect();
-        drag = { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
-        refine.mask = { x: drag.x, y: drag.y, w: 0, h: 0 };
-        renderRefineMaskBox(); preview.setPointerCapture(e.pointerId); e.preventDefault();
+      var canvas = $('#refineMaskCanvas');
+      if (!canvas) return;
+      var stroke = null;
+
+      function point(e) {
+        var rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height || !canvas.width || !canvas.height) return null;
+        return {
+          x: Math.max(0, Math.min(canvas.width, ((e.clientX - rect.left) / rect.width) * canvas.width)),
+          y: Math.max(0, Math.min(canvas.height, ((e.clientY - rect.top) / rect.height) * canvas.height)),
+        };
+      }
+
+      canvas.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        var p = point(e);
+        if (!p) return;
+        stroke = p;
+        paintRefinePoint(p.x, p.y);
+        if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+        e.preventDefault();
       });
-      preview.addEventListener('pointermove', function (e) {
-        if (!drag) return;
-        var r = preview.getBoundingClientRect();
-        var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-        var y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
-        refine.mask = { x: Math.min(drag.x, x), y: Math.min(drag.y, y), w: Math.abs(x - drag.x), h: Math.abs(y - drag.y) };
-        renderRefineMaskBox();
+
+      canvas.addEventListener('pointermove', function (e) {
+        if (!stroke) return;
+        var p = point(e);
+        if (!p) return;
+        strokeRefineSegment(stroke.x, stroke.y, p.x, p.y);
+        stroke = p;
+        e.preventDefault();
       });
-      preview.addEventListener('pointerup', function () { drag = null; });
-      preview.addEventListener('pointercancel', function () { drag = null; });
+
+      function endStroke(e) {
+        if (!stroke) return;
+        stroke = null;
+        if (canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) {
+          canvas.releasePointerCapture(e.pointerId);
+        }
+        updateRefineMaskState();
+      }
+
+      canvas.addEventListener('pointerup', endStroke);
+      canvas.addEventListener('pointercancel', endStroke);
     })();
     $('#refineStart').addEventListener('click', startRefine);
     $('#refineLayerZip').addEventListener('click', downloadLayerZip);
