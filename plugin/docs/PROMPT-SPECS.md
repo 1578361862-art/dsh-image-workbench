@@ -51,4 +51,4 @@ Prompt edits are used directly by the next generation. They stay in memory per m
 
 ## H3 细版规范
 
-H3 的五段式/保真清单、参考图角色、文本规则和 API 限制见 [H3-PROMPTING.md](./H3-PROMPTING.md)。工作台提示词面板的「H3 详细化」按钮会按当前是文生图还是图片编辑展开对应模板；修改后直接进入下一次生成。
+H3 的五段式/保真清单、参考图角色、文本规则和 API 限制见 [H3-PROMPTING.md](./H3-PROMPTING.md)。工作台 H3 默认提示词已经直接使用详细中文模板；修改后直接进入下一次生成，不再需要点击「详细化」。

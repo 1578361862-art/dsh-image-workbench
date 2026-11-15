@@ -1186,7 +1186,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格" hidden></select>
           <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
           <div class="prompt-actions">
-            <button class="ghost-btn" id="cloudPromptDetail" hidden>H3 详细化</button>
             <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
           </div>
         </div>
@@ -2546,39 +2545,51 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     return base.replace(/图1是[^。]*。?/g, '').replace(/图2[^。；\n]*[。；]?/g, '').replace(/图1[^。；\n]*[。；]?/g, '').trim();
   }
-  function h3DetailPrompt(id) {
-    var body = styleBody(id);
-    return [
-      'Create one finished, publish-ready image. Use a single clear subject and a deliberate composition, not a collage or a grid.',
-      '',
-      'Subject: 【主体】 — one identifiable subject, one action or pose; no duplicate subjects and no identity drift.',
-      'Supporting elements: 【辅助元素】 — only the objects named here; give each a color and a clear position in the frame.',
-      'Composition: 【构图】 — describe subject placement, foreground/midground/background, camera height, crop and negative space.',
-      'Setting and light: 【场景与光线】 — place, time of day, light direction, quality of light, shadow and contact with the ground.',
-      'Style and material: ' + body,
-      'Text: no text unless specified; if text is required, quote each exact word and state its position. No other text.',
-      'Avoid: extra subjects, duplicate limbs, watermark, signature, UI, plastic 3D, smooth digital gradients, and unrelated props.'
-    ].join('\n');
-  }
-  function h3ImageDetailPrompt(id) {
-    var body = styleBody(id);
-    return [
-      'Use image 1 as the sole source and composition reference.',
-      '',
-      'Preserve: subject count, identity, face, pose, orientation, clothing silhouette, key accessories, camera angle, crop, foreground/background relationships, visible text position, and the direction of light.',
-      'Edit only: 【修改内容】 — make this one local change and keep every other pixel relationship intact.',
-      'Style and material: ' + body,
-      'Do not: add or remove subjects, change the face or body, rewrite visible text, change the crop, or add watermark, signature, UI, plastic 3D or unrelated props.'
-    ].join('\n');
-  }
   function h3TextPrompt(id) {
-    return '以【主体】为主题，创作一张完整作品，不参考上传图片。' + styleBody(id);
+    return [
+      '创作一张完整、可直接发布的图片。单一清晰主体，明确构图，不要拼贴或网格。',
+      '',
+      '画面类型与用途：【画面类型/用途】',
+      '主体：【主体】——一个可识别的主体，一个动作或姿态；不要重复主体，不要改变身份。',
+      '辅助元素：【辅助元素】——只保留这里写到的物体，并给出颜色和画面位置。',
+      '构图：【构图】——主体位置、前中后景、机位高度、裁切和留白。',
+      '场景与光线：【场景与光线】——地点、时间、光源方向、软硬、阴影和接触面。',
+      '风格与材质：' + styleBody(id),
+      '文字：默认不出现文字；如需文字，逐字加引号并说明位置，画面不要出现其他文字。',
+      '避免：额外主体、重复肢体、水印、签名、UI、塑料3D、平滑数字渐变和无关道具。',
+    ].join('\n');
+  }
+  function h3ImagePrompt(id) {
+    return [
+      '以图1为唯一源图与构图来源。保持主体数量、身份、面部关键特征、姿态、朝向、服装轮廓、配饰、镜头高度、裁切范围、前中后景关系、原文字位置和光线方向不变。只改变画种、介质、光线、色彩、边缘与表面质感。',
+      '若提供图2，只把图2当作风格、材质、光线和色彩参考，不复制图2中的人物、物体、文字或构图。',
+      '',
+      '风格与材质：' + styleBody(id),
+      '',
+      '不要新增或删除主体，不改变动作、视线与空间关系，不要水印、签名、UI、塑料3D或平滑数字渐变。',
+    ].join('\n');
   }
   function seedreamTextPrompt(id) {
-    return '创作一张完整作品，不使用任何参考图；主体为【主体】，场景为【场景】。' + styleBody(id);
+    return [
+      '创作一张完整作品，不使用任何参考图。',
+      '',
+      '画面类型与用途：【画面类型/用途】',
+      '主体：【主体】——一个清晰主体，一个动作或姿态。',
+      '场景：【场景】——地点、时间、天气和环境层次。',
+      '构图与镜头：【构图】——主体位置、前中后景、机位高度、裁切和留白。',
+      '光线与色彩：【光线】——光源方向、软硬、阴影和整体色温。',
+      '风格与材质：' + styleBody(id),
+      '文字：默认不出现文字；如需文字，逐字加引号并说明位置，不要出现其他文字。',
+      '避免：额外主体、重复肢体、水印、签名、UI、塑料3D、平滑数字渐变和无关道具。',
+    ].join('\n');
   }
   function seedreamImagePrompt(id) {
-    return '参考图1是底图。保持主体数量、身份、构图和画面外区域不变，只执行下面的风格编辑：' + styleBody(id);
+    return [
+      '以参考图1为底图。保持主体数量、身份、面部、姿态、朝向、服装轮廓、配饰、镜头角度、裁切、前后景关系、原文字位置和光线方向不变。',
+      '将画面处理成以下风格与材质：' + styleBody(id),
+      '若有多张参考图，图2起只补充提示词明确指定的元素，不复制其构图和无关内容。',
+      '只做风格化处理，不新增或删除主体，不改变动作、视线与空间关系；不要水印、签名、UI、塑料3D或平滑数字渐变。',
+    ].join('\n');
   }
   function promptKey(id) { return state.genModel + ':' + id; }
   function promptOverride(id) {
@@ -2591,12 +2602,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var override = promptOverride(id);
     if (override !== undefined) return override;
     if (seedream) return textMode ? seedreamTextPrompt(id) : seedreamImagePrompt(id);
-    return textMode ? h3TextPrompt(id) : defaultPrompt(id);
+    return textMode ? h3TextPrompt(id) : h3ImagePrompt(id);
   }
   function basePromptFor(id) {
     var seedream = state.genModel === 'seedream';
     if (!state.source.url) return seedream ? seedreamTextPrompt(id) : h3TextPrompt(id);
-    return seedream ? seedreamImagePrompt(id) : defaultPrompt(id);
+    return seedream ? seedreamImagePrompt(id) : h3ImagePrompt(id);
   }
   function promptFor(id) {
     var override = promptOverride(id);
@@ -2635,8 +2646,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (stateEl) stateEl.textContent = promptStateLabel(id);
     var modeHint = $('#promptModeHint');
     if (modeHint) modeHint.textContent = (state.genModel === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + (state.source.url ? ' · 图片编辑' : ' · 文生图');
-    var detail = $('#cloudPromptDetail');
-    if (detail) detail.hidden = state.genModel !== 'minimax';
   }
 
   function resetPrompt() {
@@ -3023,7 +3032,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.1',
+        version: '0.37.2',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4881,7 +4890,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   async function generateMultiScene(images, styleId) {
     var styleBodyText = styleBody(styleId);
-    var prompt = 'Use image 1 as the primary composition and identity reference. Use images 2–' + images.length + ' only for the additional subjects, objects or environment explicitly named; do not copy their framing or unrelated details. Preserve each subject\'s identity, count, pose, key features and spatial relationship. Combine them into one coherent scene, then change only medium, light, color, edges and surface: ' + styleBodyText;
+    var prompt = '以图1作为主构图与身份参考；图2至图' + images.length + '只补充提示词明确指定的其他主体、物体或环境，不复制其构图和无关细节。保持每个主体的身份、数量、姿态、关键特征和相互空间关系，融合成一个完整场景；只改变画种、介质、光线、色彩、边缘和表面质感：' + styleBodyText;
     if (state.genModel === 'seedream') {
       var sr = await apiFetch('/seedream/edit', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -5195,7 +5204,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   // MIRROR:regionmath:end
 
-  var REGION_CROP_PROMPT = 'This is a crop from the source image. Preserve the subject count, identity, face, pose, clothing silhouette, perspective, light direction and any visible text. Change only the requested local element; do not change the framing or add new subjects: ';
+  var REGION_CROP_PROMPT = '这是从原图裁出的局部区域。保持主体数量、身份、面部、姿态、服装轮廓、透视、光线方向和可见文字不变；只修改指定局部，不改变裁切，不新增主体：';
 
   function regionFeatherPx(box) {
     return Math.max(1, Math.min(12, Math.round(Math.min(box.w, box.h) / 8)));
@@ -6632,18 +6641,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
-    $('#cloudPromptDetail').addEventListener('click', function () {
-      var id = currentCloudStyleId();
-      if (!id) return;
-      var area = $('#cloudPrompt');
-      if (!area) return;
-      area.value = state.source.url ? h3ImageDetailPrompt(id) : h3DetailPrompt(id);
-      var key = promptKey(id);
-      state.promptOverrides[key] = area.value;
-      var stateEl = $('#promptState'); if (stateEl) stateEl.textContent = '已修改';
-      if (state.results.length) state.dirty = true;
-      toast(state.source.url ? '已展开 H3 图片编辑详细提示词' : '已展开 H3 文生图详细提示词');
-    });
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;
       renderChips();

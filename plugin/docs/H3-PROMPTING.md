@@ -88,37 +88,38 @@ Create one coherent product photograph. No text, no extra products.
 
 ## 六、工作台映射
 
-- **H3 文生图**：`h3TextPrompt` 提供主体 + 风格 body；新增「H3 详细化」按钮可展开五段式占位符。
-- **H3 图片编辑**：`CLOUD_EDIT_HEAD/TAIL` + 参考图角色；详细化按钮会生成“保真清单 + 只改一项”的编辑模板。
+- **H3 文生图**：`h3TextPrompt` 默认直接使用五段式详细中文模板，不再需要「H3 详细化」按钮。
+- **H3 图片编辑**：默认直接使用图1唯一源图 + 保真清单 + 图2角色 + 只改变风格材质的中文模板。
 - **区域编辑**：工作台不是把文字当 mask，而是裁切蒙版 bbox → 只编辑裁切 → 羽化合成回原图；因此“只改框内”由合成保证，不靠提示词。
 - **多图场景**：图 1 是主构图，图 2..N 只取指定的额外元素/环境。
 - **本地提示词修改**：直接用于下一次生成，不保存到 localStorage；恢复默认只清当前模型 + 风格。
 
-## 七、工作台“H3 详细化”模板
+## 七、工作台默认详细模板
 
-文生图：
+文生图（中文 UI 直接展示）：
 
 ```text
-Create one finished, publish-ready image. Use a single clear subject and a deliberate composition, not a collage or a grid.
+创作一张完整、可直接发布的图片。单一清晰主体，明确构图，不要拼贴或网格。
 
-Subject: 【主体】 — one identifiable subject, one action or pose; no duplicate subjects and no identity drift.
-Supporting elements: 【辅助元素】 — only the objects named here; give each a color and a clear position in the frame.
-Composition: 【构图】 — describe subject placement, foreground/midground/background, camera height, crop and negative space.
-Setting and light: 【场景与光线】 — place, time of day, light direction, quality of light, shadow and contact with the ground.
-Style and material: <style body>
-Text: no text unless specified; if text is required, quote each exact word and state its position. No other text.
-Avoid: extra subjects, duplicate limbs, watermark, signature, UI, plastic 3D, smooth digital gradients, and unrelated props.
+画面类型与用途：【画面类型/用途】
+主体：【主体】——一个可识别的主体，一个动作或姿态；不要重复主体，不要改变身份。
+辅助元素：【辅助元素】——只保留这里写到的物体，并给出颜色和画面位置。
+构图：【构图】——主体位置、前中后景、机位高度、裁切和留白。
+场景与光线：【场景与光线】——地点、时间、光源方向、软硬、阴影和接触面。
+风格与材质：<style body>
+文字：默认不出现文字；如需文字，逐字加引号并说明位置，画面不要出现其他文字。
+避免：额外主体、重复肢体、水印、签名、UI、塑料3D、平滑数字渐变和无关道具。
 ```
 
 图片编辑：
 
 ```text
-Use image 1 as the sole source and composition reference.
+以图1为唯一源图与构图来源。保持主体数量、身份、面部关键特征、姿态、朝向、服装轮廓、配饰、镜头高度、裁切范围、前中后景关系、原文字位置和光线方向不变。只改变画种、介质、光线、色彩、边缘与表面质感。
+若提供图2，只把图2当作风格、材质、光线和色彩参考，不复制图2中的人物、物体、文字或构图。
 
-Preserve: subject count, identity, face, pose, orientation, clothing silhouette, key accessories, camera angle, crop, foreground/background relationships, visible text position, and the direction of light.
-Edit only: 【修改内容】 — make this one local change and keep every other pixel relationship intact.
-Style and material: <style body>
-Do not: add or remove subjects, change the face or body, rewrite visible text, change the crop, or add watermark, signature, UI, plastic 3D or unrelated props.
+风格与材质：<style body>
+
+不要新增或删除主体，不改变动作、视线与空间关系，不要水印、签名、UI、塑料3D或平滑数字渐变。
 ```
 
 ## 八、检查清单
