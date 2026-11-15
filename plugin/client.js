@@ -332,6 +332,62 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .text-result-actions{ position:absolute; right:10px; bottom:10px; display:flex; gap:6px; }
 @media (max-width:900px){.iw-root .text-layout{grid-template-columns:1fr;} .iw-root .text-form{min-height:0;} .iw-root .text-result{min-height:320px;}}
 .iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
+.iw-root .flow-page[hidden]{ display:none; }
+.iw-root .flow-page{ margin-top:16px; padding-bottom:36px; }
+.iw-root .flow-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding-bottom:12px; border-bottom:1px solid var(--p-hair); }
+.iw-root .flow-head h2{ margin:2px 0 4px; font-family:var(--p-serif); font-size:34px; font-weight:600; letter-spacing:var(--pk-ls-title); }
+.iw-root .flow-head p{ margin:0; font-size:11px; color:var(--p-ink-3); }
+.iw-root .flow-stepper{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; margin:16px 0 14px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
+.iw-root .flow-stepper div{ position:relative; display:flex; align-items:center; gap:8px; min-width:0; padding:10px 12px; border-right:1px solid var(--p-hair); color:var(--p-ink-4); }
+.iw-root .flow-stepper div:last-child{ border-right:0; }
+.iw-root .flow-stepper b{ width:26px; height:26px; flex:none; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); font-family:var(--p-mono); font-size:10px; font-weight:400; }
+.iw-root .flow-stepper span{ font-family:var(--p-mono); font-size:10px; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iw-root .flow-stepper div.on{ color:var(--p-ink); background:var(--p-signal-plate); }
+.iw-root .flow-stepper div.on b{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .flow-stepper div.done{ color:var(--p-ink-2); }
+.iw-root .flow-stepper div.done b{ color:var(--p-paper); background:var(--p-ink-3); border-color:var(--p-ink-3); }
+.iw-root .flow-body{ min-height:430px; border:1px solid var(--p-hair); background:var(--p-paper-2); padding:20px 22px; }
+.iw-root .flow-step[hidden]{ display:none; }
+.iw-root .flow-step-head span{ font-family:var(--p-mono); font-size:9px; letter-spacing:.12em; color:var(--p-signal); }
+.iw-root .flow-step-head h3{ margin:4px 0 3px; font-family:var(--p-serif); font-size:26px; font-weight:600; }
+.iw-root .flow-step-head p{ margin:0 0 16px; font-size:11px; color:var(--p-ink-3); }
+.iw-root .flow-choices{ display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:880px; }
+.iw-root .flow-choice{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; min-height:116px; padding:14px 16px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
+.iw-root .flow-choice:hover{ border-color:var(--p-ink-3); }
+.iw-root .flow-choice.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
+.iw-root .flow-choice .fc-k{ font-family:var(--p-mono); font-size:9px; letter-spacing:.08em; color:var(--p-signal); }
+.iw-root .flow-choice b{ font-family:var(--p-serif); font-size:20px; font-weight:600; }
+.iw-root .flow-choice small{ font-size:11px; line-height:1.6; color:var(--p-ink-3); }
+.iw-root .flow-source{ display:flex; gap:12px; align-items:center; margin-top:14px; padding:9px; border:1px solid var(--p-hair); background:var(--p-paper); max-width:520px; }
+.iw-root .flow-source[hidden]{ display:none; }
+.iw-root .flow-source img{ width:92px; height:68px; object-fit:cover; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .flow-source b{ display:block; font-size:12px; }
+.iw-root .flow-source span{ display:block; margin:3px 0 7px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
+.iw-root .flow-field-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.iw-root .flow-field-row label,.iw-root .flow-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .flow-field-row select{ height:30px; min-width:240px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:11px; padding:0 7px; }
+.iw-root .flow-field-row button{ margin-left:auto; }
+.iw-root .flow-label{ display:block; margin:12px 0 5px; }
+.iw-root #flowPrompt{ width:100%; min-height:250px; padding:11px 12px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.75; resize:vertical; }
+.iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:var(--p-hair); box-shadow:none; }
+.iw-root .flow-note{ margin:8px 0 0; font-family:var(--p-mono); font-size:9px; line-height:1.6; color:var(--p-ink-4); }
+.iw-root .flow-ratios{ margin-bottom:4px; }
+.iw-root .flow-summary{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.iw-root .flow-sum-item{ padding:9px 10px; border:1px solid var(--p-hair); background:var(--p-paper); }
+.iw-root .flow-sum-item span{ display:block; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
+.iw-root .flow-sum-item b{ display:block; margin-top:3px; font-size:12px; font-weight:500; line-height:1.5; }
+.iw-root .flow-sum-prompt{ grid-column:1 / -1; }
+.iw-root .flow-sum-prompt b{ font-family:var(--p-sans); font-size:11px; font-weight:400; color:var(--p-ink-2); max-height:72px; overflow:auto; white-space:pre-wrap; }
+.iw-root .flow-result{ display:flex; gap:16px; align-items:flex-start; margin-top:14px; padding-top:14px; border-top:1px solid var(--p-hair); }
+.iw-root .flow-result[hidden]{ display:none; }
+.iw-root .flow-result img{ width:min(420px,55%); max-height:420px; object-fit:contain; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .flow-result-actions{ display:flex; flex-direction:column; gap:6px; }
+.iw-root .flow-foot{ display:flex; align-items:center; gap:12px; margin-top:12px; }
+.iw-root .flow-cost{ margin-left:auto; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .flow-foot-actions{ display:flex; gap:6px; }
+.iw-root .flow-foot .go{ width:auto; min-width:120px; padding:0 18px; margin:0; }
+.iw-root .flow-foot .ghost-btn{ height:36px; }
+@media (max-width:900px){.iw-root .flow-choices,.iw-root .flow-summary{grid-template-columns:1fr;} .iw-root .flow-stepper span{display:none;} .iw-root .flow-result{flex-direction:column;} .iw-root .flow-result img{width:100%;}}
 .iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
 .iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
@@ -1084,6 +1140,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   <nav class="wrap view-tabs" id="viewTabs" aria-label="页面切换">
     <button data-view="studio" class="on">工作台</button>
+    <button data-view="flow">工作流</button>
     <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
   </nav>
 
@@ -1241,6 +1298,64 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <button class="go" id="go">生成 3 版</button>
     </aside>
   </main>
+
+  <section class="wrap flow-page" id="flowPage" hidden>
+    <div class="flow-head">
+      <div><div class="eyebrow">Fixed Pipeline</div><h2>固定工作流</h2><p>按顺序完成五步，生成一张图；流程固定，只需要选内容。</p></div>
+      <button class="ghost-btn" id="flowReset">重新开始</button>
+    </div>
+    <div class="flow-stepper" id="flowStepper">
+      <div data-flow-step="1"><b>01</b><span>上传</span></div>
+      <div data-flow-step="2"><b>02</b><span>模型</span></div>
+      <div data-flow-step="3"><b>03</b><span>提示词</span></div>
+      <div data-flow-step="4"><b>04</b><span>分辨率</span></div>
+      <div data-flow-step="5"><b>05</b><span>输出</span></div>
+    </div>
+    <div class="flow-body">
+      <section class="flow-step" data-flow-panel="1">
+        <div class="flow-step-head"><span>STEP 01</span><h3>是否上传图片？</h3><p>上传后走图片编辑；不上传走纯文生图。</p></div>
+        <div class="flow-choices" id="flowUploadChoice">
+          <button type="button" class="flow-choice" data-flow-upload="no"><span class="fc-k">TEXT TO IMAGE</span><b>不传图片</b><small>从空白画面开始，只用提示词生成。</small></button>
+          <button type="button" class="flow-choice" data-flow-upload="yes"><span class="fc-k">IMAGE EDIT</span><b>上传图片</b><small>以一张图作为源图，只改指定内容。</small></button>
+        </div>
+        <input type="file" id="flowFile" accept="image/*" hidden>
+        <div class="flow-source" id="flowSource" hidden><img id="flowSourceImg" alt="工作流源图"><div><b id="flowSourceName"></b><span id="flowSourceMeta"></span><button class="ghost-btn" id="flowRemoveSource">移除图片</button></div></div>
+      </section>
+      <section class="flow-step" data-flow-panel="2" hidden>
+        <div class="flow-step-head"><span>STEP 02</span><h3>选择模型</h3><p>模型决定提示词写法和可用能力。</p></div>
+        <div class="flow-choices">
+          <button type="button" class="flow-choice" data-flow-model="minimax"><span class="fc-k">MINIMAX H3</span><b>H3 · 保真编辑</b><small>详细保真提示词；适合风格化和图片编辑。</small></button>
+          <button type="button" class="flow-choice" data-flow-model="seedream"><span class="fc-k">SEEDREAM 5.5</span><b>Seedream · 多轮 / 图层</b><small>自然语言指令；适合多轮编辑和图层拆分。</small></button>
+        </div>
+      </section>
+      <section class="flow-step" data-flow-panel="3" hidden>
+        <div class="flow-step-head"><span>STEP 03</span><h3>提示词构建</h3><p>选一个风格，再按模板填写主体、场景和文字。</p></div>
+        <div class="flow-field-row"><label for="flowStyle">风格</label><select id="flowStyle"></select><button class="ghost-btn" id="flowPromptReset">恢复默认提示词</button></div>
+        <label class="flow-label" for="flowPrompt">提示词</label>
+        <textarea id="flowPrompt" rows="12" spellcheck="false" placeholder="按模板填写内容…"></textarea>
+        <p class="flow-note" id="flowPromptNote"></p>
+      </section>
+      <section class="flow-step" data-flow-panel="4" hidden>
+        <div class="flow-step-head"><span>STEP 04</span><h3>图像分辨率</h3><p>先定画幅，再选 1K / 2K / 4K。</p></div>
+        <label class="flow-label">画幅</label>
+        <div class="mini-seg flow-ratios" id="flowRatio"></div>
+        <label class="flow-label">分辨率</label>
+        <div class="mini-seg" id="flowQuality"><button data-flow-quality="1K">1K</button><button data-flow-quality="2K" class="on">2K</button><button data-flow-quality="4K">4K</button></div>
+        <p class="flow-note" id="flowSizeNote"></p>
+      </section>
+      <section class="flow-step" data-flow-panel="5" hidden>
+        <div class="flow-step-head"><span>STEP 05</span><h3>图像输出</h3><p>确认内容后生成；结果会进入最近生成。</p></div>
+        <div class="flow-summary" id="flowSummary"></div>
+        <div class="flow-result" id="flowResult" hidden><img id="flowResultImg" alt="工作流结果"><div class="flow-result-actions"><button class="ghost-btn" id="flowViewResult">查看大图</button><button class="ghost-btn" id="flowDownloadResult">下载</button><button class="ghost-btn" id="flowEditResult">多轮编辑</button></div></div>
+        <p class="flow-note" id="flowStatus"></p>
+      </section>
+    </div>
+    <footer class="flow-foot">
+      <button class="ghost-btn" id="flowBack" hidden>上一步</button>
+      <span class="flow-cost" id="flowCost"></span>
+      <div class="flow-foot-actions"><button class="go" id="flowNext">下一步</button><button class="go" id="flowGenerate" hidden>生成 1 版</button></div>
+    </footer>
+  </section>
 
   <section class="wrap recent-page" id="recentPage" hidden>
     <div class="recent-head">
@@ -3032,7 +3147,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.2',
+        version: '0.37.3',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3223,8 +3338,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return { url: data.url, w: data.w, h: data.h, cost: 0.28 };
   }
 
-  async function runH3TextWorkbench(prompt) {
-    var size = workbenchTextSize();
+  async function runH3TextWorkbench(prompt, sizeOverride) {
+    var size = sizeOverride || workbenchTextSize();
     var res = await fetch(API + '/cloud/text-jobs', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: prompt, size: size }),
@@ -4006,14 +4121,237 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
+  /* ————— 固定工作流 ————— */
+  var flow = { step: 1, useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null };
+  var FLOW_RATIOS = ['原图', '1:1', '4:5', '3:4', '16:9', '9:16'];
+
+  function flowStyles() {
+    return STYLES.filter(function (st) { return st.renderer === 'model' && !st.hidden; });
+  }
+  function flowStyle() { return styleById(flow.styleId) || flowStyles()[0]; }
+  function flowAspect() {
+    if (flow.ratio !== '原图') return flow.ratio;
+    if (flow.source && flow.source.w && flow.source.h) {
+      var g = gcd(flow.source.w, flow.source.h);
+      return Math.round(flow.source.w / g) + ':' + Math.round(flow.source.h / g);
+    }
+    return '1:1';
+  }
+  function flowSize() { return textTargetSize(flowAspect(), flow.quality); }
+  function flowCost() {
+    return flow.model === 'seedream' ? 0.28 : (Number(cloudUnitPrice()) || 0);
+  }
+  function flowDefaultPrompt() {
+    var id = flow.styleId;
+    if (flow.model === 'seedream') return flow.source ? seedreamImagePrompt(id) : seedreamTextPrompt(id);
+    return flow.source ? h3ImagePrompt(id) : h3TextPrompt(id);
+  }
+  function flowLoadPrompt(force) {
+    if (!force && flow.promptDirty) return;
+    flow.prompt = flowDefaultPrompt();
+    flow.promptDirty = false;
+    var area = $('#flowPrompt');
+    if (area) area.value = flow.prompt;
+  }
+  function flowSetStep(step) {
+    flow.step = Math.max(1, Math.min(5, step));
+    renderFlow();
+  }
+  function flowNext() {
+    if (flow.busy) return;
+    if (flow.step === 1 && flow.useImage && !flow.source) { toast('先选择一张图片，或改为不传图片'); return; }
+    if (flow.step === 2 && !flow.model) { toast('先选择模型'); return; }
+    if (flow.step === 3) {
+      var area = $('#flowPrompt');
+      if (area) flow.prompt = area.value;
+      if (!flow.prompt.trim()) { toast('提示词不能为空'); area && area.focus(); return; }
+    }
+    if (flow.step >= 5) return;
+    if (flow.step === 3) { /* keep edited text */ }
+    if (flow.step === 2) flowLoadPrompt(false);
+    flowSetStep(flow.step + 1);
+  }
+  function flowBack() { if (flow.busy) return; flowSetStep(flow.step - 1); }
+  function flowRender() {
+    var stepper = $('#flowStepper');
+    if (stepper) $$('#flowStepper [data-flow-step]').forEach(function (el) {
+      var n = Number(el.dataset.flowStep);
+      el.classList.toggle('on', n === flow.step);
+      el.classList.toggle('done', n < flow.step);
+    });
+    $$('[data-flow-panel]').forEach(function (el) { el.hidden = Number(el.dataset.flowPanel) !== flow.step; });
+    $$('[data-flow-upload]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.flowUpload === (flow.useImage ? 'yes' : 'no'));
+    });
+    $$('[data-flow-model]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.flowModel === flow.model);
+    });
+    var src = $('#flowSource');
+    if (src) {
+      src.hidden = !flow.source;
+      if (flow.source) {
+        $('#flowSourceImg').src = flow.source.url;
+        $('#flowSourceName').textContent = flow.source.name || '已上传图片';
+        $('#flowSourceMeta').textContent = flow.source.w + ' × ' + flow.source.h;
+      }
+    }
+    var style = $('#flowStyle');
+    if (style) {
+      var styles = flowStyles();
+      style.innerHTML = styles.map(function (st) { return '<option value="' + st.id + '">' + escapeHTML(st.name) + '</option>'; }).join('');
+      style.value = flow.styleId;
+    }
+    var promptArea = $('#flowPrompt');
+    if (promptArea && !flow.prompt) flowLoadPrompt(true);
+    if (promptArea && document.activeElement !== promptArea && !flow.promptDirty) promptArea.value = flow.prompt;
+    var note = $('#flowPromptNote');
+    if (note) {
+      note.textContent = (flow.model === 'seedream' ? 'Seedream 5.5 · 自然语言详细指令' : 'MiniMax H3 · 详细保真模板') + (flow.source ? ' · 图片编辑' : ' · 纯文生图');
+    }
+    var ratio = $('#flowRatio');
+    if (ratio) {
+      var choices = flow.source ? FLOW_RATIOS : FLOW_RATIOS.filter(function (r) { return r !== '原图'; });
+      ratio.innerHTML = choices.map(function (r) { return '<button type="button" data-flow-ratio="' + r + '" class="' + (r === flow.ratio ? 'on' : '') + '">' + r + '</button>'; }).join('');
+      ratio.style.display = 'inline-flex';
+    }
+    $$('#flowQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.flowQuality === flow.quality); });
+    var sizeNote = $('#flowSizeNote');
+    if (sizeNote) sizeNote.textContent = '目标尺寸：' + flowSize() + ' · ' + (flow.source ? '以源图比例或所选画幅输出' : '无源图，从所选画幅生成');
+    var summary = $('#flowSummary');
+    if (summary) {
+      var st = flowStyle();
+      summary.innerHTML =
+        '<div class="flow-sum-item"><span>模式</span><b>' + (flow.source ? '图片编辑' : '纯文生图') + '</b></div>' +
+        '<div class="flow-sum-item"><span>模型</span><b>' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + '</b></div>' +
+        '<div class="flow-sum-item"><span>风格</span><b>' + escapeHTML(st.name) + '</b></div>' +
+        '<div class="flow-sum-item"><span>尺寸</span><b>' + flowSize() + '</b></div>' +
+        '<div class="flow-sum-item flow-sum-prompt"><span>提示词</span><b>' + escapeHTML(flow.prompt || flowDefaultPrompt()) + '</b></div>';
+    }
+    var cost = $('#flowCost');
+    if (cost) cost.textContent = '约 ¥' + flowCost().toFixed(2);
+    var back = $('#flowBack');
+    if (back) back.hidden = flow.step === 1 || flow.busy;
+    var next = $('#flowNext');
+    if (next) { next.hidden = flow.step === 5 || flow.busy; next.disabled = flow.busy; next.textContent = '下一步'; }
+    var generate = $('#flowGenerate');
+    if (generate) { generate.hidden = flow.step !== 5; generate.disabled = flow.busy; generate.textContent = flow.busy ? '生成中…' : '生成 1 版'; }
+    var result = $('#flowResult');
+    if (result) {
+      result.hidden = !flow.result;
+      if (flow.result) $('#flowResultImg').src = flow.result.url;
+    }
+  }
+  function renderFlow() { flowRender(); }
+  function flowReset() {
+    if (flow.busy) return;
+    flow = { step: 1, useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null };
+    var st = $('#flowStatus'); if (st) st.textContent = '';
+    var f = $('#flowFile'); if (f) f.value = '';
+    renderFlow();
+  }
+  function flowReadFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        flow.source = { url: reader.result, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
+        flow.useImage = true;
+        flow.ratio = '原图';
+        flow.promptDirty = false;
+        flowLoadPrompt(true);
+        flowSetStep(1);
+        toast('已载入 ' + file.name);
+      };
+      img.onerror = function () { toast('这张图解不开'); };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function flowUploadAsset() {
+    var src = flow.source;
+    var dataUrl = src.url;
+    if (dataUrl.indexOf('data:') !== 0) {
+      var got = await fetch(dataUrl);
+      if (!got.ok) throw cloudError('源图读取失败', 'asset_read_failed');
+      dataUrl = await blobToDataUrl(await got.blob());
+    }
+    var res = await apiFetch('/assets', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl: dataUrl, name: src.name || 'flow-source.jpg', w: src.w || 0, h: src.h || 0 }),
+    });
+    var saved = await res.json().catch(function () { return {}; });
+    if (!res.ok || !saved.id) throw cloudError(saved.error || '源图上传失败', 'asset_upload_failed');
+    return saved.id;
+  }
+  async function flowStartCloud(assetId, prompt, size) {
+    var res = await apiFetch('/cloud/jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assetId: assetId, styleId: flow.styleId, prompt: prompt, size: size, params: {} }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw cloudError(data.error || '云端任务创建失败', data.code);
+    var job = await waitCloudJob(data.id);
+    if (job.status !== 'succeeded' || !job.output) throw cloudError((job.error && job.error.message) || '生成失败', job.status);
+    return { url: job.output.url, w: job.output.w, h: job.output.h, cost: cloudUnitPrice() };
+  }
+  async function flowGenerate() {
+    if (flow.busy) return;
+    if (!flow.prompt.trim()) { toast('提示词不能为空'); return; }
+    var st = flowStyle();
+    if (!st) { toast('请选择风格'); return; }
+    flow.busy = true;
+    flow.result = null;
+    $('#flowStatus').textContent = flow.model === 'seedream' ? 'Seedream 生成中…' : (flow.source ? '上传源图并提交 H3…' : '提交 H3 文生图…');
+    renderFlow();
+    try {
+      var prompt = flow.prompt;
+      var size = flowSize();
+      var result;
+      if (flow.model === 'seedream') {
+        var data = flow.source ? await refineDataUrl(flow.source.url) : null;
+        result = await runSeedreamWorkbench(prompt, size, data);
+      } else if (flow.source) {
+        var asset = await flowUploadAsset();
+        result = await flowStartCloud(asset, prompt, size);
+      } else {
+        result = await runH3TextWorkbench(prompt, size);
+      }
+      flow.result = { url: result.url, w: result.w, h: result.h, cost: result.cost || flowCost(), styleId: st.id, model: flow.model, prompt: prompt };
+      $('#flowStatus').textContent = '完成 · ' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + result.w + ' × ' + result.h;
+      loadAllHistory(true);
+      toast('工作流完成');
+    } catch (err) {
+      $('#flowStatus').textContent = err.message || '生成失败';
+      toast(err.message || '生成失败');
+    } finally {
+      flow.busy = false;
+      renderFlow();
+    }
+  }
+  function flowOpenResult() {
+    if (!flow.result) return;
+    var st = styleById(flow.result.styleId) || { name: '生成图片' };
+    openBig({
+      key: 'flow:' + flow.result.url, url: flow.result.url, title: st.name,
+      meta: (flow.result.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + flow.result.w + ' × ' + flow.result.h,
+      info: '固定工作流 · ' + flow.result.w + ' × ' + flow.result.h,
+      w: flow.result.w, h: flow.result.h, border: 'none', resultId: null,
+      styleId: flow.result.styleId, cloud: true,
+    });
+  }
+
   function switchView(view) {
     var recent = view === 'recent';
     var text = view === 'text';
     var seedream = view === 'seedream';
+    var workflow = view === 'flow';
     $('.work').hidden = view !== 'studio';
     $('#recentPage').hidden = !recent;
     $('#textPage').hidden = !text;
     $('#seedreamPage').hidden = !seedream;
+    $('#flowPage').hidden = !workflow;
     $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
     if (recent) {
       renderRecentPage();
@@ -4021,6 +4359,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }
     if (text) { renderTextTemplates(); renderTextPage(); }
     if (seedream) renderSeedreamPage();
+    if (workflow) renderFlow();
   }
 
   function currentHistory() {
@@ -6307,6 +6646,80 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (open) openFavorite(Number(open.dataset.favoriteOpen));
     });
 
+    $('#flowUploadChoice').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-flow-upload]');
+      if (!b) return;
+      if (b.dataset.flowUpload === 'yes') {
+        $('#flowFile').click();
+      } else {
+        flow.useImage = false;
+        flow.source = null;
+        if (flow.ratio === '原图') flow.ratio = '1:1';
+        flow.promptDirty = false;
+        flowLoadPrompt(true);
+        renderFlow();
+      }
+    });
+    $('#flowFile').addEventListener('change', function (e) {
+      flowReadFile(e.target.files && e.target.files[0]);
+      e.target.value = '';
+    });
+    $('#flowRemoveSource').addEventListener('click', function () {
+      flow.useImage = false;
+      flow.source = null;
+      flow.ratio = '1:1';
+      flow.promptDirty = false;
+      flowLoadPrompt(true);
+      renderFlow();
+    });
+    $$('[data-flow-model]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        flow.model = b.dataset.flowModel;
+        flow.promptDirty = false;
+        flowLoadPrompt(true);
+        renderFlow();
+      });
+    });
+    $('#flowStyle').addEventListener('change', function (e) {
+      flow.styleId = e.target.value;
+      flow.promptDirty = false;
+      flowLoadPrompt(true);
+      renderFlow();
+    });
+    $('#flowPromptReset').addEventListener('click', function () {
+      flow.promptDirty = false;
+      flowLoadPrompt(true);
+      var area = $('#flowPrompt'); if (area) area.focus();
+    });
+    $('#flowPrompt').addEventListener('input', function () {
+      flow.prompt = this.value;
+      flow.promptDirty = true;
+    });
+    $('#flowRatio').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-flow-ratio]');
+      if (!b) return;
+      flow.ratio = b.dataset.flowRatio;
+      renderFlow();
+    });
+    $('#flowQuality').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-flow-quality]');
+      if (!b) return;
+      flow.quality = b.dataset.flowQuality;
+      renderFlow();
+    });
+    $('#flowNext').addEventListener('click', flowNext);
+    $('#flowBack').addEventListener('click', flowBack);
+    $('#flowReset').addEventListener('click', flowReset);
+    $('#flowGenerate').addEventListener('click', flowGenerate);
+    $('#flowViewResult').addEventListener('click', flowOpenResult);
+    $('#flowDownloadResult').addEventListener('click', function () {
+      if (flow.result) triggerDownload(flow.result.url, 'flow-' + Date.now() + '.jpg');
+    });
+    $('#flowEditResult').addEventListener('click', function () {
+      if (!flow.result) return;
+      flowOpenResult();
+      openRefine();
+    });
     $('#viewTabs').addEventListener('click', function (e) {
       var b = e.target.closest('[data-view]');
       if (b) switchView(b.dataset.view);
