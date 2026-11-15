@@ -1019,7 +1019,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <section class="stage-col">
       <div class="stage-bar">
         <span class="file-meta"><span id="fileMeta">未载入图片</span><span id="sampleTag" class="p3" hidden>示例</span></span>
-        <span class="r"><span class="stage-model" id="genModel"><button data-gen-model="minimax" class="on">H3</button><button data-gen-model="seedream">Seedream</button></span><span id="frameHint">原图比例</span><button class="ghost-btn" id="cropBtn" disabled>裁切</button><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
+        <span class="r"><span class="stage-model" id="genModel"><button data-gen-model="minimax" class="on">H3</button><button data-gen-model="seedream">Seedream</button></span><span id="frameHint">原图比例</span><button class="ghost-btn" id="cropBtn" disabled>裁切</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
       </div>
 
       <div class="stage" id="stage">
@@ -1127,7 +1127,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="size" id="cloudQualityGroup" role="group" aria-label="云端画质">
           <button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button>
         </div>
-        <div class="cloud-price-hint" id="cloudPriceHint"></div>
       </div>
       </details>
 
@@ -1160,7 +1159,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="est-total"><span>合计</span><span><b id="estEta">≈ 1 s</b> · <b id="estCost">¥0.00</b></span></div>
       </div>
 
-      <div class="cloud-note" id="cloudNote"><span class="dot"></span><span id="cloudNoteText">含 1 版云端 · 调用 H3-Image，约 ¥0.17</span><button class="note-link" id="cloudSettings">设置</button></div>
 
       </div>
 
@@ -1236,28 +1234,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </section>
 </div>
 
-<div class="matrix-layer" id="matrixLayer" aria-hidden="true" inert>
-  <div class="drawer-backdrop" data-matrix-close></div>
-  <section class="matrix-dialog" role="dialog" aria-modal="true" aria-labelledby="matrixTitle">
-    <header class="drawer-head">
-      <div><div class="eyebrow"><span class="mark"></span> Batch · 矩阵 <span class="fill"></span></div><h2 id="matrixTitle">批量矩阵</h2></div>
-      <button class="icon-btn" data-matrix-close aria-label="关闭批量"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
-    </header>
-    <div class="matrix-body">
-      <p class="matrix-note">最多 4 张图 × 当前已选的本机风格（含预设包）。云端 H3 请回工作台单张生成，避免批量误扣费。</p>
-      <div class="matrix-pick-row"><button class="ghost-btn" id="matrixPick">选择多张图片</button><span id="matrixCount">0 / 4</span></div>
-      <input type="file" id="matrixInput" accept="image/*" multiple hidden>
-      <div class="matrix-sources" id="matrixSources"></div>
-      <div class="matrix-results" id="matrixResults"></div>
-    </div>
-    <footer class="drawer-foot">
-      <button class="go" id="matrixRun">生成本机矩阵</button>
-      <button class="ghost-btn" id="matrixZip" disabled>打包 ZIP</button>
-      <div class="ins-note" id="matrixHint">选择图片后开始；不会上传。</div>
-    </footer>
-  </section>
-</div>
-
 <div class="drawer-layer" id="settingsLayer" aria-hidden="true" inert>
   <div class="drawer-backdrop" data-close></div>
   <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="setTitle">
@@ -1279,33 +1255,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-links">
           <button class="set-action" id="keyChange">更换 Key</button>
         </div>
-        <details class="p3-details">
-          <summary>MiniMax 配置</summary>
-          <div class="set-field p3-field">
-            <span class="lab">接口地址</span>
-            <div class="mini-seg" data-group="base"><button class="on">国内站</button><button>国际站</button></div>
-          </div>
-          <div class="set-field p3-field">
-            <span class="lab">模型</span>
-            <div class="mini-seg" data-group="model"><button class="on">H3 标准</button><button>H3 极速</button></div>
-          </div>
-          <div class="set-field p3-field">
-            <span class="lab">计费</span>
-            <div class="mini-seg" data-group="bill"><button class="on">按量</button><button>M Plan</button></div>
-          </div>
-          <div class="set-row"><span>每日预算（按量）</span><b class="num-wrap">¥ <input id="budget" class="num" type="number" value="10" min="0" step="1" aria-label="每日预算"></b></div>
-          <div class="set-field p3-field">
-            <span class="lab">并发生成</span>
-            <div class="mini-seg" data-group="conc"><button>1</button><button class="on">2</button><button>3</button><button>4</button></div>
-          </div>
-        </details>
         <div class="set-row"><span>Seedream Key</span><b id="seedreamKeyState" class="key-state warn">未配置</b></div>
         <div class="key-edit" id="seedreamKeyEdit" hidden>
           <input id="seedreamKeyInput" type="password" placeholder="ARK API Key" autocomplete="off">
           <button class="set-action" id="seedreamKeySave">保存</button>
         </div>
         <div class="set-links"><button class="set-action" id="seedreamKeyChange">更换 Key</button></div>
-        <div class="set-field"><span class="lab">模型</span><div class="mini-seg" id="seedreamModelGroup" data-group="seedream"><button data-seedream-model="doubao-seedream-5-5-261028" class="on">5.5</button><button data-seedream-model="doubao-seedream-4-5-251128">4.5</button><button data-seedream-model="doubao-seedream-4-0-250828">4.0</button></div></div>
 
         <div class="set-subtitle"><span>用量</span></div>
         <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
@@ -1321,8 +1276,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <span class="lab">默认长边</span>
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
-        <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
-        <div class="set-row"><span>提示词增强</span><b>MiniMax 强制 · 文生图关闭</b></div>
       </section>
 
       <section class="set-sec last">
@@ -2382,9 +2335,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var eta = localN * 0.3 + cloudN * 25;
     $('#estEta').textContent = eta > 0 ? '≈ ' + (eta < 1 ? '1' : Math.round(eta)) + ' s' : '≈ 0 s';
     $('#estCost').textContent = '¥' + cloudCost.toFixed(2);
-    $('#cloudNote').style.display = cloudN ? '' : 'none';
+    var cloudNote = $('#cloudNote');
+    if (cloudNote) cloudNote.style.display = cloudN ? '' : 'none';
     if (cloudN) {
-      $('#cloudNoteText').textContent = '含 ' + cloudN + ' 版云端 · 按量 · 国内站 · 约 ¥' + cloudCost.toFixed(2);
+      var cloudNoteText = $('#cloudNoteText');
+      if (cloudNoteText) cloudNoteText.textContent = '含 ' + cloudN + ' 版云端 · 按量 · 国内站 · 约 ¥' + cloudCost.toFixed(2);
     }
   }
 
@@ -2539,7 +2494,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       el.classList.toggle('on', el.dataset.quality === state.cloudQuality);
     });
     var promo = Date.now() < new Date('2026-11-18T00:00:00+08:00').getTime();
-    $('#cloudPriceHint').textContent = promo ? '4K 促销 ¥0.2404/张 · 11/18 后 ¥0.4809' : '4K ¥0.4809/张';
+    var priceHint = $('#cloudPriceHint');
+    if (priceHint) priceHint.textContent = '';
     $$('#scopeGroup button').forEach(function (el) { el.classList.toggle('on', el.dataset.scope === state.scope); });
     var isTemplate = hasTemplate;
     $('#textFields').hidden = !isTemplate;
@@ -2847,7 +2803,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.32.0',
+        version: '0.33.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3092,14 +3048,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         toast(useSeedream ? '先在设置里保存 Seedream Key' : '先在设置里保存 API Key 启用云端');
         openSettings();
         return;
-      }
-      if (state.settings.privacyConfirm && !state.cloudConfirmed) {
-        var price = useSeedream ? 0.28 : cloudUnitPrice();
-        var estimate = cloudIds.length * price;
-        var ok = window.confirm((isText ? '文生图' : '图片编辑') + '会请求 ' + (useSeedream ? '火山方舟 Seedream 5.5' : 'MiniMax H3') + '（按量）。\n' +
-          cloudIds.length + ' 版 · 预计 ¥' + estimate.toFixed(2) + '。\n\n继续？');
-        if (!ok) { toast('已取消云端生成'); return; }
-        state.cloudConfirmed = true;
       }
     }
     var size = outSize();
@@ -3535,10 +3483,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var prompt = $('#seedreamPrompt').value.trim();
     if (!prompt) { toast('填写提示词'); $('#seedreamPrompt').focus(); return; }
     if (seedreamState.mode === 'edit' && !(seedreamState.source && seedreamState.source.url)) { toast('先选择一张图片'); return; }
-    if (settings.privacyConfirm) {
-      var ok = window.confirm('Seedream 会请求火山方舟，约 ¥0.20/张。\n\n继续？');
-      if (!ok) return;
-    }
     var size = textTargetSize(seedreamState.aspect, seedreamState.quality);
     seedreamState.busy = true;
     renderSeedreamPage();
@@ -3637,10 +3581,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     var size = textTargetSize(textState.aspect, textState.quality);
-    if (state.settings.privacyConfirm) {
-      var ok = window.confirm(textModelName() + ' 纯文生图，预计 ¥' + textPrice().toFixed(2) + '。\n\n继续？');
-      if (!ok) return;
-    }
     textState.busy = true;
     renderTextPage();
     try {
@@ -4040,7 +3980,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       el.textContent = '未配置';
       el.classList.add('warn');
     }
-    $$('#seedreamModelGroup button').forEach(function (b) {
+    var modelGroup = $('#seedreamModelGroup');
+    if (modelGroup) $$('#seedreamModelGroup button').forEach(function (b) {
       b.classList.toggle('on', b.dataset.seedreamModel === (s && s.seedreamModel ? s.seedreamModel : 'doubao-seedream-5-5-261028'));
     });
   }
@@ -4076,8 +4017,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         state.params.size = s.defaultSize;
         setMiniSeg('size', state.params.size);
       }
-      if (typeof s.budget === 'number') $('#budget').value = s.budget;
-      $('#confirmCloud').checked = s.privacyConfirm !== false;
+      if (typeof s.budget === 'number' && $('#budget')) $('#budget').value = s.budget;
+      if ($('#confirmCloud')) $('#confirmCloud').checked = s.privacyConfirm !== false;
       setMiniSeg('conc', String(s.concurrency || 2));
       setMiniSeg('base', s.base === 'intl' ? '国际站' : '国内站');
       setMiniSeg('model', s.model === 'highspeed' ? 'H3 极速' : 'H3 标准');
@@ -4106,14 +4047,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   function saveSettings() {
     var body = {
-      budget: Number($('#budget').value),
-      privacyConfirm: $('#confirmCloud').checked,
       defaultSize: currentSeg('size'),
-      concurrency: Number(currentSeg('conc')),
-      base: currentSeg('base') === '国际站' ? 'intl' : 'cn',
-      model: currentSeg('model') === 'H3 极速' ? 'highspeed' : 'standard',
-      billing: currentSeg('bill') === 'M Plan' ? 'mplan' : 'payg',
-      seedreamModel: ($('#seedreamModelGroup button.on') && $('#seedreamModelGroup button.on').dataset.seedreamModel) || 'doubao-seedream-5-5-261028',
       enableCloud: !!(state.settings && state.settings.hasKey)
     };
     var key = $('#keyInput').value.trim();
@@ -4637,11 +4571,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var prompt = $('#refinePrompt').value.trim();
     if (!prompt) { toast('填写二次编辑要求'); $('#refinePrompt').focus(); return; }
     var size = refineTargetSize(refine.w, refine.h);
-    if (state.settings.privacyConfirm) {
-      var ok = window.confirm('二次编辑会把当前图片上传到 ' + (seedream ? '火山方舟' : 'MiniMax') + '（按量）。\n' +
-        (seedream ? 'Seedream 5.5' : state.cloudQuality) + ' · 预计 ¥' + (seedream ? '0.28' : Number(cloudUnitPrice()).toFixed(2)) + '。\n\n继续？');
-      if (!ok) return;
-    }
     refine.thread.push({ role: 'user', text: prompt });
     renderRefineThread();
     refine.busy = true;
@@ -4918,7 +4847,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.32.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.33.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5213,19 +5142,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (restore) restoreStyleToLibrary(restore.dataset.restoreStyle);
     });
     $('#restoreAll').addEventListener('click', restoreAllStyles);
-    $('#matrixBtn').addEventListener('click', openMatrix);
-    $$('[data-matrix-close]').forEach(function (el) { el.addEventListener('click', closeMatrix); });
-    $('#matrixPick').addEventListener('click', function () { $('#matrixInput').click(); });
-    $('#matrixInput').addEventListener('change', function (e) {
-      addMatrixFiles(e.target.files);
-      e.target.value = '';
-    });
-    $('#matrixRun').addEventListener('click', runMatrix);
-    $('#matrixZip').addEventListener('click', matrixZip);
-    $('#matrixResults').addEventListener('click', function (e) {
-      var dl = e.target.closest('[data-matrix-dl]');
-      if (dl) matrixDownload(Number(dl.dataset.matrixDl));
-    });
     $('#pickEmpty').addEventListener('click', function () { $('#fileInput').click(); });
     $('#useSample').addEventListener('click', useSample);
     $$('#scopeGroup button').forEach(function (el) {
@@ -5338,7 +5254,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     print.addEventListener('pointerup', function () { dragging = false; });
 
     $('#settingsBtn').addEventListener('click', openSettings);
-    $('#cloudSettings').addEventListener('click', openSettings);
     $$('[data-close]').forEach(function (el) { el.addEventListener('click', closeSettings); });
     $('#saveSettings').addEventListener('click', saveSettings);
     $('#keyChange').addEventListener('click', function () {
@@ -5353,11 +5268,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!box.hidden) $('#seedreamKeyInput').focus();
     });
     $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
-    $('#seedreamModelGroup').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-seedream-model]');
-      if (!b) return;
-      $$('#seedreamModelGroup button').forEach(function (x) { x.classList.toggle('on', x === b); });
-    });
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;

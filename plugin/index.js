@@ -70,7 +70,9 @@ async function readBody(req, limit = MAX_BODY) {
 async function readConfig() {
   try {
     const saved = JSON.parse(await readFile(CONFIG, 'utf8'))
-    return { ...DEFAULTS, ...saved }
+    const merged = { ...DEFAULTS, ...saved }
+    merged.seedreamModel = 'doubao-seedream-5-5-261028'
+    return merged
   } catch (err) {
     if (err.code === 'ENOENT' || err instanceof SyntaxError) return { ...DEFAULTS }
     throw err
