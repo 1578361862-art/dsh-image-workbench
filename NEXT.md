@@ -54,3 +54,17 @@
 ## 设计方案
 
 - v2 实施方案与阶段拆分：`docs/superpowers/plans/2026-11-15-image-workbench-v2-roadmap.md`
+
+
+## v2 执行进度（2026-11-15）
+
+- [x] Phase 0.1 元数据：model/seed/size/params/parentId/recipeId 进入 job、batch、history。
+- [x] Phase 0.2 Seedream job：`/seedream/jobs` + list/cancel/retry 契约。
+- [x] Phase 1.1 画笔蒙版：画笔/擦除/清空/反选，归一化 bbox。
+- [x] Phase 1.2 区域合成：蒙版 bbox 裁切 → provider 编辑裁切图 → 羽化合成回原图 → `/composite` 入库。
+- [x] Phase 2.1 Host 队列：list/cancel/retry、unknown 不重发、cancel race guard。
+- [x] Phase 2.2 队列抽屉：H3/Seedream 混合列表、轮询、取消/重试。
+- [ ] Phase 3 图层编辑器：显隐/顺序/重新合成/工程 ZIP。
+- [ ] Phase 4 Recipe 与 ComfyUI 导出/后端。
+
+测试：43 pass。Host 已改，需重启 DSH 桌面端后队列与 `/composite` 才可用。

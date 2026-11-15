@@ -93,3 +93,11 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 
 - 提示词 textarea 补上与其他表单一致的纸色、1px 边线、12px 无衬线字体和行高。
 - 提示词 textarea 的 focus/focus-visible 都取消 outline，不再出现蓝色/焦点框。
+
+
+## 0.37.0 — v2 checkpoint
+
+- Phase 0: cloud/Seedream jobs now persist model/seed/size/params/parentId/recipeId; Seedream has `/seedream/jobs`.
+- Phase 1: brush mask editor; mask bbox crop; provider edits only the crop; composite back with inward-only feather; `/composite` persists region results.
+- Phase 2: host queue list/cancel/retry + queue drawer with polling.
+- Tests: 43 pass. Phase 3 layer editor and Phase 4 ComfyUI interop remain.
