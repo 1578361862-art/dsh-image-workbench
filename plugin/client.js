@@ -676,6 +676,20 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .result-action:hover{ border-color:var(--p-ink-3); color:var(--p-ink); }
 .iw-root .result-action.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
 .iw-root .result-action svg{ flex:none; }
+.iw-root .multi-layer{ position:fixed; inset:0; z-index:81; display:none; }
+.iw-root .multi-layer.open{ display:block; }
+.iw-root .multi-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
+.iw-root .multi-dialog{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(1080px,calc(100vw - 40px)); max-height:calc(100vh - 40px); display:flex; flex-direction:column; background:var(--p-paper-2); border:1px solid var(--p-hair); box-shadow:0 30px 100px rgba(0,0,0,.3); }
+.iw-root .multi-body{ flex:1; min-height:220px; overflow:auto; padding:12px 16px; }
+.iw-root .multi-mode{ display:flex; gap:6px; margin-bottom:10px; }
+.iw-root .multi-mode button{ height:28px; padding:0 10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; cursor:pointer; }
+.iw-root .multi-mode button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .multi-thumbs{ display:flex; gap:6px; flex-wrap:wrap; }
+.iw-root .multi-thumbs img{ width:94px; height:70px; object-fit:cover; border:1px solid var(--p-hair); }
+.iw-root .multi-results{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.iw-root .multi-results img{ width:100%; aspect-ratio:1; object-fit:cover; border:1px solid var(--p-hair); cursor:pointer; }
+.iw-root .multi-actions{ display:flex; gap:6px; }
+.iw-root .multi-actions .go{ width:auto; margin:0; padding:0 16px; }
 .iw-root .refine-layer{ position:fixed; inset:0; z-index:80; display:none; }
 .iw-root .refine-layer.open{ display:block; }
 .iw-root .refine-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
@@ -1141,17 +1155,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="scope-hint" id="borderHint">无边框：保留原图边缘。</div>
       </details>
 
-      <details class="field text-field" id="textFields" hidden>
-        <summary>模板文字 <span id="textSummary">海报 · 静物研究</span></summary>
-        <div class="lab"><span>模板版式</span><span class="val">印刷海报</span></div>
-        <div class="mini-seg" id="variantGroup" role="group" aria-label="模板版式"><button data-variant="poster" class="on">海报</button><button data-variant="social">卡片</button></div>
-        <label class="text-lab">标题<input class="text-input" id="textTitle" type="text" maxlength="36" autocomplete="off"></label>
-        <label class="text-lab">副题<input class="text-input" id="textSubtitle" type="text" maxlength="60" autocomplete="off"></label>
-        <div class="text-two">
-          <label class="text-lab">日期<input class="text-input" id="textDate" type="text" maxlength="24" autocomplete="off"></label>
-          <label class="text-lab">署名<input class="text-input" id="textHandle" type="text" maxlength="32" autocomplete="off"></label>
-        </div>
-      </details>
 
       <div class="est">
         <div class="est-row"><span>本机 <span id="estLocal">2</span> 版</span><b id="estLocalTime">≈ 0.6 s</b></div>
@@ -1379,6 +1382,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </figure>
 </div>
 
+<div class="multi-layer" id="multiLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-multi-close></div>
+  <section class="multi-dialog" role="dialog" aria-modal="true" aria-labelledby="multiTitle">
+    <header class="preview-head"><div><h2 id="multiTitle">多图生成</h2><span id="multiMeta"></span></div><button class="icon-btn" data-multi-close aria-label="关闭多图"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></header>
+    <div class="multi-body">
+      <div class="multi-mode" id="multiMode"><button data-multi-mode="loop" class="on">每张轮询</button><button data-multi-mode="scene">场景组合</button></div>
+      <div class="multi-thumbs" id="multiThumbs"></div>
+      <div class="multi-results" id="multiResults" hidden></div>
+    </div>
+    <footer class="preview-foot"><span id="multiCost"></span><div class="multi-actions"><button class="set-action" data-multi-close>取消</button><button class="go" id="multiGenerate">生成</button></div></footer>
+  </section>
+</div>
+
 <div class="refine-layer" id="refineLayer" aria-hidden="true" inert>
   <div class="drawer-backdrop" data-refine-close></div>
   <section class="preview-dialog refine-dialog" role="dialog" aria-modal="true" aria-labelledby="refineTitle">
@@ -1410,7 +1426,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </section>
 </div>
 
-<input type="file" id="fileInput" accept="image/*" hidden>
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 `;
@@ -2498,7 +2514,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (priceHint) priceHint.textContent = '';
     $$('#scopeGroup button').forEach(function (el) { el.classList.toggle('on', el.dataset.scope === state.scope); });
     var isTemplate = hasTemplate;
-    $('#textFields').hidden = !isTemplate;
+    if ($('#textFields')) $('#textFields').hidden = !isTemplate;
     $('#resetOverride').addEventListener('click', function () {
       if (!state.focus) return;
       delete state.overrides[state.focus];
@@ -2803,7 +2819,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.33.0',
+        version: '0.34.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4437,6 +4453,123 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
+  /* ————— 多图生成 ————— */
+  var multiState = { mode: 'loop', images: [], busy: false, results: [] };
+
+  function openMulti(files) {
+    var list = Array.prototype.slice.call(files || []).slice(0, 8);
+    if (!list.length) return;
+    multiState = { mode: 'loop', images: [], busy: false, results: [] };
+    var pending = list.length;
+    list.forEach(function (file, index) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          multiState.images[index] = { url: reader.result, el: img, w: img.naturalWidth, h: img.naturalHeight, name: file.name };
+          if (--pending === 0) renderMulti();
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    $('#multiLayer').inert = false;
+    $('#multiLayer').classList.add('open');
+    $('#multiLayer').setAttribute('aria-hidden', 'false');
+    $('#multiThumbs').innerHTML = '';
+    $('#multiResults').hidden = true;
+    $('#multiResults').innerHTML = '';
+  }
+
+  function multiSize(img) {
+    var g = gcd(img.w, img.h);
+    return textTargetSize(Math.round(img.w / g) + ':' + Math.round(img.h / g), state.cloudQuality);
+  }
+
+  function renderMulti() {
+    var imgs = multiState.images.filter(Boolean);
+    $('#multiThumbs').innerHTML = imgs.map(function (x) { return '<img src="' + x.url + '" alt="">'; }).join('');
+    var styles = selectedCloudIds();
+    var count = imgs.length * styles.length;
+    var price = state.genModel === 'seedream' ? 0.28 : Number(cloudUnitPrice());
+    $('#multiMeta').textContent = imgs.length + ' 张图片 · ' + styles.length + ' 个风格';
+    $('#multiCost').textContent = count ? '预计 ' + count + ' 张 · 约 ¥' + (count * price).toFixed(2) : '先选择云端风格';
+    $('#multiGenerate').disabled = multiState.busy || !count || !(state.genModel === 'seedream' ? state.settings.hasSeedreamKey : cloudReady());
+  }
+
+  async function uploadMultiAsset(image) {
+    var res = await apiFetch('/assets', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl: image.url, name: image.name || 'multi.jpg', w: image.w, h: image.h }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok || !data.id) throw cloudError(data.error || '图片上传失败', 'asset_upload_failed');
+    return data.id;
+  }
+
+  async function generateMultiImage(image, styleId, prompt) {
+    if (state.genModel === 'seedream') {
+      var sr = await apiFetch('/seedream/edit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, size: multiSize(image), imageDataUrl: image.url, model: 'doubao-seedream-5-5-261028' }),
+      });
+      var sd = await sr.json().catch(function () { return {}; });
+      if (!sr.ok) throw cloudError(sd.error || 'Seedream 失败', sd.code);
+      return { url: sd.url, w: sd.w, h: sd.h, styleId: styleId, cloud: true, cost: 0.28 };
+    }
+    var assetId = await uploadMultiAsset(image);
+    var started = await startCloudJob(assetId, styleId);
+    var job = await waitCloudJob(started.id);
+    if (job.status !== 'succeeded' || !job.output) throw cloudError((job.error && job.error.message) || '生成失败', job.status);
+    return { url: job.output.url, w: job.output.w, h: job.output.h, styleId: styleId, cloud: true, cost: cloudUnitPrice() };
+  }
+
+  async function startMulti() {
+    if (multiState.busy) return;
+    var styles = selectedCloudIds();
+    var images = multiState.images.filter(Boolean);
+    if (!styles.length) { toast('先选择云端风格'); return; }
+    if (state.genModel === 'seedream' ? !state.settings.hasSeedreamKey : !cloudReady()) { openSettings(); return; }
+    multiState.busy = true;
+    renderMulti();
+    var results = [];
+    try {
+      if (multiState.mode === 'scene') {
+        var c = document.createElement('canvas');
+        c.width = 1200; c.height = 1200;
+        var ctx = c.getContext('2d'); ctx.fillStyle = '#f4eddf'; ctx.fillRect(0, 0, 1200, 1200);
+        images.forEach(function (im, i) {
+          var col = i % 2, row = Math.floor(i / 2);
+          ctx.drawImage(im.el, col * 600, row * 600, 600, 600);
+        });
+        var scene = { url: c.toDataURL('image/jpeg', 0.92), w: 1200, h: 1200, name: 'scene.jpg' };
+        for (var si = 0; si < styles.length; si++) {
+          var scenePrompt = '将参考图中的多组人物与场景融合成一张完整构图，保留每组主体的身份和关键特征；' + promptFor(styles[si]);
+          results.push(await generateMultiImage(scene, styles[si], scenePrompt));
+        }
+      } else {
+        for (var i = 0; i < images.length; i++) {
+          for (var j = 0; j < styles.length; j++) {
+            results.push(await generateMultiImage(images[i], styles[j], promptFor(styles[j])));
+          }
+        }
+      }
+      multiState.results = results;
+      $('#multiResults').hidden = false;
+      $('#multiResults').innerHTML = results.map(function (r, i) {
+        var st = styleById(r.styleId) || { name: r.styleId };
+        return '<img data-multi-view="' + i + '" src="' + r.url + '" alt="' + escapeHTML(st.name) + '">';
+      }).join('');
+      loadAllHistory(true);
+      toast('多图生成完成 · ' + results.length + ' 张');
+    } catch (err) {
+      toast(err.message || '多图生成失败');
+    } finally {
+      multiState.busy = false;
+      renderMulti();
+    }
+  }
+
   /* ————— 二次编辑 ————— */
   var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
   var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null, thread: [] };
@@ -4847,7 +4980,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.33.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.34.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4924,6 +5057,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultLike').addEventListener('click', function () { toggleFeedback('up'); });
     $('#resultDislike').addEventListener('click', function () { toggleFeedback('down'); });
     $('#resultFavorite').addEventListener('click', toggleFavoriteBig);
+    $$('[data-multi-close]').forEach(function (el) { el.addEventListener('click', function () { $('#multiLayer').classList.remove('open'); $('#multiLayer').inert = true; $('#multiLayer').setAttribute('aria-hidden', 'true'); }); });
+    $('#multiMode').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-multi-mode]');
+      if (!b) return;
+      multiState.mode = b.dataset.multiMode;
+      $$('#multiMode button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
+    $('#multiGenerate').addEventListener('click', startMulti);
+    $('#multiResults').addEventListener('click', function (e) {
+      var img = e.target.closest('[data-multi-view]');
+      if (!img) return;
+      var r = multiState.results[Number(img.dataset.multiView)];
+      if (!r) return;
+      var st = styleById(r.styleId) || { name: r.styleId };
+      openBig({ key: r.url, url: r.url, title: st.name, meta: r.w + ' × ' + r.h, info: '', w: r.w, h: r.h, border: 'none', resultId: null, styleId: r.styleId, cloud: true });
+    });
     $('#resultRefine').addEventListener('click', openRefine);
     $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
     $('#refineStart').addEventListener('click', startRefine);
@@ -5178,7 +5327,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         schedulePreview();
       });
     });
-    $('#fileInput').addEventListener('change', function (e) { loadFile(e.target.files[0]); e.target.value = ''; });
+    $('#fileInput').addEventListener('change', function (e) {
+      var files = Array.prototype.slice.call(e.target.files || []);
+      if (files.length > 1) openMulti(files); else if (files[0]) loadFile(files[0]);
+      e.target.value = '';
+    });
 
     $('#stage').addEventListener('dragover', function (e) { e.preventDefault(); $('#stage').classList.add('drag'); });
     $('#stage').addEventListener('dragleave', function () { $('#stage').classList.remove('drag'); });
