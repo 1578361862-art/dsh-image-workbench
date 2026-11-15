@@ -50,3 +50,7 @@
 - 云端批量矩阵（已从 UI 移除，不建议恢复）。
 - Seedream 透明背景 UI、原生 RGBA 输出。
 - 跨设备同步归档。
+
+## 设计方案
+
+- v2 实施方案与阶段拆分：`docs/superpowers/plans/2026-11-15-image-workbench-v2-roadmap.md`
