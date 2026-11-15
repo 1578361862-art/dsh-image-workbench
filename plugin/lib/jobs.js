@@ -51,6 +51,10 @@ export function normalizeSeed(seed) {
   return seed
 }
 
+export function normalizeProvider(value) {
+  return typeof value === 'string' && value.trim() ? value.trim() : 'minimax'
+}
+
 export function createJobs({ clock = () => new Date(), onChange } = {}) {
   const jobs = new Map()
 
@@ -75,7 +79,7 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
       status: 'queued',
       createdAt: at,
       updatedAt: at,
-      provider: 'minimax',
+      provider: normalizeProvider(input.provider),
       assetId: input.assetId ?? null,
       styleId: input.styleId ?? null,
       prompt: input.prompt ?? '',
@@ -197,7 +201,7 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
         status: validStatus.has(record.status) ? record.status : 'failed',
         createdAt: typeof record.createdAt === 'string' ? record.createdAt : nowIso(),
         updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : nowIso(),
-        provider: 'minimax',
+        provider: normalizeProvider(record.provider),
         assetId: typeof record.assetId === 'string' ? record.assetId : null,
         styleId: typeof record.styleId === 'string' ? record.styleId : null,
         prompt: typeof record.prompt === 'string' ? record.prompt : '',

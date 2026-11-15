@@ -9,9 +9,12 @@ import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
-import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL } from './lib/seedream.js'
+import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL, validateSeedreamSize } from './lib/seedream.js'
+import { hashParams, MAX_SEED, normalizeSeed } from './lib/jobs.js'
 
 const SEEDREAM_MODELS = ['doubao-seedream-5-5-261028', 'doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828']
+const SEEDREAM_COST_YUAN = 0.28
+const MAX_SEEDREAM_IMAGES = 10
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -549,39 +552,118 @@ export default {
     })
     registerImageTool(ctx, cloud, storage)
 
-    async function saveSeedreamResult(result) {
-      const id = `seed_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
+    async function saveSeedreamResult(result, meta = {}) {
+      const id =
+        typeof meta.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(meta.id)
+          ? meta.id
+          : `seed_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
       const dir = join(ROOT, 'outputs', id)
       await mkdir(dir, { recursive: true })
       const file = join(dir, 'seedream.jpg')
       await writeFile(file, result.buffer, { mode: 0o644 })
       const url = `/image-workbench/result/${id}/seedream.jpg`
-      const size = /^(\d{3,5})x(\d{3,5})$/i.exec(String(result.rawMeta?.size ?? ''))
+      const size = /^(\d{3,5})x(\d{3,5})$/i.exec(String(result.rawMeta?.size ?? meta.size ?? ''))
+      const sizeValue = size ? `${Number(size[1])}x${Number(size[2])}` : null
+      const w = size ? Number(size[1]) : 0
+      const h = size ? Number(size[2]) : 0
+      const model =
+        (typeof result.rawMeta?.model === 'string' && result.rawMeta.model) ||
+        (typeof meta.model === 'string' && meta.model) ||
+        SEEDREAM_DEFAULT_MODEL
+      const seed = normalizeSeed(meta.seed)
+      const parentId = typeof meta.parentId === 'string' && meta.parentId ? meta.parentId : null
+      const recipeId = typeof meta.recipeId === 'string' && meta.recipeId ? meta.recipeId : null
+      const createdAt = new Date().toISOString()
+      const results = [{ styleId: 'seedream', w, h, costYuan: SEEDREAM_COST_YUAN, url }]
+      await writeFile(
+        join(dir, 'batch.json'),
+        JSON.stringify(
+          {
+            kind: 'cloud',
+            id,
+            assetId: '',
+            styleId: 'seedream',
+            prompt: typeof meta.prompt === 'string' ? meta.prompt : '',
+            model,
+            seed,
+            size: sizeValue,
+            params: {},
+            parentId,
+            recipeId,
+            createdAt,
+            results: [{ styleId: 'seedream', params: {}, w, h, costYuan: SEEDREAM_COST_YUAN, url }],
+          },
+          null,
+          2,
+        ),
+        { mode: 0o644 },
+      ).catch(() => {})
       await storage.indexCloudJob({
         id,
-        createdAt: new Date().toISOString(),
+        createdAt,
         assetId: '',
         styleIds: ['seedream'],
-        results: [{ styleId: 'seedream', url, w: size ? Number(size[1]) : 0, h: size ? Number(size[2]) : 0, costYuan: 0.28 }],
+        model,
+        seed,
+        size: sizeValue,
+        params: {},
+        parentId,
+        recipeId,
+        results,
       }).catch(() => {})
       await cloud.ledger.append({
-        at: new Date().toISOString(),
+        at: createdAt,
         jobId: id,
         provider: 'seedream',
         styleId: 'seedream',
-        model: result.rawMeta?.model || 'doubao-seedream-5-5-261028',
-        size: result.rawMeta?.size || '',
-        estimatedYuan: 0.28,
-        costYuan: 0.28,
+        model,
+        size: sizeValue ?? '',
+        estimatedYuan: SEEDREAM_COST_YUAN,
+        costYuan: SEEDREAM_COST_YUAN,
         requestId: result.rawMeta?.requestId || null,
       }).catch(() => {})
-      return {
-        url,
-        w: size ? Number(size[1]) : 0,
-        h: size ? Number(size[2]) : 0,
-        costYuan: 0.28,
-        model: result.rawMeta?.model || null,
-      }
+      return { id, url, w, h, costYuan: SEEDREAM_COST_YUAN, model, seed }
+    }
+
+    async function seedreamModelFor(body) {
+      if (SEEDREAM_MODELS.includes(body?.model)) return body.model
+      return (await readConfig()).seedreamModel || SEEDREAM_DEFAULT_MODEL
+    }
+
+    function seedreamImages(body) {
+      return Array.isArray(body?.imageDataUrls)
+        ? body.imageDataUrls.filter((u) => typeof u === 'string' && u.startsWith('data:image/'))
+        : (typeof body?.imageDataUrl === 'string' && body.imageDataUrl.startsWith('data:image/') ? [body.imageDataUrl] : [])
+    }
+
+    // Seedream 是同步接口，这里用作业合同包一层；请求只发一次，异常收敛到 job.status。
+    async function runSeedreamJob(job, { key, images }) {
+      cloud.jobs.update(job.id, { status: 'preparing' })
+      return cloud.jobs.start(job.id, async (current) => {
+        const result = await generateSeedream({
+          prompt: current.prompt,
+          size: current.size,
+          images,
+          key,
+          model: current.model,
+          baseUrl: SEEDREAM_DEFAULT_BASE,
+        })
+        const saved = await saveSeedreamResult(result, {
+          id: current.id,
+          prompt: current.prompt,
+          model: current.model,
+          seed: current.seed,
+          size: current.size,
+          parentId: current.parentId,
+          recipeId: current.recipeId,
+        })
+        return {
+          output: { url: saved.url, w: saved.w, h: saved.h, costYuan: saved.costYuan, model: saved.model, seed: saved.seed },
+          usage: result.usage ?? null,
+          revisedPrompt: result.revisedPrompt ?? null,
+          rawMeta: result.rawMeta ?? null,
+        }
+      })
     }
 
     async function saveSeedreamLayers(result) {
@@ -741,6 +823,53 @@ export default {
         return json(res, 200, await cloud.usage())
       }
       if (seg[0] === 'seedream') {
+        // 作业合同：Seedream 同步接口也包成 job；旧的 /seedream/text 与 /seedream/edit 保留。
+        if (method === 'POST' && path === 'seedream/jobs') {
+          const body = await readBody(req, MAX_SEEDREAM_BODY)
+          const key = await readSeedreamKeyValue(ctx)
+          if (!key) fail('还没有保存 Seedream API Key', 400)
+          if (typeof body?.prompt !== 'string' || !body.prompt.trim()) fail('prompt 不能为空')
+          if (body.prompt.length > 32000) fail('prompt 太长')
+          const checked = validateSeedreamSize(body?.size)
+          if (!checked) fail('Seedream size 需要 WxH，面积 921600–16777216，比例不超过 16:1')
+          const images = seedreamImages(body)
+          if (!images.length || images.length > MAX_SEEDREAM_IMAGES) fail('图片数据无效（1–10 张）')
+          if (body?.seed !== undefined && body.seed !== null && normalizeSeed(body.seed) === null) {
+            fail(`seed 需要是 0–${MAX_SEED} 的整数`)
+          }
+          const model = await seedreamModelFor(body)
+          const prompt = body.prompt.trim()
+          const job = cloud.jobs.create({
+            provider: 'seedream',
+            styleId: 'seedream',
+            prompt,
+            size: checked.value,
+            seed: normalizeSeed(body.seed),
+            model,
+            parentId: body?.parentId,
+            recipeId: body?.recipeId,
+            params: {},
+            paramsHash: hashParams({ prompt, size: checked.value, model, images: images.length }),
+          })
+          setImmediate(() => {
+            runSeedreamJob(job, { key, images }).catch((err) => {
+              cloud.jobs.failBeforeRequest(job.id, err)
+            })
+          })
+          return json(res, 202, { id: job.id, status: job.status })
+        }
+        if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
+          await cloud.ready
+          const job = cloud.jobs.get(seg[2])
+          if (!job) return json(res, 404, { error: '作业不存在' })
+          return json(res, 200, job)
+        }
+        if (method === 'POST' && seg.length === 4 && seg[1] === 'jobs' && seg[3] === 'cancel') {
+          await cloud.ready
+          const job = cloud.jobs.cancel(seg[2])
+          if (!job) return json(res, 404, { error: '作业不存在' })
+          return json(res, 200, job)
+        }
         if (method === 'POST' && path === 'seedream/key') {
           const body = await readBody(req, MAX_BODY)
           await applySeedreamKey(ctx, body ?? {})
@@ -764,32 +893,34 @@ export default {
           const body = await readBody(req, MAX_SEEDREAM_BODY)
           const key = await readSeedreamKeyValue(ctx)
           if (!key) fail('还没有保存 Seedream API Key', 400)
+          const model = await seedreamModelFor(body)
           const result = await generateSeedream({
             prompt: body?.prompt,
             size: body?.size,
             key,
-            model: SEEDREAM_MODELS.includes(body?.model) ? body.model : ((await readConfig()).seedreamModel || 'doubao-seedream-5-5-261028'),
+            model,
             baseUrl: SEEDREAM_DEFAULT_BASE,
           })
-          return json(res, 200, await saveSeedreamResult(result))
+          const saved = await saveSeedreamResult(result, { prompt: body?.prompt, size: body?.size, model })
+          return json(res, 200, { url: saved.url, w: saved.w, h: saved.h, costYuan: saved.costYuan, model: saved.model })
         }
         if (method === 'POST' && path === 'seedream/edit') {
           const body = await readBody(req, MAX_SEEDREAM_BODY)
           const key = await readSeedreamKeyValue(ctx)
           if (!key) fail('还没有保存 Seedream API Key', 400)
-          const images = Array.isArray(body?.imageDataUrls)
-            ? body.imageDataUrls.filter((u) => typeof u === 'string' && u.startsWith('data:image/'))
-            : (typeof body?.imageDataUrl === 'string' && body.imageDataUrl.startsWith('data:image/') ? [body.imageDataUrl] : [])
-          if (!images.length || images.length > 10) fail('图片数据无效（1–10 张）')
+          const images = seedreamImages(body)
+          if (!images.length || images.length > MAX_SEEDREAM_IMAGES) fail('图片数据无效（1–10 张）')
+          const model = await seedreamModelFor(body)
           const result = await generateSeedream({
             prompt: body?.prompt,
             size: body?.size,
             images,
             key,
-            model: SEEDREAM_MODELS.includes(body?.model) ? body.model : ((await readConfig()).seedreamModel || 'doubao-seedream-5-5-261028'),
+            model,
             baseUrl: SEEDREAM_DEFAULT_BASE,
           })
-          return json(res, 200, await saveSeedreamResult(result))
+          const saved = await saveSeedreamResult(result, { prompt: body?.prompt, size: body?.size, model })
+          return json(res, 200, { url: saved.url, w: saved.w, h: saved.h, costYuan: saved.costYuan, model: saved.model })
         }
       }
       if (seg[0] === 'cloud') {

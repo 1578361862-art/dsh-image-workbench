@@ -8,7 +8,7 @@ function apiError(message, status = 400, code = 'seedream_error') {
   return Object.assign(new Error(message), { status, code, beforeRequest: status < 500 })
 }
 
-function validateSize(size) {
+export function validateSeedreamSize(size) {
   const match = SIZE_RE.exec(String(size ?? '').trim())
   if (!match) return null
   const width = Number(match[1])
@@ -44,7 +44,7 @@ export async function generateSeedream({
 } = {}) {
   if (typeof key !== 'string' || !key.trim()) throw apiError('还没有保存 Seedream API Key', 400, 'missing_key')
   if (typeof prompt !== 'string' || !prompt.trim()) throw apiError('提示词不能为空', 400, 'invalid_prompt')
-  const checked = validateSize(size)
+  const checked = validateSeedreamSize(size)
   if (!checked) throw apiError('Seedream size 需要 WxH，面积 921600–16777216，比例不超过 16:1', 400, 'invalid_size')
   const body = {
     model,

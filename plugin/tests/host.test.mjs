@@ -1086,3 +1086,217 @@ test('云端风格 v2 提示词：Client 与 Host 保持同一份 33 条', () =>
   assert.deepEqual(clientBodies, hostBodies)
   assert.ok(clientBodies.every((body) => body.length >= 90))
 })
+
+test('Phase 0.2 jobs：provider 默认 minimax，hydrate 恢复 seedream', async () => {
+  const { createJobs } = await import(new URL('../lib/jobs.js', import.meta.url).href)
+  const clock = () => new Date('2026-11-15T00:00:00.000Z')
+  const jobs = createJobs({ clock })
+  const h3 = jobs.create({ styleId: 'h3-illus', prompt: 'p', size: '2048x2048' })
+  assert.equal(h3.provider, 'minimax', '旧调用方不传 provider 时必须回落到 minimax')
+  const seedream = jobs.create({ provider: 'seedream', styleId: 'seedream', prompt: 'p', size: '2048x2048', seed: 7 })
+  assert.equal(seedream.provider, 'seedream')
+  assert.equal(seedream.seed, 7)
+
+  const restored = createJobs({ clock })
+  const loaded = restored.hydrate([
+    { id: 'job_seedream_restored', status: 'succeeded', provider: 'seedream', seed: 7, model: 'doubao-seedream-5-5-261028' },
+    { id: 'job_legacy_restored', status: 'succeeded' },
+  ])
+  assert.equal(loaded.length, 2)
+  assert.equal(restored.get('job_seedream_restored').provider, 'seedream')
+  assert.equal(restored.get('job_legacy_restored').provider, 'minimax', '旧 job 快照没有 provider 时回落 minimax')
+})
+
+test('Phase 0.2 Seedream job：/seedream/jobs 作业合同、复现元数据、ledger 与 404/400', async () => {
+  // Seedream 作业不依赖 H3 的 cloudEnabled 开关：先显式关掉再跑。
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  config.cloudEnabled = false
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
+
+  // 与 H3 共用同一份测试凭据存储：这里切到 Seedream Key。
+  const saved = await postJson('/seedream/key', { key: 'sk-seedream-test-1234' })
+  assert.equal(saved.status, 200)
+  assert.equal(saved.body.hasSeedreamKey, true)
+  assert.equal(saved.body.cloud, false, 'cloudEnabled 必须仍是关闭状态')
+
+  // 只 mock 火山 Ark /images/generations 与结果图下载；其余 fetch（测试自身调 HTTP 路由）原样放行。
+  const realFetch = globalThis.fetch
+  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489', 'hex')
+  let providerCalls = 0
+  const seenBodies = []
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (url === 'https://ark.cn-beijing.volces.com/api/v3/images/generations') {
+      providerCalls += 1
+      assert.equal(init?.method, 'POST')
+      seenBodies.push(JSON.parse(init.body))
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            data: [{ url: 'https://seedream-mock.invalid/result.png', size: '2048x2048' }],
+            usage: { generated_images: 1 },
+            request_id: 'req_seedream_1',
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+    }
+    if (url === 'https://seedream-mock.invalid/result.png') {
+      return Promise.resolve(new Response(png, { status: 200, headers: { 'content-type': 'image/png' } }))
+    }
+    return realFetch(input, init)
+  }
+
+  try {
+    // 非法 seed 必须在创建作业、发出请求之前 400。
+    const before = providerCalls
+    for (const badSeed of [1.5, -1, 4294967296, '123']) {
+      const invalid = await postJson('/seedream/jobs', {
+        prompt: 'x',
+        size: '2048x2048',
+        imageDataUrl: PNG_URL,
+        seed: badSeed,
+      })
+      assert.equal(invalid.status, 400, `seed=${JSON.stringify(badSeed)} 必须 400`)
+      assert.match(invalid.body.error, /seed/)
+    }
+    assert.equal(providerCalls, before, '非法 seed 不得触发任何 provider 调用')
+
+    const started = await postJson('/seedream/jobs', {
+      prompt: 'Seedream 作业合同测试',
+      size: '2048x2048',
+      imageDataUrl: PNG_URL,
+      seed: 123456,
+      parentId: 'job_parent_seedream',
+      recipeId: 'recipe_seedream',
+    })
+    assert.equal(started.status, 202)
+    assert.match(started.body.id, /^job_/)
+    assert.equal(started.body.status, 'queued')
+
+    const terminal = new Set(['succeeded', 'failed', 'canceled', 'unknown'])
+    let job = null
+    for (let i = 0; i < 300; i += 1) {
+      const polled = await api(`/seedream/jobs/${started.body.id}`)
+      assert.equal(polled.status, 200)
+      job = polled.body
+      if (terminal.has(job.status)) break
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    assert.equal(job.status, 'succeeded', JSON.stringify(job.error))
+
+    // 作业身份 + provider/seed 元数据。
+    assert.equal(job.provider, 'seedream')
+    assert.equal(job.styleId, 'seedream')
+    assert.equal(job.seed, 123456)
+    assert.equal(job.model, 'doubao-seedream-5-5-261028')
+    assert.equal(job.parentId, 'job_parent_seedream')
+    assert.equal(job.recipeId, 'recipe_seedream')
+    assert.equal(job.attempts, 1)
+
+    // 作业输出契约。
+    const url = `/image-workbench/result/${started.body.id}/seedream.jpg`
+    assert.deepEqual(job.output, {
+      url,
+      w: 2048,
+      h: 2048,
+      costYuan: 0.28,
+      model: 'doubao-seedream-5-5-261028',
+      seed: 123456,
+    })
+    assert.equal(seenBodies.length, 1)
+    assert.equal(seenBodies[0].model, 'doubao-seedream-5-5-261028')
+    assert.equal(seenBodies[0].size, '2048x2048')
+    assert.equal(seenBodies[0].image, PNG_URL)
+
+    // 结果文件可读。
+    const rendered = await api(url.replace('/image-workbench', ''))
+    assert.equal(rendered.status, 200)
+    assert.equal(rendered.body.length, png.length)
+
+    // /history 行带复现元数据，且结果尺寸/成本可读。
+    const history = await api('/history?limit=20')
+    assert.equal(history.status, 200)
+    const entry = history.body.entries.find((item) => item.id === started.body.id)
+    assert.ok(entry, 'Seedream 作业必须出现在 /history')
+    assert.equal(entry.model, 'doubao-seedream-5-5-261028')
+    assert.equal(entry.seed, 123456)
+    assert.equal(entry.size, '2048x2048')
+    assert.equal(entry.parentId, 'job_parent_seedream')
+    assert.equal(entry.recipeId, 'recipe_seedream')
+    assert.equal(entry.results.length, 1)
+    assert.equal(entry.results[0].url, url)
+    assert.equal(entry.results[0].w, 2048)
+    assert.equal(entry.results[0].h, 2048)
+    assert.equal(entry.results[0].costYuan, 0.28)
+
+    // index.jsonl 行同样落盘。
+    const row = readFileSync(INDEX, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line))
+      .find((item) => item.id === started.body.id)
+    assert.ok(row)
+    assert.equal(row.model, 'doubao-seedream-5-5-261028')
+    assert.equal(row.seed, 123456)
+    assert.equal(row.size, '2048x2048')
+    assert.equal(row.parentId, 'job_parent_seedream')
+    assert.equal(row.recipeId, 'recipe_seedream')
+
+    // 同一份 ledger：provider=seedream，成本 0.28。
+    const ledgerRow = readFileSync(join(DATA, 'ledger.jsonl'), 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line))
+      .find((item) => item.jobId === started.body.id)
+    assert.ok(ledgerRow, 'Seedream 作业必须写入 ledger')
+    assert.equal(ledgerRow.provider, 'seedream')
+    assert.equal(ledgerRow.styleId, 'seedream')
+    assert.equal(ledgerRow.costYuan, 0.28)
+    assert.equal(ledgerRow.estimatedYuan, 0.28)
+
+    // seed 省略时存 null，不编造。
+    const bare = await postJson('/seedream/jobs', {
+      prompt: '无 seed 作业',
+      size: '2048x2048',
+      imageDataUrl: PNG_URL,
+    })
+    assert.equal(bare.status, 202)
+    let bareJob = null
+    for (let i = 0; i < 300; i += 1) {
+      const polled = await api(`/seedream/jobs/${bare.body.id}`)
+      assert.equal(polled.status, 200)
+      bareJob = polled.body
+      if (terminal.has(bareJob.status)) break
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    assert.equal(bareJob.status, 'succeeded', JSON.stringify(bareJob.error))
+    assert.equal(bareJob.seed, null)
+    assert.equal(bareJob.parentId, null)
+    assert.equal(bareJob.recipeId, null)
+    assert.equal(bareJob.output.seed, null)
+
+    // 旧的同步 /seedream/edit 仍然可用，并且自己生成 seed_* id。
+    const edited = await postJson('/seedream/edit', {
+      prompt: '同步路线兼容',
+      size: '2048x2048',
+      imageDataUrl: PNG_URL,
+      model: 'doubao-seedream-5-5-261028',
+    })
+    assert.equal(edited.status, 200)
+    assert.match(edited.body.url, /^\/image-workbench\/result\/seed_[a-z0-9]+\/seedream\.jpg$/)
+    assert.equal(edited.body.w, 2048)
+    assert.equal(edited.body.h, 2048)
+    assert.equal(edited.body.costYuan, 0.28)
+    assert.equal(edited.body.model, 'doubao-seedream-5-5-261028')
+    assert.deepEqual(Object.keys(edited.body).sort(), ['costYuan', 'h', 'model', 'url', 'w'])
+
+    // 缺失作业 404（查询与取消）。
+    const missing = await api('/seedream/jobs/job_missing')
+    assert.equal(missing.status, 404)
+    const missingCancel = await postJson('/seedream/jobs/job_missing/cancel', {})
+    assert.equal(missingCancel.status, 404)
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
