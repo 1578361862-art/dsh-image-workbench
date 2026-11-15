@@ -342,6 +342,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .recent-edit{ margin-top:5px; height:22px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
 .iw-root .recent-card:hover .recent-edit{ border-color:var(--p-ink-3); color:var(--p-ink); }
 .iw-root .recent-card:hover{ border-color:var(--p-ink-3); }
+.iw-root .recent-head-actions{ display:flex; gap:6px; align-items:center; }
+.iw-root .recent-actions{ display:flex; gap:3px; margin-top:5px; }
+.iw-root .rc-action{ width:24px; height:22px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-4); cursor:pointer; padding:0; }
+.iw-root .rc-action:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
+.iw-root .rc-action.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .rc-action svg{ width:12px; height:12px; }
 .iw-root .recent-card img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--p-sunken); }
 .iw-root .recent-card .rc-style{ display:block; margin-top:5px; font-family:var(--p-serif); font-size:13px; color:var(--p-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .iw-root .recent-card .rc-meta{ display:block; margin-top:2px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1186,7 +1192,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <section class="wrap recent-page" id="recentPage" hidden>
     <div class="recent-head">
       <div><h2>最近生成</h2><span id="recentMeta"></span></div>
-      <button class="ghost-btn" id="recentRefresh">刷新</button>
+      <div class="recent-head-actions"><button class="ghost-btn" id="recentArchiveToggle">归档 <span id="archiveCount">0</span></button><button class="ghost-btn" id="recentRefresh">刷新</button></div>
     </div>
     <div class="recent-grid" id="recentGrid"></div>
   </section>
@@ -1375,6 +1381,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <button class="result-action" id="resultDislike" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.8 8.8 7.6 13c-.3.6-1.3.7-1.6-.1L5.2 10.3H2.8c-.9 0-1.5-.8-1.3-1.6l1.1-4.1c.2-.6.7-1 1.3-1h7.9"/><path d="M9.8 8.8h2.4V3.6H9.8z"/></svg><span>踩</span></button>
         <button class="result-action" id="resultFavorite" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 2.5h7.2c.6 0 1 .4 1 1v10l-4.6-2.8L3.4 13.5v-10c0-.6.4-1 1-1Z"/></svg><span>收藏</span></button>
         <button class="result-action" id="resultRefine"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.8 2.6 2.6 2.6-6.9 6.9-3.2.6.6-3.2 6.9-6.9Z"/><path d="M9.4 4l2.6 2.6"/></svg><span>多轮编辑</span></button>
+        <button class="result-action" id="resultArchive"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h11v3h-11z"/><path d="M3.5 6.5v6h9v-6M6.5 9.5h3"/></svg><span>归档</span></button>
         <button class="result-action" id="resultDownload"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.8v7.1M5.2 7.2 8 10l2.8-2.8M3 12.5v1.2h10v-1.2"/></svg><span>下载</span></button>
       </div>
     </footer>
@@ -1477,8 +1484,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var FAVORITES_KEY = 'dsh-image-workbench/favorites/v1';
   var feedbackStore = readJsonStore(FEEDBACK_KEY, {});
   var favorites = readJsonStore(FAVORITES_KEY, []);
+  var ARCHIVE_KEY = 'dsh-image-workbench/archived/v1';
+  var archived = readJsonStore(ARCHIVE_KEY, []);
   if (!feedbackStore || typeof feedbackStore !== 'object' || Array.isArray(feedbackStore)) feedbackStore = {};
   if (!Array.isArray(favorites)) favorites = [];
+  if (!Array.isArray(archived)) archived = [];
+  var showArchived = false;
   function readJsonStore(key, fallback) {
     try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; }
   }
@@ -2876,7 +2887,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.5',
+        version: '0.36.6',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3419,34 +3430,127 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }).catch(function () { renderHistory(); });
   }
 
-  function recentItems() {
+  function allRecentItems() {
     var items = [];
     currentHistory().forEach(function (entry) {
       (entry.results || []).forEach(function (r) { items.push({ entry: entry, result: r }); });
     });
     return items;
   }
-
+  function archivedIndex(key) {
+    for (var i = 0; i < archived.length; i++) if (archived[i] === key) return i;
+    return -1;
+  }
+  function recentItems() {
+    return allRecentItems().filter(function (item) {
+      var isArch = archivedIndex(resultKey(item.result)) >= 0;
+      return showArchived ? isArch : !isArch;
+    });
+  }
+  var RC_ICONS = {
+    like: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 7.2 8.4 3c.3-.6 1.3-.7 1.6.1l.8 2.6h2.4c.9 0 1.5.8 1.3 1.6l-1.1 4.1c-.2.6-.7 1-1.3 1H6.2"/><path d="M6.2 7.2H3.8v5.2h2.4z"/></svg>',
+    dislike: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.8 8.8 7.6 13c-.3.6-1.3.7-1.6-.1L5.2 10.3H2.8c-.9 0-1.5-.8-1.3-1.6l1.1-4.1c.2-.6.7-1 1.3-1h7.9"/><path d="M9.8 8.8h2.4V3.6H9.8z"/></svg>',
+    fav: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 2.5h7.2c.6 0 1 .4 1 1v10l-4.6-2.8L3.4 13.5v-10c0-.6.4-1 1-1Z"/></svg>',
+    edit: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m10.8 2.6 2.6 2.6-6.9 6.9-3.2.6.6-3.2 6.9-6.9Z"/><path d="M9.4 4l2.6 2.6"/></svg>',
+    download: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.8v7.1M5.2 7.2 8 10l2.8-2.8M3 12.5v1.2h10v-1.2"/></svg>',
+    archive: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3.5h11v3h-11z"/><path d="M3.5 6.5v6h9v-6M6.5 9.5h3"/></svg>'
+  };
+  function recentIconButton(action, index, title, active) {
+    return '<button type="button" class="rc-action' + (active ? ' on' : '') + '" data-recent-action="' + action + '" data-recent-index="' + index + '" title="' + escapeHTML(title) + '" aria-label="' + escapeHTML(title) + '">' + RC_ICONS[action] + '</button>';
+  }
   function renderRecentPage() {
     var grid = $('#recentGrid');
     if (!grid) return;
     var items = recentItems();
+    var allItems = allRecentItems();
+    var archCount = archived.length;
     $('#recentTabCount').textContent = String(items.length);
-    $('#recentMeta').textContent = recentLoading ? '载入中…' : (items.length ? items.length + ' 张 · ' + currentHistory().length + ' 次生成' : '');
+    $('#archiveCount').textContent = String(archCount);
+    var toggle = $('#recentArchiveToggle');
+    if (toggle) {
+      toggle.classList.toggle('on', showArchived);
+      toggle.setAttribute('aria-pressed', showArchived ? 'true' : 'false');
+    }
+    $('#recentMeta').textContent = recentLoading ? '载入中…' : (showArchived ? '已归档 · ' + items.length + ' 张' : (items.length ? items.length + ' 张 · ' + currentHistory().length + ' 次生成' : ''));
     if (!items.length) {
-      grid.innerHTML = '<div class="recent-empty">' + (recentLoading ? '载入中…' : '还没有生成记录') + '</div>';
+      grid.innerHTML = '<div class="recent-empty">' + (recentLoading ? '载入中…' : (showArchived ? '还没有归档图片' : '还没有生成记录')) + '</div>';
       return;
     }
     grid.innerHTML = items.map(function (item, i) {
       var r = item.result;
       var s = styleById(r.id) || { name: r.id || '生成图片' };
+      var key = resultKey(r);
+      var fb = feedbackStore[key] || '';
+      var fav = favoriteIndex(key) >= 0;
+      var isArch = archivedIndex(key) >= 0;
       return '<article class="recent-card">'
         + '<button class="recent-open" data-recent-open="' + i + '" aria-label="查看 ' + escapeHTML(s.name) + '"><img loading="lazy" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
         + '<span class="rc-style">' + escapeHTML(s.name) + '</span>'
         + '<span class="rc-meta">' + escapeHTML(dateTimeLabel(item.entry.at)) + ' · ' + r.w + ' × ' + r.h + (r.cloud ? ' · 云端' : ' · 本机') + '</span></button>'
-        + '<button class="recent-edit" data-recent-edit="' + i + '">多轮编辑</button>'
+        + '<div class="recent-actions">'
+        + recentIconButton('like', i, '赞', fb === 'up')
+        + recentIconButton('dislike', i, '踩', fb === 'down')
+        + recentIconButton('fav', i, fav ? '取消收藏' : '收藏', fav)
+        + recentIconButton('edit', i, '多轮编辑', false)
+        + recentIconButton('download', i, '下载', false)
+        + recentIconButton('archive', i, isArch ? '取消归档' : '归档', isArch)
+        + '</div>'
         + '</article>';
     }).join('');
+  }
+  function toggleArchiveKey(key) {
+    var idx = archivedIndex(key);
+    if (idx >= 0) archived.splice(idx, 1);
+    else { archived.unshift(key); if (archived.length > 400) archived.pop(); }
+    if (!writeJsonStore(ARCHIVE_KEY, archived)) { toast('归档保存失败'); return false; }
+    return idx < 0;
+  }
+  function recentAction(action, index) {
+    var item = recentItems()[index];
+    if (!item) return;
+    var r = item.result;
+    var key = resultKey(r);
+    if (action === 'like') {
+      feedbackStore[key] = feedbackStore[key] === 'up' ? '' : 'up';
+      writeJsonStore(FEEDBACK_KEY, feedbackStore);
+      renderRecentPage();
+      return;
+    }
+    if (action === 'dislike') {
+      feedbackStore[key] = feedbackStore[key] === 'down' ? '' : 'down';
+      writeJsonStore(FEEDBACK_KEY, feedbackStore);
+      renderRecentPage();
+      return;
+    }
+    if (action === 'fav') {
+      var fi = favoriteIndex(key);
+      if (fi >= 0) favorites.splice(fi, 1);
+      else {
+        var st = styleById(r.id) || { name: r.id || '生成图片' };
+        favorites.unshift({ key: key, url: r.url, title: st.name, styleId: r.id, styleName: st.name, w: r.w, h: r.h, cloud: !!r.cloud, border: 'none', at: Date.now() });
+        if (favorites.length > 40) favorites.pop();
+      }
+      writeJsonStore(FAVORITES_KEY, favorites);
+      updateFavoriteCount();
+      renderRecentPage();
+      return;
+    }
+    if (action === 'download') {
+      var st2 = styleById(r.id) || { name: r.id || '生成图片' };
+      triggerDownload(r.url, st2.name + '-' + Date.now() + '.jpg');
+      return;
+    }
+    if (action === 'archive') {
+      var added = toggleArchiveKey(key);
+      if (added) toast('已归档，文件仍保留在本机');
+      else toast('已取消归档');
+      renderRecentPage();
+      return;
+    }
+    if (action === 'edit') {
+      openRecentImage(index);
+      openRefine();
+    }
   }
 
   function loadAllHistory(force) {
@@ -3497,6 +3601,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       resultId: null,
       styleId: r.id,
       cloud: !!r.cloud,
+      archiveKey: resultKey(r),
     });
   }
 
@@ -4352,6 +4457,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var label = favorite.querySelector('span');
       if (label) label.textContent = saved ? '已收藏' : '收藏';
     }
+    var archive = $('#resultArchive');
+    if (archive) {
+      var canArchive = !!bigState.archiveKey;
+      archive.hidden = !canArchive;
+      var savedArchive = canArchive && archivedIndex(bigState.archiveKey) >= 0;
+      archive.classList.toggle('on', savedArchive);
+      var archiveLabel = archive.querySelector('span');
+      if (archiveLabel) archiveLabel.textContent = savedArchive ? '取消归档' : '归档';
+    }
     updateFavoriteCount();
   }
 
@@ -5080,7 +5194,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.5', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.6', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5157,6 +5271,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultLike').addEventListener('click', function () { toggleFeedback('up'); });
     $('#resultDislike').addEventListener('click', function () { toggleFeedback('down'); });
     $('#resultFavorite').addEventListener('click', toggleFavoriteBig);
+    $('#resultArchive').addEventListener('click', function () {
+      if (!bigState || !bigState.archiveKey) return;
+      var added = toggleArchiveKey(bigState.archiveKey);
+      syncBigActions();
+      renderRecentPage();
+      toast(added ? '已归档，文件仍保留在本机' : '已取消归档');
+    });
     $$('[data-multi-close]').forEach(function (el) { el.addEventListener('click', function () { $('#multiLayer').classList.remove('open'); $('#multiLayer').inert = true; $('#multiLayer').setAttribute('aria-hidden', 'true'); }); });
     $('#multiMode').addEventListener('click', function (e) {
       var b = e.target.closest('[data-multi-mode]');
@@ -5303,15 +5424,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (textState.result) triggerDownload(textState.result.url, '文生图-' + Date.now() + '.jpg');
     });
     $('#recentGrid').addEventListener('click', function (e) {
-      var edit = e.target.closest('[data-recent-edit]');
-      if (edit) {
-        var ei = Number(edit.dataset.recentEdit);
-        openRecentImage(ei);
-        openRefine();
+      var action = e.target.closest('[data-recent-action]');
+      if (action) {
+        recentAction(action.dataset.recentAction, Number(action.dataset.recentIndex));
         return;
       }
       var card = e.target.closest('[data-recent-open]');
       if (card) openRecentImage(Number(card.dataset.recentOpen));
+    });
+    $('#recentArchiveToggle').addEventListener('click', function () {
+      showArchived = !showArchived;
+      renderRecentPage();
     });
 
     $$('#sizeGroup button').forEach(function (el) {

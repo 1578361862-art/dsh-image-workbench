@@ -46,3 +46,11 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - P3 真实 Key 已验证：2026-11-13 H3 插画化 2K 成功（1888×2240），结果已发邮件。P4：Agent 工具 `image_workbench`（cloud estimate/start/status）、批量矩阵（本机，最多 4 图）、preset 风格包导入、Context-IR 预览。
 - 云端 job 快照持久化（重启时 running/queued 转 unknown/failed，不自动重试）；成功结果自动写 host index；有 cancel 路由；账本只记成功；90 天清理已做。
 - 结果只接受 JPEG；原图 JPEG/PNG/WebP ≤20 MB；ZIP ≤80 MB。
+
+
+## 最近生成与存储
+
+- 正常 H3 / Seedream 出图会保存到本机 `~/Data/dsh-image-workbench/outputs/<job-id>/`，并写入 `index.jsonl`；最近页面使用 `/image-workbench/result/...` 本地地址。
+- Seedream 图层拆分的返回结果是远端 PNG URL，当前不落盘，可能过期。
+- 最近卡片的图标操作包括：赞、踩、收藏、多轮编辑、下载、归档。
+- 归档是本机 UI 归档（localStorage），只从最近列表隐藏，不复制、不删除文件；继续受 90 天清理规则影响。
