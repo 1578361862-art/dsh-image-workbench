@@ -15,6 +15,9 @@ export const JOB_STATUSES = Object.freeze([
 export const TERMINAL_STATUSES = Object.freeze(['succeeded', 'failed', 'canceled', 'unknown'])
 
 const TERMINAL = new Set(TERMINAL_STATUSES)
+const ACTIVE = new Set(['queued', 'preparing', 'running'])
+export const MAX_LIST_LIMIT = 200
+export const DEFAULT_LIST_LIMIT = 50
 const DEFINITIVE_CODES = new Set([
   'auth',
   'invalid_request',
@@ -55,8 +58,35 @@ export function normalizeProvider(value) {
   return typeof value === 'string' && value.trim() ? value.trim() : 'minimax'
 }
 
+// 只有“确定性失败”可以重试：unknown 可能已经发出并计费，绝不重发。
+export function retryBlockedReason(job) {
+  if (!job) return '作业不存在，不能重试'
+  if (job.status === 'unknown') return '上一次请求可能已发出并计费，不能重试'
+  if (job.status === 'succeeded') return '作业已成功，不能重试'
+  if (job.status === 'canceled') return '作业已取消，不能重试'
+  if (ACTIVE.has(job.status)) return '作业仍在进行中，不能重试'
+  if (job.status !== 'failed') return '只有失败的作业可以重试'
+  // failed 只可能来自 beforeRequest / 4xx / 明确错误码；unknown 已在上方拒绝。
+  // 防御：failed 却缺少错误详情时按状态不明处理，仍然不重发。
+  if (job.requestSentAt && !job.error) return '上一次请求状态不明，不能重试'
+  return null
+}
+
+export function normalizeListLimit(value) {
+  if (value === undefined || value === null || value === '') return DEFAULT_LIST_LIMIT
+  const raw = Number(value)
+  if (!Number.isFinite(raw)) return DEFAULT_LIST_LIMIT
+  return Math.min(MAX_LIST_LIMIT, Math.max(1, Math.trunc(raw)))
+}
+
+function snapshot(job) {
+  return structuredClone(job)
+}
+
 export function createJobs({ clock = () => new Date(), onChange } = {}) {
   const jobs = new Map()
+  const order = new Map()
+  let sequence = 0
 
   function nowIso() {
     return clock().toISOString()
@@ -98,6 +128,7 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
       error: null,
     }
     jobs.set(id, job)
+    order.set(id, ++sequence)
     void notify(job)
     return job
   }
@@ -110,6 +141,8 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
   function update(id, patch = {}) {
     const job = get(id)
     if (!job) return null
+    // 终态不可被普通 update 复活：取消后迟到的 preparing/running 不能覆盖 canceled。
+    if (TERMINAL.has(job.status) && patch.status !== undefined && !TERMINAL.has(patch.status)) return job
     Object.assign(job, patch, { updatedAt: nowIso() })
     void notify(job)
     return job
@@ -151,6 +184,8 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
 
     try {
       const result = (await task(job)) ?? {}
+      // 取消后迟到的完成不得把 canceled 覆盖成 succeeded。
+      if (job.status === 'canceled') return job
       job.status = 'succeeded'
       job.updatedAt = nowIso()
       job.output = result.output ?? null
@@ -159,6 +194,7 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
       job.rawMeta = result.rawMeta ?? null
       job.error = null
     } catch (err) {
+      if (job.status === 'canceled') return job
       finishError(job, err)
     }
     await notify(job)
@@ -187,6 +223,43 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
     if (TERMINAL.has(job.status)) return job
     job.status = 'canceled'
     job.updatedAt = nowIso()
+    void notify(job)
+    return job
+  }
+
+  // 队列快照：按 createdAt 倒序（同一时刻按创建顺序倒序），limit 收敛到 1–200。
+  function list({ status, provider, limit } = {}) {
+    const wantedStatus = typeof status === 'string' && status ? status : null
+    const wantedProvider = typeof provider === 'string' && provider ? provider : null
+    const rows = []
+    for (const job of jobs.values()) {
+      if (wantedStatus && job.status !== wantedStatus) continue
+      if (wantedProvider && job.provider !== wantedProvider) continue
+      rows.push(job)
+    }
+    rows.sort((a, b) => {
+      const byTime = String(b.createdAt).localeCompare(String(a.createdAt))
+      if (byTime !== 0) return byTime
+      return (order.get(b.id) ?? 0) - (order.get(a.id) ?? 0)
+    })
+    return rows.slice(0, normalizeListLimit(limit)).map(snapshot)
+  }
+
+  // 重试用：把确定性失败的作业复位成 queued，让 start() 能且只能再跑一次。
+  // 是否允许由 retryBlockedReason 判定；这里再判一次，避免绕过。
+  function reset(id) {
+    const job = get(id)
+    if (!job) return null
+    if (retryBlockedReason(job)) return null
+    job.status = 'queued'
+    job.updatedAt = nowIso()
+    job.requestSentAt = null
+    job.attempts = 0
+    job.output = null
+    job.usage = null
+    job.revisedPrompt = null
+    job.rawMeta = null
+    job.error = null
     void notify(job)
     return job
   }
@@ -234,11 +307,12 @@ export function createJobs({ clock = () => new Date(), onChange } = {}) {
         job.updatedAt = nowIso()
       }
       jobs.set(job.id, job)
+      order.set(job.id, ++sequence)
       loaded.push(job)
       void notify(job)
     }
     return loaded
   }
 
-  return { create, get, update, start, failBeforeRequest, cancel, hydrate }
+  return { create, get, update, start, failBeforeRequest, cancel, list, reset, hydrate }
 }

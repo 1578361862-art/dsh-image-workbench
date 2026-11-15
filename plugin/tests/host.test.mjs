@@ -246,7 +246,11 @@ test('认证守卫覆盖所有新旧路由（401 + 未授权）', async () => {
     ['/export', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
     ['/batch/abc', { method: 'DELETE' }],
     ['/cloud/jobs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
+    ['/cloud/jobs', {}],
     ['/cloud/jobs/abc', {}],
+    ['/cloud/jobs/abc/retry', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
+    ['/seedream/jobs', {}],
+    ['/seedream/jobs/abc/retry', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }],
     ['/cloud/key-test', { method: 'POST' }],
     ['/usage', {}],
   ]
@@ -1372,5 +1376,374 @@ test('Phase 1.2 /composite：区域合成落盘、本地可读、历史保留 re
   const ledgerPath = join(DATA, 'ledger.jsonl')
   if (existsSync(ledgerPath)) {
     assert.ok(!readFileSync(ledgerPath, 'utf8').includes(saved.id), 'region 合成不能写 ledger')
+  }
+})
+
+// ---- Phase 2.1：Host 队列（list / cancel / retry） ----
+
+async function pollHostJob(path) {
+  const terminal = new Set(['succeeded', 'failed', 'canceled', 'unknown'])
+  for (let i = 0; i < 300; i += 1) {
+    const res = await api(path)
+    assert.equal(res.status, 200)
+    if (terminal.has(res.body.status)) return res.body
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  throw new Error(`作业 ${path} 未在预期时间内结束`)
+}
+
+test('Phase 2.1 jobs.list：newest-first、status/provider 过滤、limit 1–200', async () => {
+  const {
+    createJobs,
+    normalizeListLimit,
+    retryBlockedReason,
+    MAX_LIST_LIMIT,
+    DEFAULT_LIST_LIMIT,
+  } = await import(new URL('../lib/jobs.js', import.meta.url).href)
+
+  let tick = 0
+  const clock = () => new Date(Date.UTC(2026, 10, 15) + tick++ * 1000)
+  const jobs = createJobs({ clock })
+
+  const first = jobs.create({ assetId: 'a'.repeat(16), styleId: 'h3-illus', prompt: '一', size: '2048x2048', seed: 1 })
+  const second = jobs.create({ assetId: 'a'.repeat(16), styleId: 'h3-illus', prompt: '二', size: '2048x2048', seed: 2 })
+  const third = jobs.create({ provider: 'seedream', styleId: 'seedream', prompt: '三', size: '2048x2048', seed: 3 })
+
+  assert.deepEqual(jobs.list().map((job) => job.id), [third.id, second.id, first.id], '默认 newest-first')
+  assert.deepEqual(jobs.list({ limit: 2 }).map((job) => job.id), [third.id, second.id])
+  assert.equal(jobs.list({ limit: 0 }).length, 1, 'limit 下限为 1')
+  assert.equal(jobs.list({ limit: 99999 }).length, 3, 'limit 上限 200，但不越过实际条数')
+  assert.equal(normalizeListLimit(99999), MAX_LIST_LIMIT)
+  assert.equal(normalizeListLimit('nope'), DEFAULT_LIST_LIMIT)
+  assert.equal(normalizeListLimit(''), DEFAULT_LIST_LIMIT, '空 limit 回落默认值')
+  assert.equal(normalizeListLimit(undefined), DEFAULT_LIST_LIMIT)
+
+  jobs.failBeforeRequest(second.id, { code: 'auth', status: 401 })
+  assert.deepEqual(jobs.list({ status: 'failed' }).map((job) => job.id), [second.id])
+  assert.deepEqual(jobs.list({ status: 'queued' }).map((job) => job.id), [third.id, first.id])
+  assert.deepEqual(jobs.list({ provider: 'seedream' }).map((job) => job.id), [third.id])
+  assert.deepEqual(jobs.list({ provider: 'minimax' }).map((job) => job.id), [second.id, first.id])
+
+  // 列表返回快照克隆，外部修改不会污染内部状态。
+  const [snap] = jobs.list({ limit: 1 })
+  snap.status = 'succeeded'
+  assert.equal(jobs.get(third.id).status, 'queued')
+
+  // 重试闸门：只有确定性失败可重试。
+  assert.equal(retryBlockedReason(jobs.get(second.id)), null)
+  const unknownJob = jobs.create({ styleId: 'h3-illus', prompt: 'u', size: '2048x2048' })
+  unknownJob.status = 'unknown'
+  assert.match(retryBlockedReason(unknownJob), /不能重试/)
+  assert.match(retryBlockedReason(third), /不能重试/, '进行中的作业不能重试')
+  assert.match(retryBlockedReason(jobs.get('job_missing')), /不能重试/)
+
+  // reset 只复位允许重试的作业；unknown 永远拒绝。
+  assert.ok(jobs.reset(second.id))
+  assert.equal(jobs.get(second.id).status, 'queued')
+  assert.equal(jobs.get(second.id).attempts, 0)
+  assert.equal(jobs.get(second.id).requestSentAt, null)
+  assert.equal(jobs.reset(unknownJob.id), null)
+  assert.equal(jobs.get(unknownJob.id).status, 'unknown')
+
+  // 取消优先：取消后的 preparing 与 start 都不能复活作业或触发 task。
+  const canceledJob = jobs.create({ styleId: 'h3-illus', prompt: 'c', size: '2048x2048' })
+  assert.equal(jobs.cancel(canceledJob.id).status, 'canceled')
+  jobs.update(canceledJob.id, { status: 'preparing' })
+  assert.equal(jobs.get(canceledJob.id).status, 'canceled', '迟到的 preparing 不能覆盖 canceled')
+  let canceledStartCalls = 0
+  await jobs.start(canceledJob.id, async () => {
+    canceledStartCalls += 1
+  })
+  assert.equal(canceledStartCalls, 0, '已取消作业不得再调用 provider')
+  assert.equal(jobs.get(canceledJob.id).status, 'canceled')
+})
+
+test('Phase 2.1 /cloud/jobs：列表过滤、确定性失败可重试并复用原参数、重复/缺失 409', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  Object.assign(config, { cloudEnabled: true, base: 'cn', model: 'standard', billing: 'payg', budget: 999 })
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
+  credential = { kind: 'api-key', key: 'sk-retry-test-1234' }
+
+  const realFetch = globalThis.fetch
+  const mode = { value: 'auth' }
+  const textMode = { value: 'auth' }
+  let providerCalls = 0
+  let textCalls = 0
+  const bodies = []
+  const provider = await startMock(async (req, res) => {
+    if (req.method === 'POST' && req.url === '/v1/images/generations') {
+      textCalls += 1
+      for await (const chunk of req) void chunk
+      if (textMode.value === 'auth') {
+        res.statusCode = 401
+        res.setHeader('content-type', 'application/json')
+        res.end(JSON.stringify({ error: { message: 'invalid api key' } }))
+        return
+      }
+      res.setHeader('content-type', 'application/json')
+      res.end(
+        JSON.stringify({
+          data: [{ b64_json: JPEG.toString('base64'), size: '2048x2048', revised_prompt: '文生图重试成功' }],
+          output_format: 'jpeg',
+          usage: { generated_images: 1, total_tokens: 5 },
+          request_id: 'req_text_retry_1',
+        }),
+      )
+      return
+    }
+    if (req.method === 'POST' && req.url === '/v1/images/edits') {
+      providerCalls += 1
+      const chunks = []
+      for await (const chunk of req) chunks.push(chunk)
+      bodies.push(Buffer.concat(chunks).toString('utf8'))
+      if (mode.value === 'auth') {
+        res.statusCode = 401
+        res.setHeader('content-type', 'application/json')
+        res.end(JSON.stringify({ error: { message: 'invalid api key' } }))
+        return
+      }
+      res.setHeader('content-type', 'application/json')
+      res.end(
+        JSON.stringify({
+          data: [{ b64_json: JPEG.toString('base64'), size: '2048x2048', revised_prompt: '重试成功' }],
+          output_format: 'jpeg',
+          usage: { generated_images: 1, total_tokens: 5 },
+          request_id: 'req_retry_1',
+        }),
+      )
+      return
+    }
+    res.statusCode = 404
+    res.end('not found')
+  })
+  const providerBase = `http://127.0.0.1:${provider.address().port}`
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (typeof url === 'string' && url.startsWith('https://api.minimax.cn/')) {
+      return realFetch(url.replace('https://api.minimax.cn', providerBase), init)
+    }
+    return realFetch(input, init)
+  }
+
+  try {
+    const params = { strength: 0.75, source: 'retry-test' }
+    const created = await postJson('/cloud/jobs', {
+      assetId,
+      styleId: 'h3-illus',
+      prompt: '重试用的确定性失败',
+      size: '2048x2048',
+      seed: 4242,
+      params,
+      parentId: 'job_parent_retry',
+      recipeId: 'recipe_retry',
+    })
+    assert.equal(created.status, 202)
+    const jobId = created.body.id
+
+    const failed = await pollHostJob(`/cloud/jobs/${jobId}`)
+    assert.equal(failed.status, 'failed', JSON.stringify(failed.error))
+    assert.equal(failed.error.code, 'auth')
+    assert.ok(failed.requestSentAt, '确定性失败同样记录请求落点')
+    assert.equal(providerCalls, 1)
+
+    // 列表：newest-first、状态过滤、limit、provider 隔离、非法 status。
+    const failedList = await api('/cloud/jobs?status=failed&limit=50')
+    assert.equal(failedList.status, 200)
+    assert.ok(Array.isArray(failedList.body.jobs))
+    assert.ok(failedList.body.jobs.length > 0)
+    assert.ok(failedList.body.jobs.every((job) => job.status === 'failed' && job.provider === 'minimax'))
+    assert.ok(failedList.body.jobs.some((job) => job.id === jobId))
+    const times = failedList.body.jobs.map((job) => job.createdAt)
+    assert.deepEqual(times, [...times].sort().reverse(), '必须 newest-first')
+    assert.equal((await api('/cloud/jobs?limit=1')).body.jobs.length, 1)
+    assert.ok((await api('/cloud/jobs?status=queued&limit=0')).body.jobs.length <= 1, 'limit 下限为 1')
+    assert.equal((await api('/cloud/jobs?status=bogus')).status, 400)
+
+    // 重试：复位同一 job，复用已落盘的复现字段，只再发一次请求。
+    mode.value = 'ok'
+    const retried = await postJson(`/cloud/jobs/${jobId}/retry`, {})
+    assert.equal(retried.status, 202)
+    assert.equal(retried.body.id, jobId, '重试复用同一个 job id')
+    assert.equal(retried.body.status, 'queued')
+
+    const done = await pollHostJob(`/cloud/jobs/${jobId}`)
+    assert.equal(done.status, 'succeeded', JSON.stringify(done.error))
+    assert.equal(done.attempts, 1, '复位后只再执行一次')
+    assert.equal(done.seed, 4242)
+    assert.deepEqual(done.params, params)
+    assert.equal(done.prompt, '重试用的确定性失败')
+    assert.equal(done.size, '2048x2048')
+    assert.equal(done.parentId, 'job_parent_retry')
+    assert.equal(done.recipeId, 'recipe_retry')
+    assert.equal(done.styleId, 'h3-illus')
+    assert.equal(done.provider, 'minimax')
+    assert.equal(done.output.url, `/image-workbench/result/${jobId}/h3-illus.jpg`)
+    assert.equal(providerCalls, 2, '失败一次 + 重试一次')
+    assert.ok(bodies[1].includes('重试用的确定性失败'), '重试必须复用原 prompt')
+    assert.ok(bodies[1].includes('2048x2048'), '重试必须复用原 size')
+    const file = await api(done.output.url.replace('/image-workbench', ''))
+    assert.equal(file.status, 200)
+    assert.deepEqual(file.body, JPEG)
+
+    // 已成功的作业不能再重试；不存在的作业同样 409（不重新发送）。
+    assert.equal((await postJson(`/cloud/jobs/${jobId}/retry`, {})).status, 409)
+    const missingRetry = await postJson('/cloud/jobs/job_not_found_0000/retry', {})
+    assert.equal(missingRetry.status, 409)
+    assert.match(missingRetry.body.error, /不能重试/)
+    assert.equal(providerCalls, 2)
+
+    // 纯文生图（assetId 为空）走同一个 retry 入口，复用文本 job 的 prompt/size。
+    const textCreated = await postJson('/cloud/text-jobs', { prompt: '文生图重试', size: '2048x2048' })
+    assert.equal(textCreated.status, 202)
+    const textFailed = await pollHostJob(`/cloud/jobs/${textCreated.body.id}`)
+    assert.equal(textFailed.status, 'failed', JSON.stringify(textFailed.error))
+    assert.equal(textCalls, 1)
+    textMode.value = 'ok'
+    const textRetried = await postJson(`/cloud/jobs/${textCreated.body.id}/retry`, {})
+    assert.equal(textRetried.status, 202)
+    assert.equal(textRetried.body.id, textCreated.body.id)
+    const textDone = await pollHostJob(`/cloud/jobs/${textCreated.body.id}`)
+    assert.equal(textDone.status, 'succeeded', JSON.stringify(textDone.error))
+    assert.equal(textDone.output.url, `/image-workbench/result/${textCreated.body.id}/h3-text.jpg`)
+    assert.equal(textCalls, 2)
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
+test('Phase 2.1 retry：unknown（请求可能已发出）返回 409 且绝不重发', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  Object.assign(config, { cloudEnabled: true, base: 'cn', model: 'standard', billing: 'payg', budget: 999 })
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
+  credential = { kind: 'api-key', key: 'sk-unknown-test-1234' }
+
+  const realFetch = globalThis.fetch
+  let providerCalls = 0
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (typeof url === 'string' && url.startsWith('https://api.minimax.cn/')) {
+      providerCalls += 1
+      return Promise.reject(new Error('socket hang up'))
+    }
+    return realFetch(input, init)
+  }
+
+  try {
+    const created = await postJson('/cloud/jobs', {
+      assetId,
+      styleId: 'h3-illus',
+      prompt: '不确定失败不可重试',
+      size: '2048x2048',
+    })
+    assert.equal(created.status, 202)
+    const jobId = created.body.id
+
+    const unknown = await pollHostJob(`/cloud/jobs/${jobId}`)
+    assert.equal(unknown.status, 'unknown', JSON.stringify(unknown.error))
+    assert.equal(unknown.error.code, 'network')
+    assert.equal(providerCalls, 1)
+
+    const retried = await postJson(`/cloud/jobs/${jobId}/retry`, {})
+    assert.equal(retried.status, 409)
+    assert.match(retried.body.error, /可能已发出|不能重试/)
+    assert.equal(providerCalls, 1, 'unknown 作业绝不能重发')
+    assert.equal((await api(`/cloud/jobs/${jobId}`)).body.status, 'unknown')
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
+test('Phase 2.1 Seedream：列表、取消竞态不覆盖 canceled、retry 409', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  Object.assign(config, { cloudEnabled: true })
+  writeFileSync(CONFIG, JSON.stringify(config, null, 2), { mode: 0o600 })
+  credential = { kind: 'api-key', key: 'sk-seedream-queue-1234' }
+
+  const realFetch = globalThis.fetch
+  const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489', 'hex')
+  let providerCalls = 0
+  let releaseProvider = null
+  let signalProviderStarted = null
+  const providerStarted = new Promise((resolve) => {
+    signalProviderStarted = resolve
+  })
+  const gate = new Promise((resolve) => {
+    releaseProvider = resolve
+  })
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (url === 'https://ark.cn-beijing.volces.com/api/v3/images/generations') {
+      providerCalls += 1
+      signalProviderStarted()
+      return gate.then(
+        () =>
+          new Response(
+            JSON.stringify({
+              data: [{ url: 'https://seedream-queue.invalid/result.png', size: '2048x2048' }],
+              usage: { generated_images: 1 },
+              request_id: 'req_seedream_queue',
+            }),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          ),
+      )
+    }
+    if (url === 'https://seedream-queue.invalid/result.png') {
+      return Promise.resolve(new Response(png, { status: 200, headers: { 'content-type': 'image/png' } }))
+    }
+    return realFetch(input, init)
+  }
+
+  try {
+    const created = await postJson('/seedream/jobs', {
+      prompt: '取消竞态',
+      size: '2048x2048',
+      imageDataUrl: PNG_URL,
+      seed: 9,
+    })
+    assert.equal(created.status, 202)
+    const jobId = created.body.id
+
+    await providerStarted
+    const running = await api(`/seedream/jobs/${jobId}`)
+    assert.equal(running.body.status, 'running')
+    assert.ok(running.body.requestSentAt, 'provider 调用进行中时已有请求落点')
+
+    const canceled = await postJson(`/seedream/jobs/${jobId}/cancel`, {})
+    assert.equal(canceled.status, 200)
+    assert.equal(canceled.body.status, 'canceled')
+
+    // 放行迟到的 provider 完成；jobs.start 的完成分支不得覆盖 canceled。
+    releaseProvider()
+    const outputFile = join(DATA, 'outputs', jobId, 'seedream.jpg')
+    for (let i = 0; i < 300 && !existsSync(outputFile); i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    const after = await api(`/seedream/jobs/${jobId}`)
+    assert.equal(after.body.status, 'canceled', '迟到的完成不能覆盖 canceled')
+    assert.equal(after.body.output, null)
+    assert.equal(providerCalls, 1)
+
+    // Seedream 列表：只含 seedream 作业，可按状态过滤，可由 limit 收敛。
+    const canceledList = await api('/seedream/jobs?status=canceled&limit=10')
+    assert.equal(canceledList.status, 200)
+    assert.ok(canceledList.body.jobs.length > 0)
+    assert.ok(canceledList.body.jobs.every((job) => job.provider === 'seedream' && job.status === 'canceled'))
+    assert.ok(canceledList.body.jobs.some((job) => job.id === jobId))
+    const succeededList = await api('/seedream/jobs?status=succeeded&limit=5')
+    assert.ok(succeededList.body.jobs.every((job) => job.provider === 'seedream' && job.status === 'succeeded'))
+    assert.ok(succeededList.body.jobs.length <= 5)
+    assert.equal((await api('/seedream/jobs?status=bogus')).status, 400)
+
+    // Seedream 作业源图未持久化：两个 retry 入口都是 409。
+    const seedreamRetry = await postJson(`/seedream/jobs/${jobId}/retry`, {})
+    assert.equal(seedreamRetry.status, 409)
+    assert.match(seedreamRetry.body.error, /源图|持久化/)
+    assert.equal((await postJson('/seedream/jobs/job_missing/retry', {})).status, 409)
+    const cloudRetry = await postJson(`/cloud/jobs/${jobId}/retry`, {})
+    assert.equal(cloudRetry.status, 409, 'cloud.retryJob 对 seedream 必须 409')
+    assert.match(cloudRetry.body.error, /Seedream|源图|持久化/)
+  } finally {
+    globalThis.fetch = realFetch
   }
 })

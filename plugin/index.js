@@ -929,6 +929,16 @@ export default {
           })
           return json(res, 202, { id: job.id, status: job.status })
         }
+        if (method === 'GET' && path === 'seedream/jobs') {
+          await cloud.ready
+          return json(res, 200, {
+            jobs: cloud.listJobs({
+              status: url.searchParams.get('status') ?? undefined,
+              provider: 'seedream',
+              limit: url.searchParams.get('limit') ?? undefined,
+            }),
+          })
+        }
         if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
           await cloud.ready
           const job = cloud.jobs.get(seg[2])
@@ -940,6 +950,10 @@ export default {
           const job = cloud.jobs.cancel(seg[2])
           if (!job) return json(res, 404, { error: '作业不存在' })
           return json(res, 200, job)
+        }
+        if (method === 'POST' && seg.length === 4 && seg[1] === 'jobs' && seg[3] === 'retry') {
+          // Seedream 作业只存了 prompt/size/seed，源图数据没有落盘，无法安全重放。
+          return json(res, 409, { error: 'Seedream 作业暂不支持重试：源图数据未持久化' })
         }
         if (method === 'POST' && path === 'seedream/key') {
           const body = await readBody(req, MAX_BODY)
@@ -1020,11 +1034,26 @@ export default {
           const body = await readBody(req, MAX_CLOUD_BODY)
           return json(res, 202, await cloud.createTextJob(body ?? {}, config))
         }
+        if (method === 'GET' && path === 'cloud/jobs') {
+          return json(res, 200, {
+            jobs: cloud.listJobs({
+              status: url.searchParams.get('status') ?? undefined,
+              provider: 'minimax',
+              limit: url.searchParams.get('limit') ?? undefined,
+            }),
+          })
+        }
         if (method === 'GET' && seg.length === 3 && seg[1] === 'jobs') {
           return json(res, 200, cloud.getJob(seg[2]))
         }
         if (method === 'POST' && seg.length === 4 && seg[1] === 'jobs' && seg[3] === 'cancel') {
           return json(res, 200, cloud.cancelJob(seg[2]))
+        }
+        if (method === 'POST' && seg.length === 4 && seg[1] === 'jobs' && seg[3] === 'retry') {
+          const existing = cloud.jobs.get(seg[2])
+          const reference =
+            existing && existing.provider === 'minimax' ? await styleReferenceFor(existing.styleId) : null
+          return json(res, 202, await cloud.retryJob(seg[2], config, { reference: reference ?? undefined }))
         }
         if (method === 'POST' && path === 'cloud/key-test') {
           const key = await readKeyValue(ctx)

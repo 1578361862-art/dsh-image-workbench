@@ -4,7 +4,7 @@ import { mkdir, readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { checkBudget, estimate as estimateCost } from './budget.js'
 import { fail } from './errors.js'
-import { createJobs, hashParams, MAX_SEED, normalizeSeed } from './jobs.js'
+import { createJobs, hashParams, JOB_STATUSES, MAX_SEED, normalizeSeed, retryBlockedReason } from './jobs.js'
 import { createLedger } from './ledger.js'
 import { baseUrlFor, generateEdit, generateText, isValidSize } from './minimax.js'
 import { writeAtomic } from './storage.js'
@@ -322,6 +322,13 @@ export function createCloud({
     return job
   }
 
+  // 队列列表：只做只读快照，顺序/过滤/limit 全部由 jobs.js 负责。
+  function listJobs({ status, provider, limit } = {}) {
+    const wantedStatus = typeof status === 'string' && status ? status : undefined
+    if (wantedStatus && !JOB_STATUSES.includes(wantedStatus)) fail('status 无效', 400)
+    return jobs.list({ status: wantedStatus, provider, limit })
+  }
+
   function cancelJob(id) {
     const job = jobs.get(id)
     if (!job) fail('作业不存在', 404)
@@ -330,9 +337,83 @@ export function createCloud({
     return next
   }
 
+  /**
+   * 重试一个确定性失败的 H3 作业：复位同一个 job，再异步执行一次。
+   * 只复用已落盘的复现字段；unknown（请求可能已发出）永不重发。
+   */
+  async function retryJob(id, config, extras = {}) {
+    const job = jobs.get(id)
+    if (!job) fail('作业不存在，不能重试', 409)
+    if (job.provider !== 'minimax') {
+      fail(
+        job.provider === 'seedream'
+          ? 'Seedream 作业暂不支持重试：源图数据未持久化'
+          : '该作业暂不支持重试',
+        409,
+      )
+    }
+    const blocked = retryBlockedReason(job)
+    if (blocked) fail(blocked, 409)
+
+    const key = await readKey()
+    if (!key) fail('还没有保存 API Key', 400)
+
+    const estimated = estimateCost({
+      size: job.size,
+      speed: config?.model,
+      billing: config?.billing,
+      count: 1,
+      now: clock(),
+    })
+    const spentToday = await ledger.spentToday(clock())
+    const decision = checkBudget({
+      spentToday,
+      estimated: estimated.costYuan,
+      limit: numberOr(config?.budget, 10),
+      billing: config?.billing,
+      allow: false,
+    })
+    if (!decision.allowed) {
+      fail('超出每日预算，需要手动放行', 402, {
+        code: 'budget_exceeded',
+        estimatedYuan: decision.estimatedYuan,
+        spentTodayYuan: decision.spentTodayYuan,
+        budgetYuan: decision.limitYuan,
+      })
+    }
+
+    // 复用 assetId/styleId/prompt/size/params/seed/parentId/recipeId；不接收客户端新参数。
+    // assetIds 第 2 张起的参考图没有持久化，重试时不再发送（只有 style 参考图会重算）。
+    if (job.assetId) {
+      const asset = await storage.getAsset(job.assetId)
+      if (!asset) fail('原图不存在，无法重试', 409)
+      jobs.reset(job.id)
+      setImmediate(() => {
+        runJob(job, {
+          config,
+          key,
+          asset,
+          extraAssets: [],
+          estimated,
+          reference: extras.reference,
+        }).catch((err) => {
+          jobs.failBeforeRequest(job.id, err)
+        })
+      })
+    } else {
+      jobs.reset(job.id)
+      setImmediate(() => {
+        runTextJob(job, { config, key, estimated }).catch((err) => {
+          jobs.failBeforeRequest(job.id, err)
+        })
+      })
+    }
+    return { id: job.id, status: job.status }
+  }
+
   async function usage() {
     return ledger.summary(clock())
   }
 
-  return { createJob, createTextJob, getJob, usage, ledger, jobs }
+  return { createJob, createTextJob, getJob, listJobs, cancelJob, retryJob, usage, ledger, jobs }
 }
