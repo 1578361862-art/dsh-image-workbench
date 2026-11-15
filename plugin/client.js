@@ -1123,7 +1123,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格" hidden></select>
           <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
           <div class="prompt-actions">
-            <button class="ghost-btn" id="cloudPromptSave">保存为本地</button>
             <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
           </div>
         </div>
@@ -1469,7 +1468,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   var HISTORY_KEY = 'dsh-image-workbench/history/v1';
   var HIDDEN_KEY = 'dsh-image-workbench/hidden-styles/v1';
-  var PROMPT_KEY = 'dsh-image-workbench/prompt-overrides/v1';
   var hiddenStyles = readHiddenStyles();
   var FEEDBACK_KEY = 'dsh-image-workbench/feedback/v1';
   var FAVORITES_KEY = 'dsh-image-workbench/favorites/v1';
@@ -1611,7 +1609,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     thumbs: {},
     settings: null
   }
-  try { var storedPrompts = JSON.parse(localStorage.getItem(PROMPT_KEY) || '{}'); if (storedPrompts && typeof storedPrompts === 'object' && !Array.isArray(storedPrompts)) state.promptOverrides = storedPrompts; } catch (e) {};
+  try { localStorage.removeItem('dsh-image-workbench/prompt-overrides/v1'); } catch (e) {}
 
   function make(w, h) {
     var c = document.createElement('canvas');
@@ -2453,7 +2451,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   function promptStateLabel(id) {
-    return promptOverride(id) !== undefined ? '本地' : '默认';
+    return promptOverride(id) !== undefined ? '已修改' : '默认';
   }
 
   function renderPromptPanel() {
@@ -2495,7 +2493,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!id) return;
     delete state.promptOverrides[promptKey(id)];
     delete state.promptOverrides[id];
-    try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
     var area = $('#cloudPrompt');
     if (area) area.value = basePromptFor(id);
     $('#promptState').textContent = '默认';
@@ -2873,7 +2870,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.2',
+        version: '0.36.3',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -5072,7 +5069,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.2', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.3', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5519,20 +5516,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
-    $('#cloudPromptSave').addEventListener('click', function () {
-      var id = currentCloudStyleId();
-      if (!id) return;
-      var area = $('#cloudPrompt');
-      if (!area) return;
-      var val = area.value;
-      var key = promptKey(id);
-      if (val.trim() === basePromptFor(id).trim()) delete state.promptOverrides[key];
-      else state.promptOverrides[key] = val;
-      try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
-      var stateEl = $('#promptState'); if (stateEl) stateEl.textContent = '本地';
-      if (state.results.length) state.dirty = true;
-      toast('已保存为本机提示词');
-    });
     $('#promptTabs').addEventListener('click', function (e) {
       var b = e.target.closest('[data-prompt-style]');
       if (!b) return;
@@ -5555,7 +5538,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (val.trim() === basePromptFor(id).trim()) delete state.promptOverrides[key];
       else state.promptOverrides[key] = val;
       var stateEl = $('#promptState');
-      if (stateEl) stateEl.textContent = '未保存';
+      if (stateEl) stateEl.textContent = state.promptOverrides[key] !== undefined ? '已修改' : '默认';
       if (state.results.length) state.dirty = true;
     });
     $('#clearHistory').addEventListener('click', function () {

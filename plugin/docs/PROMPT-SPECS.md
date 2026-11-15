@@ -46,4 +46,4 @@ Uses the H3 `CLOUD_EDIT_HEAD` / `CLOUD_SCENE_HEAD` wrappers: image roles, preser
 
 `参考图1是底图。保持主体数量、身份、构图和画面外区域不变，只执行下面的风格编辑：` + style body.
 
-Local prompt overrides are namespaced by model and style, e.g. `minimax:h3-illus` / `seedream:h3-illus`; switching models does not reuse the other model's saved prompt.
+Prompt edits are used directly by the next generation. They stay in memory per model/style for the current page session (for example `minimax:h3-illus` / `seedream:h3-illus`); there is no local-save step and no localStorage persistence. Reloading the page returns to defaults. “恢复默认” clears only the current model/style edit.
