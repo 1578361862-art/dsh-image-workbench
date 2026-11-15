@@ -47,3 +47,8 @@ Uses the H3 `CLOUD_EDIT_HEAD` / `CLOUD_SCENE_HEAD` wrappers: image roles, preser
 `参考图1是底图。保持主体数量、身份、构图和画面外区域不变，只执行下面的风格编辑：` + style body.
 
 Prompt edits are used directly by the next generation. They stay in memory per model/style for the current page session (for example `minimax:h3-illus` / `seedream:h3-illus`); there is no local-save step and no localStorage persistence. Reloading the page returns to defaults. “恢复默认” clears only the current model/style edit.
+
+
+## H3 细版规范
+
+H3 的五段式/保真清单、参考图角色、文本规则和 API 限制见 [H3-PROMPTING.md](./H3-PROMPTING.md)。工作台提示词面板的「H3 详细化」按钮会按当前是文生图还是图片编辑展开对应模板；修改后直接进入下一次生成。

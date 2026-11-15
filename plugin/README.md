@@ -101,3 +101,9 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - Phase 1: brush mask editor; mask bbox crop; provider edits only the crop; composite back with inward-only feather; `/composite` persists region results.
 - Phase 2: host queue list/cancel/retry + queue drawer with polling.
 - Tests: 43 pass. Phase 3 layer editor and Phase 4 ComfyUI interop remain.
+
+
+## 0.37.1
+
+- H3 提示词规则整理到 `plugin/docs/H3-PROMPTING.md`：五段式文生图、保真清单编辑、参考图角色、文本/排除项、比例与 API 限制。
+- 提示词面板新增「H3 详细化」：文生图展开五段式模板，图片编辑展开“只改一项 + 保留清单”模板；直接进入下一次生成。
