@@ -2876,7 +2876,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.4',
+        version: '0.36.5',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4727,9 +4727,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function openRefine() {
     if (!bigState || !bigState.url) return;
+    var sourceStyle = bigState.styleId;
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: 'minimax', busy: false, result: null, thread: [] };
+    var sourceModel = sourceStyle === 'seedream' ? 'seedream' : 'minimax';
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: sourceModel, busy: false, result: null, thread: [] };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
@@ -4746,7 +4748,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineStart').hidden = false;
     $('#refineStart').disabled = false;
     $('#refineStart').textContent = '开始编辑';
-    refine.model = 'minimax';
     syncRefineCost();
     $('#refineLayer').inert = false;
     $('#refineLayer').classList.add('open');
@@ -5079,7 +5080,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.4', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.5', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
