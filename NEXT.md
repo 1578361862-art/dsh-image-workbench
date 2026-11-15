@@ -1,50 +1,52 @@
-# 图像风格工作台 · 剩余待办
+# 图像风格工作台 · 当前待办
 
-> 2026-11-14 · 当前 0.36.8：P1–P5 已实现；P3/P4 live 已验证；真实 DSH 页面（侧栏/历史/设置/单张下载/ZIP）已实测。源码 `~/Code/dsh-image-workbench`。
+> 2026-11-15 · 0.36.8（`8de90d3`）
+> 17 个 Host 测试通过；最近一次真实页面验收覆盖最近生成、详情、归档、提示词、Seedream 官方风格预览。
+> 本轮没有实际调用 H3 / Seedream；真实出图验收仍是待办。
 
-## 已完成
+## 已验证
 
-- P1：入口、空态、上传/粘贴/拖入、6 本机风格、多选、试印、A/B、单张下载、设置、历史、夜版、窄宽（harness 1020/760）。
-- P1 修正：`poster` 是 HTML 文字层 + Canvas 图像；下载改为每张卡片单张；去掉「点对比原图」提示。
-- P2：模板文字（海报/卡片）、共用/当前风格参数、原图长边导出、ZIP + manifest、Host 持久历史/资产/批次/删除、localStorage 回落。
-- P2 Host：`assets / batches / history / batch DELETE / result / export / storage`。
-- P3：云端 H3 插画/银盐、1K/2K/4K、预估费用、预算/隐私确认、partial failure、unknown 不重试；Host provider/队列/预算/账本；Key 保存后启用；key-test 诚实 501。
-- P3 真实：2K H3 成功（1888×2240 / 1,000,034 B），邮件发到 1578361862@qq.com；自动 history、job 持久化、cancel、usage。
-- P4：Agent 工具 `image_workbench`（1K live）、本机批量矩阵、preset 风格包、Context-IR 预览（live 200）。
-- P5：90 天清理、失败卡重试（非 unknown，二次确认）、4K 促销提示、真实页面历史/设置/单张下载/ZIP 验收；`dsh_verify` 客户端 PASS 14/14。
-- 2026-11-14 修复：风格卡再次点击取消；最近记录悬停 × 删除（Host/local）；油墨色块选中环改为 inset 阴影不再被裁切；移除导入风格包的旧 P2 toast。
-- 2026-11-14 云端风格扩到 21 个：古典油画、印象派、金箔手抄本、敦煌壁画、工笔重彩、剪纸拼贴、像素海报、电影胶片、概念场景、皮影戏、东方幻想线稿、旧手机快照、闪光胶片、DV 家庭录像、贴纸残胶海报、游戏角色设定、信息图、工程蓝图、超现实时尚；prompt 归纳自 MiniMax-H3-Image 官方 showcase，见 `plugin/docs/CLOUD-STYLES.md`。
+- 工作台：先选风格，可选图片；无图文生图、有图编辑。
+- 模型：MiniMax H3 / Seedream 5.5，提示词模板分开；本地修改直接生效，不做本地持久化。
+- 多选风格提示词 tabs，按「模型 + 风格」独立。
+- 多轮编辑 thread；最近记录可直接进入多轮编辑，Seedream 记录默认 Seedream 5.5。
+- 最近生成：6 个图标操作、归档/返回最近、归档计数、模型与分辨率显示。
+- Seedream 5.5：图层拆分入口、区域描述、官方示例风格 4 个。
+- 多图：每张轮询 / 场景组合（拼参考板）。
+- 设置只保留 Key、输出、风格库；右侧 inspector 固定滚动条槽位。
 
-## 还需闭环
+## 功能待办（按优先级）
 
-### 1. 真实页面剩余验收
-- [x] 打开「图像风格」、空态、风格墙、历史恢复、设置/用量、单张下载、ZIP。
-  - 实测：下载 `cloud-01-h3-illus.jpg` 208,581 B（JPEG）；ZIP 209,441 B，含 `results/01-h3-illus.jpg` + `manifest.json`；无 pageerror。
-- [ ] 拖入 / 粘贴 / 文件选择上传（真机）。
-- [ ] 本机 3/4 版生成、A/B 键盘、夜版、1024/900 宽真机。
-- [ ] 控制台无 slot/React 警告（下载流程已无 pageerror）。
+1. **原生多参考图**
+   - 当前「场景组合」是把多图拼成一张参考板，不是真正的多图引用。
+   - 需要 Host 支持多个 assetId，H3 / Seedream 请求传 `images[]`。
 
-### 2. 数据与费用
-- [x] 历史费用回填：2 个既有 cloud job 的 `costYuan` 已从 ledger 写回 index/batch，刷新后历史卡不再显示 `¥—`。
-- [ ] 账本按 MiniMax usage 回填“实际费用”；当前 `costYuan` 是按价目表估算。
-- [ ] 90 天清理后的 ledger 保留策略确认（当前保留全部账本，只删资产/结果/job）。
-- [ ] 清理/重试在真实页面点一次（Host 测试和 harness 已过；真实按钮未点）。
+2. **Seedream 图层拆分闭环**
+   - 当前只把远端 PNG URL 显示在弹窗里，不入库、不打包、不持久化。
+   - 待补：图层下载/ZIP、最近记录、归档、24h 过期提示、`max_images` 可调、OCR 文字层。
 
-### 3. P4/P5 后续
-- [ ] 风格包真实文件夹导入一次（Host 测试 + harness 加载已过，真实 `webkitdirectory` 未点）。
-- [ ] 矩阵 ZIP 在真实页面打一次（矩阵 harness 已过；Host `/export` 已被实际 ZIP 验证）。
-- [ ] 矩阵/设置 drawer 的焦点陷阱、Esc、读屏标签。
-- [ ] 下载被 Electron/WebView 拦截时的 Host 落盘兜底（当前真实 Chromium 下载正常）。
-- [ ] 云端矩阵（多图 × H3）；成本按张累加，需要你拍板。
-- [ ] 任意 HTML/JS 风格包（当前只支持 preset：base + params + preview，安全但能力有限）。
+3. **区域编辑硬约束**
+   - 当前「只修改位置」是自然语言提示词。
+   - 待补：画框/遮罩区域，或把区域坐标稳定传给 Seedream；目前不保证像素级局部编辑。
 
-### 4. 需要拍板
-- [ ] 4K 促销 2026-11-18 结束；之后是否保留 4K（¥0.4809/张）。
-- [ ] 云端矩阵是否开。
-- [ ] 任意 HTML/JS 风格包是否做（需要信任模型）。
+4. **归档**
+   - 归档状态只在 localStorage，是 UI 隐藏，不复制、不删除文件。
+   - 换浏览器/设备不同步；90 天清理仍会删文件；不能当备份。
 
-## 验证基线
+5. **费用**
+   - Seedream 5.5 仍是前端估算 ¥0.28/张，未进 MiniMax 账本。
+   - 预算超限的 402 分支仍保留弹窗；正常生成已无二次费用确认。
 
-- `node --test plugin/tests/`：15 pass / 0 fail。
-- `dsh_verify`：`specs/workbench.json` PASS 14/14；报告 `dsh-verify-out/report.html`。
-- 真实页面截图：`shots/plugin-real-open.png`、`plugin-real-history.png`、`plugin-real-settings.png`、`plugin-retry.png`。
+6. **代码清理**
+   - 旧的纯文生图页、Seedream 独立页、矩阵批量代码、模板文字状态仍留在源码中，导航已移除。
+   - 不影响当前使用，但后续应删除，避免再次出现死入口/死样式。
+
+7. **真实 API 验收**
+   - 本轮及最近多轮均未实际出图；H3/Seedream 的真实文本、编辑、图层拆分、多图请求还需跑一次带费用的验收。
+
+## 明确未做
+
+- 任意 HTML/JS 风格包。
+- 云端批量矩阵（已从 UI 移除，不建议恢复）。
+- Seedream 透明背景 UI、原生 RGBA 输出。
+- 跨设备同步归档。
