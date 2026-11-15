@@ -1116,7 +1116,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       </details>
 
       <details class="ins-group" open id="promptGroup" hidden>
-        <summary><span>提示词</span><span class="ins-group-hint">云端 H3</span></summary>
+        <summary><span>提示词</span><span class="ins-group-hint" id="promptModeHint">云端 H3</span></summary>
         <div class="field">
           <div class="lab"><span id="promptStyleName">云端风格</span><span class="val" id="promptState">默认</span></div>
           <div class="prompt-tabs" id="promptTabs"></div>
@@ -2412,32 +2412,43 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return (st && st.prompt) || '';
   }
 
-  function textPromptFor(id) {
+  function styleBody(id) {
     var base = defaultPrompt(id);
     [CLOUD_EDIT_HEAD, CLOUD_EDIT_TAIL, CLOUD_SCENE_HEAD, CLOUD_SCENE_TAIL, CLOUD_LAYOUT_HEAD, CLOUD_LAYOUT_TAIL, CLOUD_REF_HEAD, CLOUD_SCENE_REF_HEAD].forEach(function (part) {
       if (part) base = base.split(part).join('');
     });
-    base = base
-      .replace(/图1是[^。]*。?/g, '')
-      .replace(/图2[^。；\n]*[。；]?/g, '')
-      .replace(/图1[^。；\n]*[。；]?/g, '')
-      .trim();
-    return '以【主体】为主题，创作一张完整作品，不参考上传图片。' + base;
+    return base.replace(/图1是[^。]*。?/g, '').replace(/图2[^。；\n]*[。；]?/g, '').replace(/图1[^。；\n]*[。；]?/g, '').trim();
   }
-  function seedreamPromptFor(id) {
-    var base = defaultPrompt(id);
-    [CLOUD_EDIT_HEAD, CLOUD_EDIT_TAIL, CLOUD_SCENE_HEAD, CLOUD_SCENE_TAIL, CLOUD_LAYOUT_HEAD, CLOUD_LAYOUT_TAIL, CLOUD_REF_HEAD, CLOUD_SCENE_REF_HEAD].forEach(function (part) {
-      if (part) base = base.split(part).join('');
-    });
-    base = base.replace(/图1是[^。]*。?/g, '').replace(/图2[^。；\n]*[。；]?/g, '').replace(/图1[^。；\n]*[。；]?/g, '').trim();
-    return '参考图1是底图。只执行以下编辑，保持主体、构图、文字和画面外区域不变：' + base;
+  function h3TextPrompt(id) {
+    return '以【主体】为主题，创作一张完整作品，不参考上传图片。' + styleBody(id);
   }
-
-  function promptFor(id) {
+  function seedreamTextPrompt(id) {
+    return '创作一张完整作品，不使用任何参考图；主体为【主体】，场景为【场景】。' + styleBody(id);
+  }
+  function seedreamImagePrompt(id) {
+    return '参考图1是底图。保持主体数量、身份、构图和画面外区域不变，只执行下面的风格编辑：' + styleBody(id);
+  }
+  function promptKey(id) { return state.genModel + ':' + id; }
+  function promptOverride(id) {
+    var key = promptKey(id);
+    if (state.promptOverrides[key] !== undefined) return state.promptOverrides[key];
     if (state.promptOverrides[id] !== undefined) return state.promptOverrides[id];
-    return state.source.url ? defaultPrompt(id) : textPromptFor(id);
+    return undefined;
+  }
+  function basePromptFor(id) {
+    var seedream = state.genModel === 'seedream';
+    if (!state.source.url) return seedream ? seedreamTextPrompt(id) : h3TextPrompt(id);
+    return seedream ? seedreamImagePrompt(id) : defaultPrompt(id);
+  }
+  function promptFor(id) {
+    var override = promptOverride(id);
+    if (override !== undefined) return override;
+    return basePromptFor(id);
   }
 
+  function promptStateLabel(id) {
+    return promptOverride(id) !== undefined ? '本地' : '默认';
+  }
 
   function renderPromptPanel() {
     var ids = selectedCloudIds();
@@ -2468,16 +2479,19 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var area = $('#cloudPrompt');
     if (area && document.activeElement !== area) area.value = promptFor(id);
     var stateEl = $('#promptState');
-    if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '本地' : '默认';
+    if (stateEl) stateEl.textContent = promptStateLabel(id);
+    var modeHint = $('#promptModeHint');
+    if (modeHint) modeHint.textContent = (state.genModel === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + (state.source.url ? ' · 图片编辑' : ' · 文生图');
   }
 
   function resetPrompt() {
     var id = currentCloudStyleId();
     if (!id) return;
+    delete state.promptOverrides[promptKey(id)];
     delete state.promptOverrides[id];
     try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
     var area = $('#cloudPrompt');
-    if (area) area.value = defaultPrompt(id);
+    if (area) area.value = basePromptFor(id);
     $('#promptState').textContent = '默认';
     if (state.results.length) state.dirty = true;
     toast('已恢复默认提示词');
@@ -2853,7 +2867,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.0',
+        version: '0.36.1',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3147,12 +3161,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           try {
             var result = null;
             if (isText) {
-              if (useSeedream) result = await runSeedreamWorkbench(promptFor(cid), workbenchTextSize());
-              else result = await runH3TextWorkbench(promptFor(cid));
+              if (useSeedream) result = await runSeedreamWorkbench(modelPrompt(cid, true, true), workbenchTextSize());
+              else result = await runH3TextWorkbench(modelPrompt(cid, true, false));
             } else if (useSeedream) {
               var g = gcd(state.source.w, state.source.h);
               var asp = Math.round(state.source.w / g) + ':' + Math.round(state.source.h / g);
-              result = await runSeedreamWorkbench(seedreamPromptFor(cid), textTargetSize(asp, state.cloudQuality), sourceData);
+              result = await runSeedreamWorkbench(modelPrompt(cid, false, true), textTargetSize(asp, state.cloudQuality), sourceData);
             } else if (assetId) {
               var started = await startCloudJob(assetId, cid);
               var job = await waitCloudJob(started.id);
@@ -5052,7 +5066,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5505,10 +5519,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var area = $('#cloudPrompt');
       if (!area) return;
       var val = area.value;
-      if (val.trim() === defaultPrompt(id).trim()) delete state.promptOverrides[id];
-      else state.promptOverrides[id] = val;
+      var key = promptKey(id);
+      if (val.trim() === basePromptFor(id).trim()) delete state.promptOverrides[key];
+      else state.promptOverrides[key] = val;
       try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
-      var stateEl = $('#promptState'); if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '本地' : '默认';
+      var stateEl = $('#promptState'); if (stateEl) stateEl.textContent = '本地';
       if (state.results.length) state.dirty = true;
       toast('已保存为本机提示词');
     });
@@ -5530,10 +5545,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var id = currentCloudStyleId();
       if (!id) return;
       var val = this.value;
-      if (val.trim() === defaultPrompt(id).trim()) delete state.promptOverrides[id];
-      else state.promptOverrides[id] = val;
+      var key = promptKey(id);
+      if (val.trim() === basePromptFor(id).trim()) delete state.promptOverrides[key];
+      else state.promptOverrides[key] = val;
       var stateEl = $('#promptState');
-      if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '未保存' : '默认';
+      if (stateEl) stateEl.textContent = '未保存';
       if (state.results.length) state.dirty = true;
     });
     $('#clearHistory').addEventListener('click', function () {

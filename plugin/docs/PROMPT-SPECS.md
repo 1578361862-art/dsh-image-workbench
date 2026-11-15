@@ -27,3 +27,23 @@ The workbench already wraps style bodies with `cloudPrompt` / `cloudScenePrompt`
 - MiniMax image edit extracts the style body from H3 wrappers for text mode.
 - Seedream image edit prepends `参考图1是底图。只执行以下编辑，保持主体、构图、文字和画面外区域不变：` to the style body.
 - Region field is currently a **semantic location description** (for example, “左上角招牌”); Seedream 5.5 follows it via prompt, not a hard mask.
+
+## Actual workbench templates
+
+### MiniMax H3, text mode (no image)
+
+`以【主体】为主题，创作一张完整作品，不参考上传图片。` + style body, with `disable_prompt_enhanced: true` and exact WxH.
+
+### MiniMax H3, image edit
+
+Uses the H3 `CLOUD_EDIT_HEAD` / `CLOUD_SCENE_HEAD` wrappers: image roles, preservation list, allowed changes, negatives.
+
+### Seedream 5.5, text mode
+
+`创作一张完整作品，不使用任何参考图；主体为【主体】，场景为【场景】。` + style body.
+
+### Seedream 5.5, image edit
+
+`参考图1是底图。保持主体数量、身份、构图和画面外区域不变，只执行下面的风格编辑：` + style body.
+
+Local prompt overrides are namespaced by model and style, e.g. `minimax:h3-illus` / `seedream:h3-illus`; switching models does not reuse the other model's saved prompt.
