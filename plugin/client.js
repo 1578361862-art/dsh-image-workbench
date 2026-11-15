@@ -407,6 +407,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--p-hair-2);
   font-family: var(--p-mono); font-size: 10px; line-height: 1.65; color: var(--p-ink-4);
 }
+.iw-root .stage-model{ display:inline-flex; align-items:center; gap:2px; margin-right:6px; }
+.iw-root .stage-model button{ height:20px; padding:0 5px; border:1px solid var(--p-hair); background:transparent; color:var(--p-ink-4); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
+.iw-root .stage-model button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
 .iw-root .stage-bar{
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   height: 22px; margin-bottom: 10px; font-family: var(--p-mono); font-size: 10px; letter-spacing: var(--pk-ls-mono); color: var(--p-ink-3);
@@ -676,6 +679,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-layer{ position:fixed; inset:0; z-index:80; display:none; }
 .iw-root .refine-layer.open{ display:block; }
 .iw-root .refine-layer .drawer-backdrop{ position:absolute; inset:0; background:var(--p-overlay); }
+.iw-root .refine-thread{ max-height:150px; overflow:auto; padding:8px 16px; border-top:1px solid var(--p-hair); display:flex; flex-direction:column; gap:6px; background:var(--p-paper); }
+.iw-root .refine-thread[hidden]{ display:none; }
+.iw-root .rturn{ display:flex; gap:8px; align-items:flex-start; font-size:10px; color:var(--p-ink-2); }
+.iw-root .rturn.user{ justify-content:flex-end; }
+.iw-root .rturn .bubble{ max-width:80%; padding:5px 8px; background:var(--p-paper-2); border:1px solid var(--p-hair); line-height:1.5; }
+.iw-root .rturn.user .bubble{ background:var(--p-ink); color:var(--p-paper); border-color:var(--p-ink); }
+.iw-root .rturn img{ width:54px; height:54px; object-fit:cover; border:1px solid var(--p-hair); }
 .iw-root .refine-dialog{ width:min(1080px,calc(100vw - 40px)); max-height:calc(100vh - 40px); }
 .iw-root .refine-body{ flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.8fr); gap:16px; padding:16px; background:var(--p-paper-2); }
 .iw-root .refine-preview{ display:flex; align-items:center; justify-content:center; min-height:280px; background:var(--p-sunken); overflow:hidden; }
@@ -863,6 +873,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .history-empty{grid-column:1 / -1;padding:26px;text-align:center;font-family:var(--p-mono);font-size:10px;color:var(--p-ink-4);}
 .iw-root .history-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px 12px;border-top:1px solid var(--p-hair);font-family:var(--p-mono);font-size:10px;color:var(--p-ink-4);}
 @media (max-width:760px){.iw-root .history-grid{grid-template-columns:1fr;}}
+.iw-root .empty-alt{ margin-top:2px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
 .iw-root .empty-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--p-paper-2);color:var(--p-ink-3);z-index:5;}
 .iw-root .empty-stage[hidden]{display:none;}
 .iw-root .empty-stage h3{margin:0;font-family:var(--p-serif);font-size:22px;font-weight:600;letter-spacing:var(--pk-ls-title);color:var(--p-ink);}
@@ -987,8 +998,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <nav class="wrap view-tabs" id="viewTabs" aria-label="页面切换">
     <button data-view="studio" class="on">工作台</button>
     <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
-    <button data-view="text">纯文生图</button>
-    <button data-view="seedream">Seedream</button>
   </nav>
 
   <main class="wrap work">
@@ -1010,7 +1019,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <section class="stage-col">
       <div class="stage-bar">
         <span class="file-meta"><span id="fileMeta">未载入图片</span><span id="sampleTag" class="p3" hidden>示例</span></span>
-        <span class="r"><span id="frameHint">原图比例</span><button class="ghost-btn" id="cropBtn" disabled>裁切</button><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
+        <span class="r"><span class="stage-model" id="genModel"><button data-gen-model="minimax" class="on">H3</button><button data-gen-model="seedream">Seedream</button></span><span id="frameHint">原图比例</span><button class="ghost-btn" id="cropBtn" disabled>裁切</button><button class="ghost-btn" id="matrixBtn">批量</button><button class="ghost-btn" id="replaceBtn">换一张</button></span>
       </div>
 
       <div class="stage" id="stage">
@@ -1027,6 +1036,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="empty-stage" id="emptyStage" hidden>
           <h3>把图片放到这里</h3>
           <p>JPG / PNG / WEBP · ⌘V 粘贴</p>
+          <p class="empty-alt">不传图片也可以：选风格后直接文生图</p>
           <div class="empty-actions">
             <button class="ghost-btn" id="pickEmpty">选择图片</button>
             <button class="ghost-btn" id="useSample">用示例图试试</button>
@@ -1394,7 +1404,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <button class="result-action" id="resultLike" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 7.2 8.4 3c.3-.6 1.3-.7 1.6.1l.8 2.6h2.4c.9 0 1.5.8 1.3 1.6l-1.1 4.1c-.2.6-.7 1-1.3 1H6.2"/><path d="M6.2 7.2H3.8v5.2h2.4z"/></svg><span>赞</span></button>
         <button class="result-action" id="resultDislike" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.8 8.8 7.6 13c-.3.6-1.3.7-1.6-.1L5.2 10.3H2.8c-.9 0-1.5-.8-1.3-1.6l1.1-4.1c.2-.6.7-1 1.3-1h7.9"/><path d="M9.8 8.8h2.4V3.6H9.8z"/></svg><span>踩</span></button>
         <button class="result-action" id="resultFavorite" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 2.5h7.2c.6 0 1 .4 1 1v10l-4.6-2.8L3.4 13.5v-10c0-.6.4-1 1-1Z"/></svg><span>收藏</span></button>
-        <button class="result-action" id="resultRefine"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.8 2.6 2.6 2.6-6.9 6.9-3.2.6.6-3.2 6.9-6.9Z"/><path d="M9.4 4l2.6 2.6"/></svg><span>再次编辑</span></button>
+        <button class="result-action" id="resultRefine"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.8 2.6 2.6 2.6-6.9 6.9-3.2.6.6-3.2 6.9-6.9Z"/><path d="M9.4 4l2.6 2.6"/></svg><span>多轮编辑</span></button>
         <button class="result-action" id="resultDownload"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.8v7.1M5.2 7.2 8 10l2.8-2.8M3 12.5v1.2h10v-1.2"/></svg><span>下载</span></button>
       </div>
     </footer>
@@ -1420,26 +1430,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <div class="drawer-backdrop" data-refine-close></div>
   <section class="preview-dialog refine-dialog" role="dialog" aria-modal="true" aria-labelledby="refineTitle">
     <header class="preview-head">
-      <div><h2 id="refineTitle">再次编辑</h2><span id="refineMeta"></span></div>
+      <div><h2 id="refineTitle">多轮编辑</h2><span id="refineMeta"></span></div>
       <button class="icon-btn" data-refine-close aria-label="关闭再次编辑"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
     </header>
     <div class="refine-body">
       <div class="refine-preview"><img id="refineSource" alt="待二次编辑的图片"></div>
       <div class="refine-form">
         <label class="refine-label" for="refinePrompt">编辑要求</label>
-        <textarea id="refinePrompt" rows="7" spellcheck="false"></textarea>
+        <textarea id="refinePrompt" rows="7" spellcheck="false" placeholder="输入下一轮编辑要求…"></textarea>
         <p class="refine-note" id="refineNote">MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
         <div class="model-seg" id="refineModel"><span>模型</span><button data-refine-model="minimax" class="on">MiniMax H3</button><button data-refine-model="seedream">Seedream 5.5</button></div>
         <div class="refine-cost" id="refineCost"></div>
       </div>
     </div>
+    <div class="refine-thread" id="refineThread" hidden></div>
     <footer class="preview-foot refine-foot">
       <span id="refineStatus" class="refine-status"></span>
       <div class="refine-actions">
         <button class="ghost-btn" data-refine-close>取消</button>
         <button class="ghost-btn" id="refineDownload" hidden>下载</button>
         <button class="ghost-btn" id="refineView" hidden>查看大图</button>
-        <button class="ghost-btn" id="refineAgain" hidden>继续编辑</button>
+        <button class="ghost-btn" id="refineAgain" hidden style="display:none">继续编辑</button>
         <button class="go" id="refineStart">开始二次优化</button>
       </div>
     </footer>
@@ -1600,6 +1611,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     text: { variant: 'poster', title: '静物研究', subtitle: '光与纸的第二次曝光', date: '2026.11', handle: '@IMAGE STUDIO' },
     assetId: null,
     cloudQuality: '2K',
+    genModel: 'minimax',
     frame: '原图',
     border: 'none',
     results: [],
@@ -2126,6 +2138,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 尺寸 / 输出 ————— */
   function frameRatio() {
+    if (!state.source.url) {
+      var active = null;
+      for (var ai = 0; ai < state.results.length; ai++) if (state.results[ai].id === state.activeResult) active = state.results[ai];
+      if (active && active.w && active.h) return active.h / active.w;
+      return 4 / 3;
+    }
     if (state.frame === '原图') return state.source.h / state.source.w;
     if (state.frame === '4:5') return 5 / 4;
     if (state.frame === '3:4') return 4 / 3;
@@ -2405,8 +2423,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return (st && st.prompt) || '';
   }
 
+  function textPromptFor(id) {
+    var base = defaultPrompt(id);
+    [CLOUD_EDIT_HEAD, CLOUD_EDIT_TAIL, CLOUD_SCENE_HEAD, CLOUD_SCENE_TAIL, CLOUD_LAYOUT_HEAD, CLOUD_LAYOUT_TAIL, CLOUD_REF_HEAD, CLOUD_SCENE_REF_HEAD].forEach(function (part) {
+      if (part) base = base.split(part).join('');
+    });
+    base = base
+      .replace(/图1是[^。]*。?/g, '')
+      .replace(/图2[^。；\n]*[。；]?/g, '')
+      .replace(/图1[^。；\n]*[。；]?/g, '')
+      .trim();
+    return '以【主体】为主题，创作一张完整作品，不参考上传图片。' + base;
+  }
   function promptFor(id) {
-    return state.promptOverrides[id] !== undefined ? state.promptOverrides[id] : defaultPrompt(id);
+    if (state.promptOverrides[id] !== undefined) return state.promptOverrides[id];
+    return state.source.url ? defaultPrompt(id) : textPromptFor(id);
   }
 
 
@@ -2450,12 +2481,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function updateUI() {
     var n = state.selected.length;
     $('#selCount').textContent = n ? n + ' 版' : '未选';
-    $('#go').disabled = state.generating || !state.source.url;
+    $('#go').disabled = state.generating || (!state.source.url && !state.selected.length);
     $('#cropBtn').disabled = !state.source.url || state.generating;
-    $('#go').hidden = !state.source.url;
+    $$('#genModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.genModel === state.genModel); });
+    $('#go').hidden = !state.source.url && !state.selected.length;
     var proofEl = document.querySelector('.proof');
-    if (proofEl) proofEl.hidden = !state.source.url;
-    $('#go').textContent = !state.source.url ? '先载入图片' : (state.generating ? '生成中 ' + state.results.length + ' / ' + n : (n ? '生成 ' + n + ' 版' : '生成'));
+    if (proofEl) proofEl.hidden = !state.source.url && !state.selected.length && !state.results.length;
+    $('#go').textContent = (!state.source.url && !n) ? '先载入图片' : (state.generating ? '生成中 ' + state.results.length + ' / ' + n : (n ? '生成 ' + n + ' 版' : '生成'));
     $('#proofCount').textContent = state.results.length + ' / ' + (state.generating ? n : (state.results.length || n));
     var successCount = state.results.filter(function (r) { return !r.error; }).length;
     var failedCount = state.results.length - successCount;
@@ -2593,7 +2625,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#print').classList.add('original-only');
     $('#resultImg').removeAttribute('src');
     state.activeResult = null;
-    caption('<b>原图</b> · ' + (state.source.name || '未载入'), '先选一个风格');
+    caption(state.source.url ? '<b>原图</b> · ' + (state.source.name || '未载入') : '<b>文生图</b> · 不传图片模式', state.selected.length ? '点「生成」开始' : '先选一个风格');
   }
 
   function showPreview() {
@@ -2631,7 +2663,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       return;
     }
     $('#print').classList.remove('original-only');
+    $('#emptyStage').hidden = true;
+    $('#print').style.display = '';
+    $('#printFrame').hidden = false;
     $('#resultImg').src = r.url;
+    applyFrame();
     caption('<b>结果 ' + ('0' + (idx + 1)).slice(-2) + '</b> · ' + s.name, r.w + ' × ' + r.h + ' · sRGB');
     renderProof();
   }
@@ -2640,10 +2676,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var grid = $('#proofGrid');
     var n = state.generating ? state.selected.length : state.results.length;
     grid.style.setProperty('--cols', Math.min(4, Math.max(2, n || 2)));
-    if (!state.source.url) {
-      grid.innerHTML = '';
-      return;
-    }
     if (state.generating) {
       grid.innerHTML = state.selected.map(function (id, i) {
         var r = state.results[i];
@@ -2815,7 +2847,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.31.0',
+        version: '0.32.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -2965,9 +2997,71 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     updateUI();
   }
 
+  function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { var t = b; b = a % b; a = t; }
+    return a || 1;
+  }
+
+  function frameAspectText() {
+    if (state.frame === '4:5') return '4:5';
+    if (state.frame === '3:4') return '3:4';
+    if (state.frame === '3:2') return '3:2';
+    return state.source.url ? (Math.round(state.source.w / gcd(state.source.w, state.source.h)) + ':' + Math.round(state.source.h / gcd(state.source.w, state.source.h))) : '3:4';
+  }
+
+  function workbenchTextSize() {
+    return textTargetSize(frameAspectText(), state.cloudQuality);
+  }
+
+  async function sourceDataUrl() {
+    if (!state.source.url) return null;
+    if (state.source.url.indexOf('data:') === 0) return state.source.url;
+    var res = await fetch(state.source.url);
+    if (!res.ok) throw cloudError('原图读取失败', 'asset_read_failed');
+    return blobToDataUrl(await res.blob());
+  }
+
+  async function runSeedreamWorkbench(prompt, size, imageDataUrl) {
+    var path = imageDataUrl ? '/seedream/edit' : '/seedream/text';
+    var body = { prompt: prompt, size: size, model: 'doubao-seedream-5-5-261028' };
+    if (imageDataUrl) body.imageDataUrl = imageDataUrl;
+    var res = await apiFetch(path, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw cloudError(data.error || ('Seedream 请求失败 ' + res.status), data.code);
+    return { url: data.url, w: data.w, h: data.h, cost: 0.28 };
+  }
+
+  async function runH3TextWorkbench(prompt) {
+    var size = workbenchTextSize();
+    var res = await fetch(API + '/cloud/text-jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt, size: size }),
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (res.status === 402 && data.code === 'budget_exceeded') {
+      var msg = '今日云端预算不足。\n预计 ¥' + Number(data.estimatedYuan || 0).toFixed(2) +
+        ' · 已用 ¥' + Number(data.spentTodayYuan || 0).toFixed(2) +
+        ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) + '。\n\n仍要生成吗？';
+      if (!window.confirm(msg)) throw cloudError('已取消文生图', 'budget_cancelled');
+      res = await fetch(API + '/cloud/text-jobs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, size: size, allowOverBudget: true }),
+      });
+      data = await res.json().catch(function () { return {}; });
+    }
+    if (!res.ok) throw cloudError(data.error || ('文生图请求失败 ' + res.status), data.code);
+    var job = await waitCloudJob(data.id);
+    if (job.status !== 'succeeded' || !job.output) {
+      throw cloudError((job.error && job.error.message) || ('文生图作业 ' + job.status), (job.error && job.error.code) || job.status);
+    }
+    return { url: job.output.url, w: job.output.w, h: job.output.h, cost: cloudUnitPrice() };
+  }
+
   function generate(auto) {
     if (disposed || state.generating) return;
-    if (!state.source.url) { toast('先载入图片'); return; }
     if (!state.selected.length) {
       toast('还没有选风格，请先从左边风格库选一个');
       var firstCard = $('#styleGrid .card');
@@ -2983,15 +3077,26 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var s2 = styleById(id);
       return s2 && s2.renderer === 'model';
     });
+    var isText = !state.source.url;
+    if (isText && localIds.length) {
+      localIds = [];
+      toast('不传图片时只生成云端文生图，本机风格需要图片');
+    }
+    if (isText && !cloudIds.length) {
+      toast('文生图需要选择一个云端风格');
+      return;
+    }
+    var useSeedream = state.genModel === 'seedream';
     if (cloudIds.length) {
-      if (!cloudReady()) {
-        toast('先在设置里保存 API Key 启用云端');
+      if (useSeedream ? !state.settings.hasSeedreamKey : !cloudReady()) {
+        toast(useSeedream ? '先在设置里保存 Seedream Key' : '先在设置里保存 API Key 启用云端');
         openSettings();
         return;
       }
       if (state.settings.privacyConfirm && !state.cloudConfirmed) {
-        var estimate = cloudIds.length * cloudUnitPrice();
-        var ok = window.confirm('云端生成会把原图上传到 MiniMax（国内站，按量）。\n' +
+        var price = useSeedream ? 0.28 : cloudUnitPrice();
+        var estimate = cloudIds.length * price;
+        var ok = window.confirm((isText ? '文生图' : '图片编辑') + '会请求 ' + (useSeedream ? '火山方舟 Seedream 5.5' : 'MiniMax H3') + '（按量）。\n' +
           cloudIds.length + ' 版 · 预计 ¥' + estimate.toFixed(2) + '。\n\n继续？');
         if (!ok) { toast('已取消云端生成'); return; }
         state.cloudConfirmed = true;
@@ -3007,9 +3112,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
     (async function () {
       var assetId = null;
-      if (cloudIds.length) {
-        try { assetId = await ensureAssetId(); }
-        catch (err) {
+      var sourceData = null;
+      if (cloudIds.length && !isText) {
+        try {
+          if (useSeedream) sourceData = await sourceDataUrl();
+          else assetId = await ensureAssetId();
+        } catch (err) {
           cloudIds.forEach(function (id) {
             state.results.push({ id: id, cloud: true, params: effective(id), error: cloudError(err.message, err.code) });
           });
@@ -3034,33 +3142,35 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         if (i === 0) showResult(localIds[i]);
       }
 
-      if (assetId) {
+      if (cloudIds.length) {
         for (var c2 = 0; c2 < cloudIds.length; c2++) {
           if (disposed) return;
           var cid = cloudIds[c2];
           try {
-            var started = await startCloudJob(assetId, cid);
-            var job = await waitCloudJob(started.id);
-            if (job.status === 'succeeded' && job.output) {
-              state.results.push({
-                id: cid,
-                url: job.output.url,
-                w: job.output.w,
-                h: job.output.h,
-                cloud: true,
-                params: effective(cid),
-                cost: cloudUnitPrice(),
-                revisedPrompt: job.revisedPrompt || null
-              });
-            } else {
-              state.results.push({
-                id: cid,
-                cloud: true,
-                params: effective(cid),
-                error: cloudError(
+            var result = null;
+            if (isText) {
+              if (useSeedream) result = await runSeedreamWorkbench(promptFor(cid), workbenchTextSize());
+              else result = await runH3TextWorkbench(promptFor(cid));
+            } else if (useSeedream) {
+              var g = gcd(state.source.w, state.source.h);
+              var asp = Math.round(state.source.w / g) + ':' + Math.round(state.source.h / g);
+              result = await runSeedreamWorkbench(promptFor(cid), textTargetSize(asp, state.cloudQuality), sourceData);
+            } else if (assetId) {
+              var started = await startCloudJob(assetId, cid);
+              var job = await waitCloudJob(started.id);
+              if (job.status === 'succeeded' && job.output) {
+                result = { url: job.output.url, w: job.output.w, h: job.output.h, cost: cloudUnitPrice(), revisedPrompt: job.revisedPrompt || null };
+              } else {
+                throw cloudError(
                   (job.error && job.error.message) || ('云端作业 ' + job.status),
                   (job.error && job.error.code) || job.status
-                )
+                );
+              }
+            }
+            if (result) {
+              state.results.push({
+                id: cid, url: result.url, w: result.w, h: result.h, cloud: true,
+                params: effective(cid), cost: result.cost || 0, revisedPrompt: result.revisedPrompt || null
               });
             }
           } catch (err) {
@@ -3096,10 +3206,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function toggleStyle(id) {
     var s = styleById(id);
     if (!s || state.generating) return;
-    if (s.renderer === 'model' && !cloudReady()) {
-      toast('先在设置里保存 API Key 启用云端');
-      openSettings();
-      return;
+    if (s.renderer === 'model') {
+      var needs = state.genModel === 'seedream' ? !state.settings.hasSeedreamKey : !cloudReady();
+      if (needs) {
+        toast(state.genModel === 'seedream' ? '先在设置里保存 Seedream Key' : '先在设置里保存 API Key 启用云端');
+        openSettings();
+        return;
+      }
     }
     if (state.selected.indexOf(id) >= 0) {
       removeStyle(id);
@@ -3111,6 +3224,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     renderGrid();
     renderChips();
     updateUI();
+    renderProof();
     schedulePreview();
   }
 
@@ -4391,7 +4505,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 二次编辑 ————— */
   var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
-  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null };
+  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null, thread: [] };
 
   function refineTargetSize(w, h) {
     var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[state.cloudQuality] || 4194304;
@@ -4446,6 +4560,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (note) note.textContent = seedream ? 'Seedream 5.5 直接基于当前图片和提示词编辑。' : 'MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。';
   }
 
+  function renderRefineThread() {
+    var box = $('#refineThread');
+    if (!box) return;
+    box.hidden = !refine.thread.length;
+    box.innerHTML = refine.thread.map(function (m) {
+      if (m.role === 'user') return '<div class="rturn user"><span class="bubble">' + escapeHTML(m.text) + '</span></div>';
+      return '<div class="rturn"><img src="' + escapeHTML(m.url) + '" alt="编辑结果"><span class="bubble">已按这一轮要求编辑。可继续输入。</span></div>';
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+
   function finishRefineResult(result) {
     refine.result = { url: result.url, w: result.w, h: result.h };
     refine.url = result.url;
@@ -4455,22 +4580,27 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineMeta').textContent = '二次编辑 · ' + result.w + ' × ' + result.h;
     $('#refineStatus').textContent = '完成 · 已加入最近生成';
     $('#refineStatus').className = 'refine-status';
-    $('#refineStart').hidden = true;
+    refine.thread.push({ role: 'assistant', url: result.url });
+    renderRefineThread();
+    $('#refineStart').hidden = false;
+    $('#refineStart').disabled = false;
+    $('#refineStart').textContent = '继续编辑';
+    $('#refinePrompt').value = '';
     $('#refineView').hidden = false;
     $('#refineDownload').hidden = false;
-    $('#refineAgain').hidden = false;
     loadAllHistory(true);
-    toast('二次优化完成');
+    toast('这一轮编辑完成');
   }
 
   function openRefine() {
     if (!bigState || !bigState.url) return;
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: 'minimax', busy: false, result: null };
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: 'minimax', busy: false, result: null, thread: [] };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
+    renderRefineThread();
     $('#refineStatus').textContent = '';
     $('#refineStatus').className = 'refine-status';
     $('#refineView').hidden = true;
@@ -4478,7 +4608,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineAgain').hidden = true;
     $('#refineStart').hidden = false;
     $('#refineStart').disabled = false;
-    $('#refineStart').textContent = '开始二次优化';
+    $('#refineStart').textContent = '开始编辑';
     refine.model = 'minimax';
     syncRefineCost();
     $('#refineLayer').inert = false;
@@ -4512,6 +4642,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         (seedream ? 'Seedream 5.5' : state.cloudQuality) + ' · 预计 ¥' + (seedream ? '0.28' : Number(cloudUnitPrice()).toFixed(2)) + '。\n\n继续？');
       if (!ok) return;
     }
+    refine.thread.push({ role: 'user', text: prompt });
+    renderRefineThread();
     refine.busy = true;
     var startBtn = $('#refineStart');
     startBtn.disabled = true;
@@ -4566,7 +4698,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       $('#refineStatus').textContent = err.message || '二次优化失败';
       $('#refineStatus').className = 'refine-status error';
       startBtn.disabled = false;
-      startBtn.textContent = '重试二次优化';
+      startBtn.textContent = '重试编辑';
     } finally {
       refine.busy = false;
       if (!refine.result) startBtn.disabled = false;
@@ -4786,7 +4918,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.31.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.32.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4879,30 +5011,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       openBig({
         key: resultKey({ id: 'h3-refine', cloud: true, url: result.url }),
         url: result.url,
-        title: '二次编辑',
-        meta: '二次编辑 · ' + result.w + ' × ' + result.h,
+        title: '多轮编辑',
+        meta: '多轮编辑 · ' + result.w + ' × ' + result.h,
         info: '二次编辑结果 · ' + result.w + ' × ' + result.h,
         w: result.w, h: result.h, border: 'none', resultId: null, styleId: 'h3-refine', cloud: true,
       });
     });
     $('#refineDownload').addEventListener('click', function () {
       if (refine.result) triggerDownload(refine.result.url, '二次编辑-' + Date.now() + '.jpg');
-    });
-    $('#refineAgain').addEventListener('click', function () {
-      if (!refine.result) return;
-      refine.busy = false;
-      refine.result = null;
-      $('#refineSource').src = refine.url;
-      $('#refinePrompt').value = REFINE_PROMPT;
-      $('#refineStatus').textContent = '';
-      $('#refineStatus').className = 'refine-status';
-      $('#refineView').hidden = true;
-      $('#refineDownload').hidden = true;
-      $('#refineAgain').hidden = true;
-      $('#refineStart').hidden = false;
-      $('#refineStart').disabled = false;
-      $('#refineStart').textContent = '开始二次优化';
-      syncRefineCost();
     });
     $('#favoritesBtn').addEventListener('click', openFavorites);
     $$('[data-favorites-close]').forEach(function (el) { el.addEventListener('click', closeFavorites); });
@@ -5072,6 +5188,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
     $('#replaceBtn').addEventListener('click', function () { $('#fileInput').click(); });
     $('#cropBtn').addEventListener('click', openCrop);
+    $('#genModel').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-gen-model]');
+      if (!b) return;
+      state.genModel = b.dataset.genModel;
+      updateUI();
+      toast(state.genModel === 'seedream' ? '生成模型：Seedream 5.5' : '生成模型：MiniMax H3');
+    });
     $$('[data-crop-close]').forEach(function (el) { el.addEventListener('click', closeCrop); });
     $('#cropRatios').addEventListener('click', function (e) {
       var b = e.target.closest('[data-crop-ratio]');
