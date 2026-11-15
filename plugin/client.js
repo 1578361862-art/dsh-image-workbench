@@ -959,6 +959,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
 .iw-root .scope-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 2px}
 .iw-root .scope-row>span{flex:none;font-family:var(--p-mono);font-size:10px;letter-spacing:var(--pk-ls-mono);color:var(--p-ink-3)}
+.iw-root .mini-seg{ display:inline-flex; border:1px solid var(--p-hair); border-radius:6px; overflow:hidden; }
+.iw-root .mini-seg button{ height:26px; padding:0 9px; border:0; border-right:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; cursor:pointer; white-space:nowrap; }
+.iw-root .mini-seg button:last-child{ border-right:0; }
+.iw-root .mini-seg button.on{ background:var(--p-ink); color:var(--p-paper); }
 .iw-root .scope-row .mini-seg{display:flex;flex:none;border:1px solid var(--p-hair);border-radius:0px;overflow:hidden}
 .iw-root .scope-row .mini-seg button{height:22px;padding:0 6px;border:0;border-right:1px solid var(--p-hair);background:var(--p-paper-2);font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3);cursor:pointer;white-space:nowrap}
 .iw-root .scope-row .mini-seg button:last-child{border-right:0}
@@ -1113,7 +1117,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <summary><span>提示词</span><span class="ins-group-hint" id="promptModeHint">云端 H3</span></summary>
         <div class="field">
           <div class="lab"><span id="promptStyleName">云端风格</span><span class="val" id="promptState">默认</span></div>
-          <div class="prompt-tabs" id="promptTabs"></div>
           <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格" hidden></select>
           <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
           <div class="prompt-actions">
@@ -2345,7 +2348,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var s = styleById(id);
       var on = state.focus === id;
       var tag = on ? '预览中' : (s.renderer === 'model' ? '云端' : s.renderer === 'html' ? '模板' : s.renderer === 'preset' ? '预设' : '本机');
-      return '<div class="chip' + (on ? ' on' : '') + '">' +
+      return '<div class="chip' + (on ? ' on' : '') + '" data-focus="' + id + '">' +
         '<img src="' + (state.thumbs[id] || '') + '" alt="">' +
         '<span class="cname">' + s.name + '</span><span class="ctag">' + tag + '</span>' +
         '<button class="x" data-remove="' + id + '" aria-label="移除 ' + s.name + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>' +
@@ -2472,11 +2475,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       }).join('');
       select.hidden = true;
     }
-    var tabs = $('#promptTabs');
-    if (tabs) tabs.innerHTML = ids.map(function (id) {
-      var st = styleById(id);
-      return '<button type="button" data-prompt-style="' + id + '" class="' + (id === currentCloudStyleId() ? 'on' : '') + '">' + escapeHTML(st ? st.name : id) + '</button>';
-    }).join('');
     if (select) select.value = currentCloudStyleId();
     var id = currentCloudStyleId();
     if (!id) return;
@@ -2876,7 +2874,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.10',
+        version: '0.36.11',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -5200,7 +5198,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#previewNext').addEventListener('click', function () { moveStylePreview(1); });
     $('#chips').addEventListener('click', function (e) {
       var el = e.target.closest('[data-remove]');
-      if (el) removeStyle(el.dataset.remove);
+      if (el) { removeStyle(el.dataset.remove); return; }
+      var chip = e.target.closest('[data-focus]');
+      if (!chip) return;
+      state.focus = chip.dataset.focus;
+      renderChips();
+      renderPromptPanel();
+      updateUI();
     });
 
     $('#proofGrid').addEventListener('click', function (e) {
@@ -5655,15 +5659,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
-    $('#promptTabs').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-prompt-style]');
-      if (!b) return;
-      state.focus = b.dataset.promptStyle;
-      var sel = $('#cloudPromptSelect'); if (sel) sel.value = state.focus;
-      renderPromptPanel();
-      renderChips();
-      updateUI();
-    });
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;
       renderChips();
