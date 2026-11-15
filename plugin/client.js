@@ -333,83 +333,125 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 @media (max-width:900px){.iw-root .text-layout{grid-template-columns:1fr;} .iw-root .text-form{min-height:0;} .iw-root .text-result{min-height:320px;}}
 .iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
 .iw-root .flow-page[hidden]{ display:none; }
-.iw-root .flow-page{ margin-top:12px; padding-bottom:18px; }
-.iw-root .flow-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding-bottom:12px; border-bottom:1px solid var(--p-hair); }
-.iw-root .flow-head h2{ margin:2px 0 4px; font-family:var(--p-serif); font-size:34px; font-weight:600; letter-spacing:var(--pk-ls-title); }
-.iw-root .flow-head p{ margin:0; font-size:11px; color:var(--p-ink-3); }
-.iw-root .flow-head-right{ display:flex; align-items:center; gap:10px; }
-.iw-root .flow-cost{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .flow-canvas{ position:relative; margin-top:0; height:calc(100vh - 235px); min-height:380px; background:var(--p-paper); overflow:hidden; }
-.iw-root .flow-canvas-bar{ position:absolute; z-index:5; right:12px; top:12px; display:flex; align-items:center; gap:7px; padding:4px 6px; background:color-mix(in srgb,var(--p-paper-2) 92%,transparent); border:1px solid var(--p-hair); box-shadow:0 2px 10px rgba(0,0,0,.06); }
-.iw-root .flow-canvas-bar .flow-cost{ margin-left:4px; }
-.iw-root .flow-canvas-bar #flowReset{ height:20px; padding:0 6px; font-size:7px; }
-.iw-root .flow-bar-rule{ width:1px; height:14px; background:var(--p-hair); }
-.iw-root .canvas-tools{ display:flex; align-items:center; gap:3px; }
-.iw-root .canvas-tools .ghost-btn{ height:20px; padding:0 6px; font-size:7px; }
-.iw-root .canvas-tools span{ min-width:32px; text-align:center; font-family:var(--p-mono); font-size:7px; color:var(--p-ink-3); }
-.iw-root .flow-graph{ position:absolute; left:50%; top:50%; width:1060px; height:420px; transform:translate(-50%,-50%) scale(1); transform-origin:center center; }
-.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.55; background-image:radial-gradient(circle,var(--p-hair) 1px,transparent 1px); background-size:18px 18px; }
-.iw-root .flow-edges{ position:absolute; inset:0; width:1060px; height:420px; z-index:1; pointer-events:none; overflow:visible; }
-.iw-root .flow-edges path{ fill:none; stroke:var(--p-ink-4); stroke-width:1.5; }
-.iw-root .flow-node{ position:absolute; z-index:2; background:var(--p-paper); border:1px solid var(--p-hair); box-shadow:0 1px 0 var(--p-hair-2); display:flex; flex-direction:column; }
-.iw-root .flow-node header{ display:flex; align-items:baseline; gap:6px; padding:7px 8px; border-bottom:1px solid var(--p-hair); background:var(--p-paper); }
-.iw-root .flow-node header .node-num{ font-family:var(--p-mono); font-size:8px; color:var(--p-signal); }
-.iw-root .flow-node header b{ font-family:var(--p-serif); font-size:13px; font-weight:600; }
-.iw-root .flow-node header small{ margin-left:auto; font-family:var(--p-mono); font-size:7px; letter-spacing:.06em; color:var(--p-ink-4); }
-.iw-root .node-body{ padding:7px 8px 8px; min-height:0; overflow:auto; }
-.iw-root .flow-node .port{ position:absolute; width:9px; height:9px; border:1px solid var(--p-ink-4); background:var(--p-paper-2); border-radius:50%; z-index:3; }
+.iw-root .flow-page{
+  --fx-bg:#070912; --fx-panel:rgba(14,17,31,.82); --fx-ink:#f5f7ff; --fx-muted:#969dbb;
+  --fx-line:rgba(255,255,255,.13); --fx-cyan:#54f4ff; --fx-pink:#ff5ec4; --fx-lime:#b6ff5c; --fx-amber:#ffc857;
+  position:relative; margin-top:12px; height:calc(100vh - 165px); min-height:560px;
+  overflow:hidden; border-radius:22px; color:var(--fx-ink); color-scheme:dark;
+  background:var(--fx-bg);
+  box-shadow:0 30px 90px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.iw-root .flow-canvas{ position:absolute; inset:0; overflow:hidden; background:transparent; }
+.iw-root .flow-aurora{ position:absolute; inset:-35%; pointer-events:none; filter:blur(74px); opacity:.62; }
+.iw-root .flow-aurora i{ position:absolute; display:block; border-radius:50%; mix-blend-mode:screen; }
+.iw-root .flow-aurora .a1{ width:44%; height:52%; left:4%; top:14%; background:radial-gradient(circle at 35% 35%,rgba(84,244,255,.9),rgba(84,244,255,0) 66%); animation:fxDriftA 18s ease-in-out infinite alternate; }
+.iw-root .flow-aurora .a2{ width:42%; height:48%; right:2%; top:4%; background:radial-gradient(circle at 60% 40%,rgba(255,94,196,.78),rgba(255,94,196,0) 68%); animation:fxDriftB 21s ease-in-out infinite alternate; }
+.iw-root .flow-aurora .a3{ width:48%; height:42%; left:24%; bottom:-8%; background:radial-gradient(circle at 50% 50%,rgba(182,255,92,.55),rgba(182,255,92,0) 70%); animation:fxDriftC 24s ease-in-out infinite alternate; }
+.iw-root .flow-aurora .a4{ width:30%; height:34%; right:22%; bottom:16%; background:radial-gradient(circle at 50% 50%,rgba(255,200,87,.42),rgba(255,200,87,0) 70%); animation:fxDriftB 16s ease-in-out infinite alternate-reverse; }
+.iw-root .flow-sparkles{ position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:radial-gradient(circle,rgba(255,255,255,.55) 1px,transparent 1.4px),radial-gradient(circle,rgba(255,255,255,.22) 1px,transparent 1.4px);
+  background-size:73px 73px,41px 41px; background-position:0 0,17px 23px; animation:fxStars 18s linear infinite;
+}
+.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.38;
+  background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+  background-size:72px 72px;
+}
+.iw-root .flow-edges{ position:absolute; inset:0; width:1060px; height:420px; z-index:3; pointer-events:none; overflow:visible; }
+.iw-root .flow-edge{ fill:none; stroke:url(#flowGrad); stroke-width:1.8; stroke-dasharray:7 11; filter:url(#flowGlow); animation:fxFlow 2.4s linear infinite; }
+.iw-root .flow-graph{ position:absolute; left:50%; top:50%; width:1060px; height:420px; transform:translate(-50%,-50%) scale(1); transform-origin:center center; z-index:4; }
+.iw-root .flow-node{
+  position:absolute; z-index:2; display:flex; flex-direction:column; overflow:hidden;
+  background:linear-gradient(160deg,rgba(24,28,49,.9),rgba(9,11,21,.94));
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  border-radius:14px; color:var(--fx-ink);
+  box-shadow:0 22px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(18px);
+  transition:transform .35s var(--p-ease), box-shadow .35s var(--p-ease), border-color .35s var(--p-ease);
+  animation:fxNodeIn .7s var(--p-ease) both;
+}
+.iw-root .flow-node:hover{ transform:translateY(-3px); border-color:color-mix(in srgb,var(--accent) 66%,transparent); box-shadow:0 28px 72px rgba(0,0,0,.58),0 0 30px color-mix(in srgb,var(--accent) 16%,transparent); }
+.iw-root .node-input{ --accent:#54f4ff; left:10px; top:180px; width:160px; height:145px; animation-delay:.08s; }
+.iw-root .node-model{ --accent:#7c9dff; left:195px; top:80px; width:160px; height:150px; animation-delay:.16s; }
+.iw-root .node-prompt{ --accent:#ff5ec4; left:380px; top:25px; width:290px; height:305px; animation-delay:.24s; }
+.iw-root .node-resolution{ --accent:#ffc857; left:695px; top:150px; width:160px; height:160px; animation-delay:.32s; }
+.iw-root .node-output{ --accent:#b6ff5c; left:880px; top:100px; width:170px; height:230px; animation-delay:.4s; }
+.iw-root .flow-node header{ display:flex; align-items:baseline; gap:6px; padding:7px 9px; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.025); }
+.iw-root .flow-node header .node-num{ font-family:var(--p-mono); font-size:8px; color:var(--accent); text-shadow:0 0 12px color-mix(in srgb,var(--accent) 60%,transparent); }
+.iw-root .flow-node header b{ font-family:var(--p-sans); font-size:12px; font-weight:600; color:var(--fx-ink); }
+.iw-root .flow-node header small{ margin-left:auto; font-family:var(--p-mono); font-size:7px; letter-spacing:.08em; color:var(--fx-muted); }
+.iw-root .node-body{ padding:7px 8px 8px; min-height:0; overflow:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.2) transparent; }
+.iw-root .flow-node .port{ position:absolute; width:9px; height:9px; border:1px solid color-mix(in srgb,var(--accent) 80%,white); background:var(--accent); border-radius:50%; z-index:4; box-shadow:0 0 14px var(--accent); animation:fxPulse 2.2s ease-in-out infinite; }
 .iw-root .flow-node .port.left{ left:-5px; top:50%; }
 .iw-root .flow-node .port.right{ right:-5px; top:50%; }
 .iw-root .flow-node .port.top{ top:-5px; left:50%; transform:translateX(-50%); }
 .iw-root .flow-node .port.bottom{ bottom:-5px; left:50%; transform:translateX(-50%); }
-.iw-root .node-input{ left:10px; top:180px; width:160px; height:145px; }
-.iw-root .node-model{ left:195px; top:80px; width:160px; height:150px; }
-.iw-root .node-prompt{ left:380px; top:25px; width:290px; height:305px; }
-.iw-root .node-resolution{ left:695px; top:150px; width:160px; height:160px; }
-.iw-root .node-output{ left:880px; top:100px; width:170px; height:230px; }
+.iw-root .flow-canvas-bar{ position:absolute; z-index:8; right:14px; top:14px; display:flex; align-items:center; gap:6px; padding:5px 6px; border-radius:999px;
+  background:rgba(10,13,26,.72); border:1px solid rgba(255,255,255,.14); box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter:blur(18px);
+}
+.iw-root .flow-canvas-bar .flow-cost{ margin:0 3px 0 6px; color:#c9d3ff; font-family:var(--p-mono); font-size:8px; }
+.iw-root .flow-canvas-bar .ghost-btn{ height:22px; padding:0 7px; border:1px solid rgba(255,255,255,.14); border-radius:999px; background:rgba(255,255,255,.06); color:#dfe5ff; font-size:8px; }
+.iw-root .flow-canvas-bar .ghost-btn:hover{ background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.28); }
+.iw-root .flow-canvas-bar #flowReset{ border-color:color-mix(in srgb,var(--fx-pink) 40%,transparent); color:#ffd2f2; }
+.iw-root .flow-canvas-bar #flowMotion[aria-pressed="false"]{ opacity:.55; }
+.iw-root .flow-bar-rule{ width:1px; height:14px; background:rgba(255,255,255,.14); }
+.iw-root .canvas-tools{ display:flex; align-items:center; gap:3px; }
+.iw-root .canvas-tools span{ min-width:32px; text-align:center; font-family:var(--p-mono); font-size:8px; color:#bcc7fa; }
 .iw-root .flow-choices{ display:grid; grid-template-columns:1fr 1fr; gap:5px; }
-.iw-root .flow-choice{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:49px; padding:6px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
-.iw-root .flow-choice:hover{ border-color:var(--p-ink-3); }
-.iw-root .flow-choice.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
-.iw-root .flow-choice .fc-k{ font-family:var(--p-mono); font-size:8px; color:var(--p-signal); letter-spacing:.06em; }
+.iw-root .flow-choice{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:49px; padding:6px; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.035); color:#e9ecff; text-align:left; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s,transform .2s; }
+.iw-root .flow-choice:hover{ transform:translateY(-1px); background:rgba(255,255,255,.08); }
+.iw-root .flow-choice.on{ border-color:var(--fx-cyan); background:linear-gradient(140deg,rgba(84,244,255,.18),rgba(84,244,255,.03)); box-shadow:inset 0 0 0 1px rgba(84,244,255,.25),0 0 20px rgba(84,244,255,.12); }
+.iw-root .flow-choice .fc-k{ font-family:var(--p-mono); font-size:7px; letter-spacing:.08em; color:var(--fx-cyan); }
 .iw-root .flow-choice b{ font-family:var(--p-sans); font-size:10px; font-weight:600; }
-.iw-root .flow-source{ display:flex; gap:7px; align-items:center; margin-top:7px; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper); }
+.iw-root .flow-source{ display:flex; gap:7px; align-items:center; margin-top:7px; padding:5px; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.04); }
 .iw-root .flow-source[hidden]{ display:none; }
-.iw-root .flow-source img{ width:52px; height:40px; object-fit:cover; border:1px solid var(--p-hair); }
-.iw-root .flow-source b{ display:block; max-width:92px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; }
-.iw-root .flow-source span{ display:block; margin:2px 0 3px; font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); }
-.iw-root .flow-source button{ height:19px; padding:0 5px; font-size:8px; }
+.iw-root .flow-source img{ width:46px; height:36px; object-fit:cover; border-radius:5px; border:1px solid rgba(255,255,255,.14); }
+.iw-root .flow-source b{ display:block; max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:9px; }
+.iw-root .flow-source span{ display:block; margin:2px 0 3px; font-family:var(--p-mono); font-size:7px; color:var(--fx-muted); }
+.iw-root .flow-source button{ height:18px; padding:0 5px; font-size:7px; border:1px solid rgba(255,255,255,.16); border-radius:5px; background:rgba(255,255,255,.06); color:#e9ecff; }
 .iw-root .node-model-list{ display:flex; flex-direction:column; gap:5px; }
-.iw-root .node-model-option{ display:grid; grid-template-columns:1fr; gap:1px; padding:6px 7px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
-.iw-root .node-model-option span{ font-family:var(--p-mono); font-size:7px; color:var(--p-ink-4); }
-.iw-root .node-model-option b{ font-family:var(--p-serif); font-size:14px; }
-.iw-root .node-model-option small{ font-size:8px; color:var(--p-ink-3); }
-.iw-root .node-model-option.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
+.iw-root .node-model-option{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; padding:6px 7px; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.035); color:#e9ecff; text-align:left; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s; }
+.iw-root .node-model-option span{ font-family:var(--p-mono); font-size:7px; color:var(--fx-muted); }
+.iw-root .node-model-option b{ font-family:var(--p-sans); font-size:13px; }
+.iw-root .node-model-option small{ font-size:8px; color:#aeb7d9; }
+.iw-root .node-model-option.on{ border-color:#7c9dff; background:linear-gradient(140deg,rgba(124,157,255,.22),rgba(124,157,255,.03)); box-shadow:inset 0 0 0 1px rgba(124,157,255,.2),0 0 20px rgba(124,157,255,.1); }
 .iw-root .flow-prompt-head{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
-.iw-root .flow-prompt-head select{ flex:1; min-width:0; height:24px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:10px; padding:0 5px; }
-.iw-root .flow-prompt-head button{ height:24px; padding:0 6px; font-size:8px; color:var(--p-ink-2); }
-.iw-root #flowPrompt{ width:100%; height:145px; padding:8px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:11px; line-height:1.65; resize:vertical; }
-.iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:var(--p-hair); box-shadow:none; }
-.iw-root .flow-note{ margin:6px 0 0; font-family:var(--p-mono); font-size:8px; line-height:1.55; color:var(--p-ink-4); }
-.iw-root .flow-label{ display:block; margin:6px 0 4px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); }
-.iw-root .flow-ratios{ display:flex; flex-wrap:wrap; gap:2px; border:0; }
-.iw-root .flow-ratios button{ height:23px; padding:0 6px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); cursor:pointer; }
-.iw-root .flow-ratios button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
-.iw-root .node-resolution #flowQuality{ border:1px solid var(--p-hair); border-radius:4px; }
-.iw-root .node-resolution #flowQuality button{ height:21px; padding:0 5px; font-size:8px; }
-.iw-root .node-summary{ display:flex; flex-direction:column; gap:4px; }
-.iw-root .node-sum-item{ display:flex; justify-content:space-between; gap:4px; padding:2px 0; border-bottom:1px solid var(--p-hair-2); font-size:8px; color:var(--p-ink-3); }
-.iw-root .node-sum-item b{ font-weight:500; color:var(--p-ink); text-align:right; }
-.iw-root .node-sum-item.prompt{ display:block; max-height:48px; overflow:auto; white-space:pre-wrap; line-height:1.5; color:var(--p-ink-2); font-size:9px; }
+.iw-root .flow-prompt-head select{ flex:1; min-width:0; height:24px; border:1px solid rgba(255,255,255,.13); border-radius:6px; background:#0a0d1a; color:#e9ecff; font-family:var(--p-sans); font-size:9px; padding:0 5px; }
+.iw-root .flow-prompt-head button{ height:24px; padding:0 6px; font-size:8px; color:#ffd2f2; border:1px solid rgba(255,94,196,.35); border-radius:6px; background:rgba(255,94,196,.08); }
+.iw-root #flowPrompt{ width:100%; height:145px; padding:8px; border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(4,6,14,.62); color:#e9ecff; font-family:var(--p-sans); font-size:10px; line-height:1.65; resize:vertical; }
+.iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:rgba(255,94,196,.55); box-shadow:0 0 0 1px rgba(255,94,196,.14); }
+.iw-root #flowPrompt::placeholder{ color:#6f7899; }
+.iw-root .flow-note{ margin:6px 0 0; font-family:var(--p-mono); font-size:7px; line-height:1.55; color:var(--fx-muted); }
+.iw-root .flow-label{ display:block; margin:6px 0 4px; font-family:var(--p-mono); font-size:8px; color:var(--fx-muted); }
+.iw-root .flow-ratios{ display:flex; flex-wrap:wrap; gap:3px; border:0; }
+.iw-root .flow-ratios button{ height:23px; padding:0 6px; border:1px solid rgba(255,255,255,.12); border-radius:5px; background:rgba(255,255,255,.04); font-family:var(--p-mono); font-size:8px; color:#bcc7fa; cursor:pointer; }
+.iw-root .flow-ratios button.on{ background:linear-gradient(135deg,#ffc857,#ff9d3d); border-color:#ffc857; color:#201400; box-shadow:0 0 16px rgba(255,200,87,.25); }
+.iw-root .node-resolution #flowQuality{ border:1px solid rgba(255,255,255,.12); border-radius:6px; }
+.iw-root .node-resolution #flowQuality button{ height:21px; padding:0 5px; font-size:8px; background:rgba(255,255,255,.04); color:#bcc7fa; border:0; }
+.iw-root .node-resolution #flowQuality button.on{ background:#ffc857; color:#201400; }
+.iw-root .node-summary{ display:flex; flex-direction:column; gap:2px; }
+.iw-root .node-sum-item{ display:flex; justify-content:space-between; gap:4px; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:8px; color:var(--fx-muted); }
+.iw-root .node-sum-item b{ font-weight:500; color:#e9ecff; text-align:right; }
 .iw-root .node-output-actions{ margin-top:8px; }
-.iw-root .node-output-actions .go{ width:100%; height:27px; margin:0; font-size:9px; }
+.iw-root .node-output-actions .go{ position:relative; overflow:hidden; width:100%; height:28px; margin:0; border:0; border-radius:8px; background:linear-gradient(100deg,#54f4ff,#ff5ec4 55%,#b6ff5c); color:#080b14; font-family:var(--p-sans); font-size:9px; font-weight:700; box-shadow:0 0 24px rgba(255,94,196,.25),0 0 24px rgba(84,244,255,.16); }
+.iw-root .node-output-actions .go::after{ content:""; position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%); transform:translateX(-130%); animation:fxShine 3.2s ease-in-out infinite; }
 .iw-root .node-output #flowStatus{ max-height:38px; overflow:auto; }
-.iw-root .flow-result{ display:flex; flex-direction:column; gap:5px; margin-top:7px; padding-top:7px; border-top:1px solid var(--p-hair); }
+.iw-root .flow-result{ display:flex; flex-direction:column; gap:5px; margin-top:7px; padding-top:7px; border-top:1px solid rgba(255,255,255,.1); }
 .iw-root .flow-result[hidden]{ display:none; }
-.iw-root .flow-result img{ width:100%; max-height:120px; object-fit:contain; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .flow-result img{ width:100%; max-height:110px; object-fit:contain; border-radius:6px; border:1px solid rgba(255,255,255,.14); background:#050812; }
 .iw-root .flow-result-actions{ display:flex; gap:3px; }
-.iw-root .flow-result-actions button{ height:21px; padding:0 5px; font-size:8px; }
-@media (max-width:760px){.iw-root .flow-head{flex-direction:column;} .iw-root .flow-head-right{width:100%;justify-content:space-between;}}
+.iw-root .flow-result-actions button{ height:20px; padding:0 5px; font-size:7px; border:1px solid rgba(255,255,255,.14); border-radius:5px; background:rgba(255,255,255,.06); color:#e9ecff; }
+.iw-root .flow-page.motion-off .flow-aurora i,.iw-root .flow-page.motion-off .flow-sparkles,.iw-root .flow-page.motion-off .flow-edge,.iw-root .flow-page.motion-off .flow-node,.iw-root .flow-page.motion-off .port,.iw-root .flow-page.motion-off .go::after{ animation-play-state:paused!important; }
+.iw-root .flow-page.motion-off .flow-node{ animation:none; }
+@keyframes fxDriftA{ from{transform:translate3d(-4%,-2%,0) scale(.92)} to{transform:translate3d(8%,6%,0) scale(1.08)} }
+@keyframes fxDriftB{ from{transform:translate3d(5%,-4%,0) scale(1.04)} to{transform:translate3d(-7%,7%,0) scale(.9)} }
+@keyframes fxDriftC{ from{transform:translate3d(-3%,5%,0) scale(1)} to{transform:translate3d(6%,-6%,0) scale(1.1)} }
+@keyframes fxStars{ from{background-position:0 0,17px 23px} to{background-position:73px 146px,58px 105px} }
+@keyframes fxFlow{ to{stroke-dashoffset:-36} }
+@keyframes fxPulse{ 0%,100%{box-shadow:0 0 8px var(--accent);opacity:.8} 50%{box-shadow:0 0 22px var(--accent);opacity:1} }
+@keyframes fxNodeIn{ from{opacity:0;transform:translateY(12px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes fxShine{ 0%,45%{transform:translateX(-130%)} 75%,100%{transform:translateX(130%)} }
+@media (prefers-reduced-motion: reduce){ .iw-root .flow-aurora i,.iw-root .flow-sparkles,.iw-root .flow-edge,.iw-root .flow-node,.iw-root .flow-node .port,.iw-root .node-output-actions .go::after{ animation:none!important; } .iw-root .flow-node{ transition:none; } }
+@media (max-width:760px){ .iw-root .flow-page{ height:calc(100vh - 120px); min-height:500px; border-radius:16px; } .iw-root .flow-canvas-bar{ right:8px; top:8px; } }
 .iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
 .iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
@@ -1323,10 +1365,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   <section class="wrap flow-page" id="flowPage" aria-label="固定工作流" hidden>
     <div class="flow-canvas" id="flowCanvas">
+      <div class="flow-aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
+      <div class="flow-sparkles" aria-hidden="true"></div>
       <div class="flow-canvas-bar">
         <span class="flow-cost" id="flowCost">约 ¥0.00</span>
         <button type="button" class="ghost-btn" id="flowReset">重新开始</button>
         <span class="flow-bar-rule" aria-hidden="true"></span>
+        <button type="button" class="ghost-btn" id="flowMotion" aria-pressed="true">动效</button>
         <div class="canvas-tools" role="group" aria-label="画布缩放">
           <button type="button" class="ghost-btn" data-flow-zoom="fit">适应</button>
           <button type="button" class="ghost-btn" data-flow-zoom="out" aria-label="缩小画布">−</button>
@@ -1337,11 +1382,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div class="flow-graph" id="flowGraph" role="group" aria-label="固定工作流节点画布">
         <div class="flow-dotgrid"></div>
         <svg class="flow-edges" viewBox="0 0 1060 420" preserveAspectRatio="none" aria-hidden="true">
-          <defs><marker id="flowArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#777064"/></marker></defs>
-          <path d="M170 252 C182 252 182 155 193 155" marker-end="url(#flowArrow)"/>
-          <path d="M355 155 C366 155 368 180 378 180" marker-end="url(#flowArrow)"/>
-          <path d="M670 180 C682 180 682 230 693 230" marker-end="url(#flowArrow)"/>
-          <path d="M855 230 C866 230 866 215 878 215" marker-end="url(#flowArrow)"/>
+          <defs>
+            <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#54f4ff"/><stop offset=".5" stop-color="#ff5ec4"/><stop offset="1" stop-color="#b6ff5c"/></linearGradient>
+            <filter id="flowGlow" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <marker id="flowArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#9ff7ff"/></marker>
+          </defs>
+          <g filter="url(#flowGlow)">
+            <path class="flow-edge" d="M170 252 C182 252 182 155 193 155" marker-end="url(#flowArrow)"/>
+            <path class="flow-edge" d="M355 155 C366 155 368 180 378 180" marker-end="url(#flowArrow)"/>
+            <path class="flow-edge" d="M670 180 C682 180 682 230 693 230" marker-end="url(#flowArrow)"/>
+            <path class="flow-edge" d="M855 230 C866 230 866 215 878 215" marker-end="url(#flowArrow)"/>
+          </g>
         </svg>
 
         <article class="flow-node node-input" data-node="1" aria-label="输入节点">
@@ -3194,7 +3245,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.7',
+        version: '0.38.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -6750,6 +6801,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!b) return;
       flow.quality = b.dataset.flowQuality;
       renderFlow();
+    });
+    $('#flowMotion').addEventListener('click', function () {
+      var off = !$('#flowPage').classList.contains('motion-off');
+      $('#flowPage').classList.toggle('motion-off', off);
+      this.setAttribute('aria-pressed', off ? 'false' : 'true');
+      this.textContent = off ? '静效' : '动效';
     });
     $('#flowReset').addEventListener('click', flowReset);
     $$('[data-flow-zoom]').forEach(function (b) { b.addEventListener('click', function () { flowZoom(b.dataset.flowZoom); }); });
