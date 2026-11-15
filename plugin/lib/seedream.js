@@ -53,7 +53,6 @@ export async function generateSeedream({
     response_format: 'url',
     output_format: 'jpeg',
     watermark: false,
-    sequential_image_generation: 'disabled',
   }
   if (Array.isArray(images) && images.length) body.image = images.length === 1 ? images[0] : images
 
