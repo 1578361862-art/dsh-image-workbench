@@ -823,6 +823,60 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .drawer-foot .go{ margin-top: 0; }
 .iw-root .drawer-foot .ins-note{ margin-top: 4px; }
 .iw-root .drawer .ghost-btn{ font-size: 10px; }
+
+/* ————— 队列 ————— */
+.iw-root .queue-badge{
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px; margin-left: -2px;
+  background: var(--p-signal); color: var(--p-paper);
+  font-family: var(--p-mono); font-size: 9px; font-weight: 500; letter-spacing: 0;
+}
+.iw-root .queue-badge[hidden]{ display: none; }
+.iw-root .queue-head-actions{ display: flex; align-items: center; gap: 2px; flex: none; }
+.iw-root .queue-drawer{ width: 408px; }
+.iw-root .queue-body{ padding-top: 10px; }
+.iw-root .queue-status{ margin: 0 0 9px; font-family: var(--p-mono); font-size: 10px; line-height: 1.6; color: var(--p-ink-4); }
+.iw-root .queue-status.err{ color: var(--p-signal); }
+.iw-root .queue-list{ display: flex; flex-direction: column; gap: 8px; }
+.iw-root .queue-empty{
+  padding: 38px 16px; text-align: center;
+  border: 1px dashed var(--p-hair); background: var(--p-paper);
+  font-family: var(--p-mono); font-size: 10px; line-height: 1.8; color: var(--p-ink-4);
+}
+.iw-root .queue-item{ padding: 9px 10px 10px; border: 1px solid var(--p-hair); background: var(--p-paper); }
+.iw-root .queue-item-head{ display: flex; align-items: center; gap: 6px; }
+.iw-root .queue-provider{
+  flex: none; display: inline-flex; align-items: center; height: 16px; padding: 0 5px;
+  border: 1px solid var(--p-ink-4); color: var(--p-ink-2);
+  font-family: var(--p-mono); font-size: 9px; letter-spacing: var(--pk-ls-label);
+}
+.iw-root .queue-provider.seedream{ border-color: var(--p-signal); color: var(--p-signal); }
+.iw-root .queue-state{ font-family: var(--p-mono); font-size: 9px; letter-spacing: var(--pk-ls-label); color: var(--p-ink-3); }
+.iw-root .queue-state.active, .iw-root .queue-state.failed{ color: var(--p-signal); }
+.iw-root .queue-time{ margin-left: auto; font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); white-space: nowrap; }
+.iw-root .queue-prompt{
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 6px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--p-ink);
+}
+.iw-root .queue-prompt.muted{ color: var(--p-ink-4); }
+.iw-root .queue-meta{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); }
+.iw-root .queue-meta b{ font-weight: 500; color: var(--p-ink-3); }
+.iw-root .queue-error{
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin: 5px 0 0; font-family: var(--p-mono); font-size: 9px; line-height: 1.5; color: var(--p-signal);
+}
+.iw-root .queue-actions{ display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.iw-root .queue-action{
+  height: 22px; padding: 0 8px; border: 1px solid var(--p-hair); background: var(--p-paper-2);
+  color: var(--p-ink-3); font-family: var(--p-mono); font-size: 9px; cursor: pointer;
+}
+.iw-root .queue-action:hover:not(:disabled){ color: var(--p-ink); border-color: var(--p-ink-3); }
+.iw-root .queue-action.danger:hover:not(:disabled){ color: var(--p-signal); border-color: var(--p-signal); }
+.iw-root .queue-action:disabled{ opacity: .55; cursor: not-allowed; }
+.iw-root .queue-blocked{ margin-left: auto; font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); }
+.iw-root .queue-foot{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.iw-root .queue-foot .note{ font-family: var(--p-mono); font-size: 9px; color: var(--p-ink-4); }
+
 .iw-root .eyebrow{ font-size: 10px; }
 .iw-root .stamp{ font-size: 10px; }
 .iw-root .card .nm{ font-size: 11.5px; }
@@ -1022,6 +1076,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <div class="mast-right">
       <div class="stamp"><b id="stampMain">今日 0 张 · ¥0.00</b><span id="stampSub">本机 6 · 云端 2 · 队列空闲</span></div>
       <div class="mast-tools">
+        <button class="icon-btn wide" id="queueBtn" aria-label="打开队列" aria-haspopup="dialog" aria-expanded="false" title="作业队列"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.2h11M2.5 8h11M2.5 11.8h7"/><circle cx="12.4" cy="11.8" r="1.1" fill="none"/></svg><span>队列</span><b class="queue-badge" id="queueBadge" hidden>0</b></button>
         <button class="icon-btn wide" id="settingsBtn" aria-label="打开设置"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5.6" cy="4.2" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="10.4" cy="8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="6.4" cy="11.8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/></svg><span>设置</span></button>
       </div>
     </div>
@@ -1319,6 +1374,30 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   </aside>
 </div>
 
+<div class="drawer-layer" id="queueLayer" aria-hidden="true" inert>
+  <div class="drawer-backdrop" data-queue-close></div>
+  <aside class="drawer queue-drawer" role="dialog" aria-modal="true" aria-labelledby="queueTitle">
+    <header class="drawer-head">
+      <div>
+        <div class="eyebrow">Queue</div>
+        <h2 id="queueTitle">队列</h2>
+      </div>
+      <div class="queue-head-actions">
+        <button class="ghost-btn" id="queueRefresh">刷新</button>
+        <button class="icon-btn" data-queue-close aria-label="关闭队列"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      </div>
+    </header>
+    <div class="drawer-body queue-body">
+      <p class="queue-status" id="queueStatus" role="status" aria-live="polite">打开后每 2 秒刷新，关闭即停。</p>
+      <div class="queue-list" id="queueList"></div>
+    </div>
+    <footer class="drawer-foot queue-foot">
+      <span class="note">H3 + Seedream</span>
+      <span class="note" id="queueTotal">0 个作业</span>
+    </footer>
+  </aside>
+</div>
+
 <div class="preview-layer" id="previewLayer" aria-hidden="true" inert>
   <div class="drawer-backdrop" data-preview-close></div>
   <figure class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
@@ -1540,6 +1619,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var recentLoaded = false;
   var recentLoading = false;
   var historyLoadingMore = false;
+  var queueUi = {
+    open: false,
+    timer: null,
+    loading: false,
+    jobs: [],
+    error: '',
+    returnFocus: null,
+    refreshAgain: false,
+  };
 
   var CLOUD_EDIT_HEAD = '图1是唯一参考图与构图来源。先读图1：锁定主体数量、身份、姿态、朝向、手部动作、服装轮廓、关键配饰、前中后景关系、镜头高度、裁切范围，以及原文字的位置与排版。成图逐项保持这些关系；不新增、删除或替换主体，不改变动作、视线与空间关系。只改变画种、介质、光线、色彩、边缘与表面质感。最终必须像一张真正完成的完整作品，而不是原图加滤镜。';
   var CLOUD_EDIT_TAIL = '保留原图文字的位置和图形轮廓，不生成新的可读句子；全尺寸下仍能看到材质的真实细节；不要水印、签名、UI、网页边框、平滑数字渐变或塑料感。';
@@ -2420,7 +2508,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var visible = visibleStyles();
     var localCount = visible.filter(function (x) { return x.renderer !== 'model'; }).length;
     var cloudCount = visible.filter(function (x) { return x.renderer === 'model'; }).length;
-    $('#stampSub').textContent = '本机 ' + localCount + ' · 云端 ' + cloudCount;
+    var queueActive = queueActiveCount();
+    var queueText = queueActive
+      ? '队列 ' + queueActive + ' 进行中'
+      : (queueUi.error && !queueUi.jobs.length ? '队列未知' : '队列空闲');
+    $('#stampSub').textContent = '本机 ' + localCount + ' · 云端 ' + cloudCount + ' · ' + queueText;
     if ($('#packCount')) $('#packCount').textContent = visible.length + ' 个';
     $('#usageText').textContent = success + ' 张 · ¥' + cost.toFixed(2);
   }
@@ -2999,7 +3091,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var res = await fetch(API + '/cloud/jobs/' + encodeURIComponent(id), { cache: 'no-store' });
       var job = await res.json().catch(function () { return {}; });
       if (!res.ok) throw cloudError(job.error || ('云端状态读取失败 ' + res.status), job.code);
-      if (['succeeded', 'failed', 'unknown', 'canceled'].indexOf(job.status) >= 0) return job;
+      if (['succeeded', 'failed', 'unknown', 'canceled'].indexOf(job.status) >= 0) {
+        // 事件驱动的单次刷新：作业落定后同步队列徽标，不额外轮询。
+        loadQueue({ silent: true });
+        return job;
+      }
     }
     return { status: 'unknown', error: cloudError('等待超时；请求可能已生成并计费', 'unknown') };
   }
@@ -5667,6 +5763,311 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   /* ————— 批量矩阵 ————— */
+  /* ————— 队列 ————— */
+  // 只在抽屉打开时轮询；关闭即停，工作台其他位置不做后台轮询。
+  var QUEUE_POLL_MS = 2000;
+  var QUEUE_LIMIT = 100;
+  var QUEUE_ACTIVE = { queued: true, preparing: true, running: true };
+  var QUEUE_LABELS = {
+    queued: '排队中',
+    preparing: '准备中',
+    running: '生成中',
+    succeeded: '已完成',
+    failed: '失败',
+    canceled: '已取消',
+    unknown: '状态不明'
+  };
+  var queueLayerEl = $('#queueLayer');
+
+  function queueJobActive(job) {
+    return !!(job && QUEUE_ACTIVE[job.status]);
+  }
+  function queueActiveCount() {
+    var n = 0;
+    for (var i = 0; i < queueUi.jobs.length; i++) if (queueJobActive(queueUi.jobs[i])) n += 1;
+    return n;
+  }
+  function queueJobById(id) {
+    for (var i = 0; i < queueUi.jobs.length; i++) if (queueUi.jobs[i].id === id) return queueUi.jobs[i];
+    return null;
+  }
+  function queueStatusLabel(status) {
+    return QUEUE_LABELS[status] || status || '未知';
+  }
+  function queueProviderLabel(job) {
+    return job && job.provider === 'seedream' ? 'Seedream' : 'H3';
+  }
+  function queueStyleLabel(job) {
+    if (!job || job.provider === 'seedream') return '';
+    var style = styleById(job.styleId);
+    if (style && style.name) return style.name;
+    if (job.styleId === 'h3-text') return '文生图';
+    return job.styleId || '';
+  }
+  function queueModelLabel(job) {
+    if (!job || job.provider !== 'seedream') return '';
+    var model = String(job.model || '');
+    if (model.indexOf('5-5') >= 0) return 'Seedream 5.5';
+    if (model.indexOf('4-5') >= 0) return 'Seedream 4.5';
+    if (model.indexOf('4-0') >= 0) return 'Seedream 4.0';
+    return model || 'Seedream';
+  }
+  function queueCostLabel(job) {
+    var raw = job && job.output ? job.output.costYuan : null;
+    if (raw === null || raw === undefined) raw = job && job.usage ? job.usage.costYuan : null;
+    var value = Number(raw);
+    if (raw === null || raw === undefined || !Number.isFinite(value) || value <= 0) return '';
+    return '¥' + value.toFixed(2);
+  }
+  function queueTimeLabel(at) {
+    var date = new Date(at);
+    if (isNaN(date.getTime())) return '--:--';
+    try {
+      var now = new Date();
+      var sameDay = date.toDateString() === now.toDateString();
+      return sameDay
+        ? date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        : date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch (err) { return '--:--'; }
+  }
+  function queueExcerpt(text, max) {
+    var value = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+    if (!value) return '';
+    return value.length > max ? value.slice(0, max) + '…' : value;
+  }
+  function mergeQueueJobs(cloudJobs, seedreamJobs) {
+    var seen = {};
+    var rows = [];
+    (cloudJobs || []).concat(seedreamJobs || []).forEach(function (job) {
+      if (!job || typeof job.id !== 'string' || !job.id || seen[job.id]) return;
+      seen[job.id] = true;
+      rows.push(job);
+    });
+    rows.sort(function (a, b) {
+      var byTime = String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+      if (byTime !== 0) return byTime;
+      return String(b.id || '').localeCompare(String(a.id || ''));
+    });
+    return rows;
+  }
+  function queueSignature(jobs) {
+    return (jobs || []).map(function (job) {
+      return [
+        job.id,
+        job.status,
+        job.updatedAt || '',
+        job.output && job.output.url ? job.output.url : '',
+        job.error && job.error.code ? job.error.code : ''
+      ].join(':');
+    }).join('|');
+  }
+  // 后端只返回错误文本；402 的预算明细在 details 里，这里合成一句人话。
+  function queueApiError(status, data) {
+    var message = data && data.error ? String(data.error) : '';
+    if (status === 402 && data && data.code === 'budget_exceeded') {
+      return '超出每日预算，需要手动放行（预计 ¥' + Number(data.estimatedYuan || 0).toFixed(2) +
+        ' · 已用 ¥' + Number(data.spentTodayYuan || 0).toFixed(2) +
+        ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) + '）';
+    }
+    if (status === 409) return message || '当前状态不能执行这个操作';
+    return message || ('请求失败 ' + status);
+  }
+
+  async function loadQueue(options) {
+    options = options || {};
+    var silent = options.silent === true;
+    if (queueUi.loading) {
+      if (!silent) queueUi.refreshAgain = true;
+      return;
+    }
+    if (disposed) return;
+    var beforeSignature = queueSignature(queueUi.jobs);
+    var beforeError = queueUi.error;
+    queueUi.loading = true;
+    if (!silent) renderQueue();
+    var errors = [];
+    async function fetchSide(path) {
+      try {
+        var res = await apiFetch(path, { cache: 'no-store' });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error(data.error || ('读取队列失败 ' + res.status));
+        return Array.isArray(data.jobs) ? data.jobs : [];
+      } catch (err) {
+        errors.push(err && err.message ? err.message : String(err));
+        return [];
+      }
+    }
+    var parts = await Promise.all([
+      fetchSide('/cloud/jobs?limit=' + QUEUE_LIMIT),
+      fetchSide('/seedream/jobs?limit=' + QUEUE_LIMIT)
+    ]);
+    if (disposed) { queueUi.loading = false; return; }
+    queueUi.jobs = mergeQueueJobs(parts[0], parts[1]);
+    queueUi.error = errors.length ? errors.join('；') : '';
+    queueUi.loading = false;
+    var changed = queueSignature(queueUi.jobs) !== beforeSignature || queueUi.error !== beforeError;
+    if (changed || !silent) renderQueue();
+    else renderQueueBadge();
+    if (queueUi.error && !silent) toast('队列刷新失败：' + queueUi.error);
+    if (queueUi.refreshAgain) {
+      queueUi.refreshAgain = false;
+      loadQueue({ silent: true });
+    }
+  }
+
+  function queueItemHTML(job) {
+    var active = queueJobActive(job);
+    var meta = [];
+    var styleLabel = queueStyleLabel(job);
+    var modelLabel = queueModelLabel(job);
+    var costLabel = queueCostLabel(job);
+    if (styleLabel) meta.push('<span>' + escapeHTML(styleLabel) + '</span>');
+    if (modelLabel) meta.push('<span>' + escapeHTML(modelLabel) + '</span>');
+    if (job.size) meta.push('<span>' + escapeHTML(String(job.size)) + '</span>');
+    if (costLabel) meta.push('<span>费用 <b>' + escapeHTML(costLabel) + '</b></span>');
+    var prompt = queueExcerpt(job.prompt, 96);
+    var errorText = job.error && job.error.message ? queueExcerpt(job.error.message, 160) : '';
+    var actions = [];
+    if (active) {
+      actions.push('<button type="button" class="queue-action danger" data-queue-cancel="' + escapeHTML(job.id) + '">取消</button>');
+    }
+    if (job.status === 'failed') {
+      if (job.provider === 'minimax') {
+        actions.push('<button type="button" class="queue-action" data-queue-retry="' + escapeHTML(job.id) + '">重试</button>');
+      } else {
+        actions.push('<button type="button" class="queue-action" data-queue-retry="' + escapeHTML(job.id) + '" disabled title="Seedream 作业暂不支持重试：源图数据未持久化">重试</button>');
+        actions.push('<span class="queue-blocked">源图未持久化，不能重试</span>');
+      }
+    }
+    return '<article class="queue-item" data-queue-id="' + escapeHTML(job.id) + '">' +
+      '<div class="queue-item-head">' +
+      '<span class="queue-provider' + (job.provider === 'seedream' ? ' seedream' : '') + '">' + escapeHTML(queueProviderLabel(job)) + '</span>' +
+      '<span class="queue-state' + (active ? ' active' : (job.status === 'failed' ? ' failed' : '')) + '">' + escapeHTML(queueStatusLabel(job.status)) + '</span>' +
+      '<span class="queue-time">' + escapeHTML(queueTimeLabel(job.createdAt)) + '</span>' +
+      '</div>' +
+      '<p class="queue-prompt' + (prompt ? '' : ' muted') + '">' + escapeHTML(prompt || '（无提示词）') + '</p>' +
+      (meta.length ? '<div class="queue-meta">' + meta.join('') + '</div>' : '') +
+      (errorText ? '<p class="queue-error">' + escapeHTML(errorText) + '</p>' : '') +
+      (actions.length ? '<div class="queue-actions">' + actions.join('') + '</div>' : '') +
+      '</article>';
+  }
+
+  function renderQueueStatus() {
+    var el = $('#queueStatus');
+    if (!el) return;
+    var active = queueActiveCount();
+    var text;
+    if (queueUi.loading && !queueUi.jobs.length) text = '载入中…';
+    else if (queueUi.loading) text = '刷新中… · ' + (active ? active + ' 个进行中' : '队列空闲');
+    else if (queueUi.error) text = '读取失败：' + queueUi.error;
+    else if (queueUi.jobs.length) text = queueUi.jobs.length + ' 个作业' + (active ? ' · ' + active + ' 个进行中' : ' · 无进行中');
+    else text = '队列为空 · 每次生成或编辑都会留下作业记录';
+    el.textContent = text;
+    el.classList.toggle('err', !!queueUi.error);
+  }
+
+  function renderQueue() {
+    var list = $('#queueList');
+    if (!list) return;
+    renderQueueStatus();
+    var total = $('#queueTotal');
+    if (total) total.textContent = queueUi.jobs.length + ' 个作业';
+    if (!queueUi.jobs.length) {
+      var emptyText = queueUi.loading ? '载入中…' : (queueUi.error ? '暂时读不到队列。点「刷新」重试。' : '队列为空。<br>生成或编辑后会出现在这里。');
+      list.innerHTML = '<div class="queue-empty">' + emptyText + '</div>';
+    } else {
+      list.innerHTML = queueUi.jobs.map(queueItemHTML).join('');
+    }
+    renderQueueBadge();
+  }
+
+  function renderQueueBadge() {
+    var badge = $('#queueBadge');
+    var button = $('#queueBtn');
+    if (!badge || !button) return;
+    var active = queueActiveCount();
+    badge.textContent = String(active);
+    badge.hidden = active === 0;
+    button.setAttribute('aria-label', active ? '打开队列 · ' + active + ' 个进行中' : '打开队列');
+    button.title = active ? '队列 · ' + active + ' 个进行中' : '队列';
+    renderStamp();
+  }
+
+  function startQueuePolling() {
+    stopQueuePolling();
+    queueUi.timer = setInterval(function () {
+      if (!queueUi.open) { stopQueuePolling(); return; }
+      loadQueue({ silent: true });
+    }, QUEUE_POLL_MS);
+  }
+  function stopQueuePolling() {
+    if (queueUi.timer !== null) {
+      clearInterval(queueUi.timer);
+      queueUi.timer = null;
+    }
+  }
+  function openQueue() {
+    if (!queueLayerEl || queueUi.open) return;
+    queueUi.open = true;
+    queueUi.returnFocus = document.activeElement;
+    queueLayerEl.inert = false;
+    queueLayerEl.classList.add('open');
+    queueLayerEl.setAttribute('aria-hidden', 'false');
+    $('#queueBtn').setAttribute('aria-expanded', 'true');
+    renderQueue();
+    loadQueue();
+    startQueuePolling();
+    setTimeout(function () {
+      var refresh = $('#queueRefresh');
+      if (refresh) refresh.focus();
+    }, 0);
+  }
+  function closeQueue() {
+    queueUi.open = false;
+    stopQueuePolling();
+    if (!queueLayerEl) return;
+    queueLayerEl.classList.remove('open');
+    queueLayerEl.setAttribute('aria-hidden', 'true');
+    queueLayerEl.inert = true;
+    var button = $('#queueBtn');
+    if (button) button.setAttribute('aria-expanded', 'false');
+    if (queueUi.returnFocus && queueUi.returnFocus.isConnected) queueUi.returnFocus.focus();
+    queueUi.returnFocus = null;
+  }
+
+  async function cancelQueueJob(id) {
+    var job = queueJobById(id);
+    if (!job) return;
+    var side = job.provider === 'seedream' ? 'seedream' : 'cloud';
+    try {
+      var res = await apiFetch('/' + side + '/jobs/' + encodeURIComponent(id) + '/cancel', { method: 'POST' });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(queueApiError(res.status, data));
+      toast('已取消');
+    } catch (err) {
+      toast(err && err.message ? err.message : '取消失败');
+    }
+    loadQueue();
+  }
+
+  async function retryQueueJob(id) {
+    var job = queueJobById(id);
+    if (!job) return;
+    if (job.provider !== 'minimax') {
+      toast('Seedream 作业暂不支持重试：源图数据未持久化');
+      return;
+    }
+    try {
+      var res = await apiFetch('/cloud/jobs/' + encodeURIComponent(id) + '/retry', { method: 'POST' });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(queueApiError(res.status, data));
+      toast('已重新排队');
+    } catch (err) {
+      toast(err && err.message ? err.message : '重试失败');
+    }
+    loadQueue();
+  }
+
   /* ————— 提示 ————— */
   function toast(msg) {
     var el = $('#toast');
@@ -5973,6 +6374,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       renderRecentPage();
     });
 
+    $('#queueBtn').addEventListener('click', openQueue);
+    $$('[data-queue-close]').forEach(function (el) { el.addEventListener('click', closeQueue); });
+    $('#queueRefresh').addEventListener('click', function () { loadQueue(); });
+    $('#queueList').addEventListener('click', function (e) {
+      var cancel = e.target.closest('[data-queue-cancel]');
+      if (cancel) { cancelQueueJob(cancel.dataset.queueCancel); return; }
+      var retry = e.target.closest('[data-queue-retry]');
+      if (retry && !retry.disabled) { retryQueueJob(retry.dataset.queueRetry); return; }
+    });
+
     $$('#sizeGroup button').forEach(function (el) {
       el.addEventListener('click', function () {
         state.params.size = el.dataset.size;
@@ -6255,8 +6666,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         e.preventDefault();
         $('#searchInput').focus();
       }
-      if (e.key === 'Tab' && setLayer.classList.contains('open')) {
-        var focusables = $$('button:not([disabled]), input:not([disabled])', setLayer).filter(function (el) {
+      var trapLayer = setLayer.classList.contains('open')
+        ? setLayer
+        : (queueLayerEl && queueLayerEl.classList.contains('open') ? queueLayerEl : null);
+      if (e.key === 'Tab' && trapLayer) {
+        var focusables = $$('button:not([disabled]), input:not([disabled])', trapLayer).filter(function (el) {
           return el.offsetParent !== null;
         });
         if (focusables.length) {
@@ -6265,6 +6679,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         }
       }
+      if (e.key === 'Escape' && queueLayerEl && queueLayerEl.classList.contains('open')) { closeQueue(); return; }
       if (e.key === 'Escape' && $('#refineLayer')?.classList.contains('open')) { closeRefine(); return; }
       if (e.key === 'Escape' && $('#favoritesLayer')?.classList.contains('open')) { closeFavorites(); return; }
       if (e.key === 'Escape' && $('#cropLayer')?.classList.contains('open')) { closeCrop(); return; }
@@ -6284,6 +6699,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function dispose() {
     disposed = true;
+    stopQueuePolling();
     cleanups.forEach(function (fn) { try { fn(); } catch (e) {} });
     cleanups = [];
     clearTimeout(previewTimer);
@@ -6335,6 +6751,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     loadStyles();
     loadAllHistory();
     loadSampleThumbs();
+    loadQueue({ silent: true });
     applyFrame();
     if (typeof ResizeObserver === 'function') {
       var ro = new ResizeObserver(function () { applyFrame(); });

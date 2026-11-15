@@ -1,0 +1,31 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>队列验收 · dsh-verify</title>
+<style>body{font-family:-apple-system,"PingFang SC",sans-serif;background:#0f1117;color:#e6e8ee;margin:0;padding:32px;line-height:1.6}.wrap{max-width:900px;margin:0 auto}h1{font-size:22px}.banner{border-radius:12px;padding:20px 24px;margin:16px 0 24px;background:rgba(46,160,67,.12);border:1px solid rgba(46,160,67,.4)}.big{font-size:26px;font-weight:700}.meta{color:#9aa3b2;font-size:13px}.row{display:flex;gap:12px;padding:12px 14px;border:1px solid #232838;border-radius:10px;margin-bottom:10px;background:#151923;border-left:3px solid #2ea043}.detail{color:#c9d1d9;margin-top:2px;font-size:13px}code{background:#1c212e;padding:1px 6px;border-radius:5px;font-size:12px}.shot{max-width:100%;border-radius:8px;margin-top:10px;border:1px solid #232838}figure{margin:0 0 20px}figcaption{color:#7d8590;font-size:12px}.summary{color:#7d8590;font-size:13px;margin-bottom:20px}</style></head><body><div class="wrap">
+<h1>dsh-verify · 队列抽屉验收</h1>
+<div class="summary">21 项检查 · 2026-11-15T09:44:38.085Z · 156.0.8078.4</div>
+<div class="banner"><span class="big">✅ 验收通过</span> — 真实 DSH GUI + GUI cookie + Playwright；队列接口使用 Host 真实返回结构的 mock（当前 Host 启动早于队列路由）。</div>
+<div class="row pass"><span class="b">✅</span><div><code>1. 真实 DSH GUI 打开图像风格面板</code><div class="detail">sidebar → 图像风格，GUI cookie 鉴权</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>2. 空队列时 badge 隐藏</code><div class="detail">active = 0</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>3. 打开队列抽屉显示空状态</code><div class="detail">队列为空。 生成或编辑后会出现在这里。</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>4. Escape 关闭后停止轮询</code><div class="detail">打开期间 4 次请求，关闭后 2.8s 内新增 0 次</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>5. 合并 H3 + Seedream 作业并按时间倒序</code><div class="detail">job_h3_active → job_sd_queued → job_h3_queued → job_h3_failed → job_sd_failed → job_h3_ok → job_h3_budget</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>6. provider 徽标与状态文案</code><div class="detail">H3,Seedream,H3,H3,Seedream,H3,H3 / 生成中,准备中,排队中,失败,失败,已完成,失败</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>7. 成功作业显示实际费用</code><div class="detail">H3 插画化2K费用 ¥0.17</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>8. 提示词摘要 / 时间 / 进行中计数与 badge</code><div class="detail">badge = 3, status = 7 个作业 · 3 个进行中</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>9. 取消/重试按钮矩阵</code><div class="detail">3 个取消、2 个可重试 H3、1 个禁用 Seedream 重试（带原因）</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>10. 抽屉打开时每 2 秒轮询</code><div class="detail">2.4s 内新增 2 次队列请求</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>11. 取消 queued H3 作业（cloud 端点）并刷新</code><div class="detail">job_h3_queued → 已取消，badge 2</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>12. 取消 preparing Seedream 作业（seedream 端点）</code><div class="detail">job_sd_queued → 已取消，badge 1</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>13. 取消 running 作业 409 → toast 且状态不变</code><div class="detail">请求已发出，不能取消；可能已生成并计费</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>14. 重试 402 → toast 显示预算明细</code><div class="detail">超出每日预算，需要手动放行（预计 ¥0.17 · 已用 ¥10.00 · 预算 ¥10.00）</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>15. 失败 H3 作业重试成功并回到队列</code><div class="detail">job_h3_failed → 排队中，badge 2</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>16. 关闭按钮停止轮询</code><div class="detail">2.8s 内无新增队列请求</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>17. 点击遮罩关闭抽屉</code><div class="detail">drawer-backdrop</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>18. 刷新按钮重新拉取列表</code><div class="detail">+2 次请求</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>19. 无 pageerror</code><div class="detail">0 条</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>20. cancel/retry 命中正确 provider 端点</code><div class="detail">cloud:cancel:job_h3_queued | seedream:cancel:job_sd_queued | cloud:cancel:job_h3_active | cloud:retry:job_h3_budget | cloud:retry:job_h3_failed</div></div></div>
+<div class="row pass"><span class="b">✅</span><div><code>21. 零作业时 badge 清除</code><div class="detail">hidden = true</div></div></div>
+<h2>截图</h2><figure><img class="shot" src="queue-empty.png" alt=""><figcaption>queue-empty.png</figcaption></figure>
+<figure><img class="shot" src="queue-list.png" alt=""><figcaption>queue-list.png</figcaption></figure>
+<figure><img class="shot" src="queue-after-actions.png" alt=""><figcaption>queue-after-actions.png</figcaption></figure>
+<p class="meta">在真实 DSH GUI（GUI cookie 鉴权）中运行；queue 列表/取消/重试由 Playwright route 以真实返回结构 mock，其余接口走真实 Host。无 pageerror。</p>
+</div></body></html>

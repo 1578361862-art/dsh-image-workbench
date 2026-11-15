@@ -1,0 +1,94 @@
+{
+  "title": "Image Workbench — Phase 2.2 队列抽屉验收",
+  "url": "http://127.0.0.1:60493/",
+  "at": "2026-11-15T09:44:38.085Z",
+  "browser": "156.0.8078.4",
+  "checks": [
+    {
+      "name": "真实 DSH GUI 打开图像风格面板",
+      "detail": "sidebar → 图像风格，GUI cookie 鉴权"
+    },
+    {
+      "name": "空队列时 badge 隐藏",
+      "detail": "active = 0"
+    },
+    {
+      "name": "打开队列抽屉显示空状态",
+      "detail": "队列为空。 生成或编辑后会出现在这里。"
+    },
+    {
+      "name": "Escape 关闭后停止轮询",
+      "detail": "打开期间 4 次请求，关闭后 2.8s 内新增 0 次"
+    },
+    {
+      "name": "合并 H3 + Seedream 作业并按时间倒序",
+      "detail": "job_h3_active → job_sd_queued → job_h3_queued → job_h3_failed → job_sd_failed → job_h3_ok → job_h3_budget"
+    },
+    {
+      "name": "provider 徽标与状态文案",
+      "detail": "H3,Seedream,H3,H3,Seedream,H3,H3 / 生成中,准备中,排队中,失败,失败,已完成,失败"
+    },
+    {
+      "name": "成功作业显示实际费用",
+      "detail": "H3 插画化2K费用 ¥0.17"
+    },
+    {
+      "name": "提示词摘要 / 时间 / 进行中计数与 badge",
+      "detail": "badge = 3, status = 7 个作业 · 3 个进行中"
+    },
+    {
+      "name": "取消/重试按钮矩阵",
+      "detail": "3 个取消、2 个可重试 H3、1 个禁用 Seedream 重试（带原因）"
+    },
+    {
+      "name": "抽屉打开时每 2 秒轮询",
+      "detail": "2.4s 内新增 2 次队列请求"
+    },
+    {
+      "name": "取消 queued H3 作业（cloud 端点）并刷新",
+      "detail": "job_h3_queued → 已取消，badge 2"
+    },
+    {
+      "name": "取消 preparing Seedream 作业（seedream 端点）",
+      "detail": "job_sd_queued → 已取消，badge 1"
+    },
+    {
+      "name": "取消 running 作业 409 → toast 且状态不变",
+      "detail": "请求已发出，不能取消；可能已生成并计费"
+    },
+    {
+      "name": "重试 402 → toast 显示预算明细",
+      "detail": "超出每日预算，需要手动放行（预计 ¥0.17 · 已用 ¥10.00 · 预算 ¥10.00）"
+    },
+    {
+      "name": "失败 H3 作业重试成功并回到队列",
+      "detail": "job_h3_failed → 排队中，badge 2"
+    },
+    {
+      "name": "关闭按钮停止轮询",
+      "detail": "2.8s 内无新增队列请求"
+    },
+    {
+      "name": "点击遮罩关闭抽屉",
+      "detail": "drawer-backdrop"
+    },
+    {
+      "name": "刷新按钮重新拉取列表",
+      "detail": "+2 次请求"
+    },
+    {
+      "name": "无 pageerror",
+      "detail": "0 条"
+    },
+    {
+      "name": "cancel/retry 命中正确 provider 端点",
+      "detail": "cloud:cancel:job_h3_queued | seedream:cancel:job_sd_queued | cloud:cancel:job_h3_active | cloud:retry:job_h3_budget | cloud:retry:job_h3_failed"
+    },
+    {
+      "name": "零作业时 badge 清除",
+      "detail": "hidden = true"
+    }
+  ],
+  "pageErrors": [],
+  "note": "在真实 DSH GUI（GUI cookie 鉴权）中运行；当前运行中的 Host 启动早于队列路由提交，因此 /cloud/jobs 与 /seedream/jobs 由 Playwright route 以 Host 真实返回结构 mock，其余接口走真实 Host。"
+}
