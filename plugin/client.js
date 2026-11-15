@@ -293,6 +293,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .view-tabs button{ height:30px; padding:0 2px; border:0; border-bottom:2px solid transparent; background:none; font-family:var(--p-mono); font-size:10px; letter-spacing:var(--pk-ls-label); text-transform:uppercase; color:var(--p-ink-4); cursor:pointer; }
 .iw-root .view-tabs button.on{ color:var(--p-ink); border-bottom-color:var(--p-ink); }
 .iw-root .view-tabs button span{ margin-left:4px; color:var(--p-ink-4); }
+.iw-root .seedream-page[hidden]{ display:none; }
+.iw-root .text-templates{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .text-templates>span{ flex:none; }
+.iw-root .text-templates button{ height:24px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
+.iw-root .text-templates button:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
+.iw-root .seedream-mode{ display:flex; gap:6px; margin-bottom:10px; }
+.iw-root .seedream-mode button{ height:28px; padding:0 10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; cursor:pointer; }
+.iw-root .seedream-mode button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .seedream-edit{ display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.iw-root .seedream-edit img{ width:84px; height:60px; object-fit:cover; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .seedream-edit img[hidden]{ display:none; }
+.iw-root .seedream-page .text-form textarea{ min-height:150px; }
 .iw-root .text-page[hidden]{ display:none; }
 .iw-root .text-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .text-head{ display:flex; align-items:flex-end; justify-content:space-between; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
@@ -971,6 +983,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <button data-view="studio" class="on">工作台</button>
     <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
     <button data-view="text">纯文生图</button>
+    <button data-view="seedream">Seedream</button>
   </nav>
 
   <main class="wrap work">
@@ -1156,6 +1169,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div class="text-form">
         <label class="text-label" for="textPrompt">提示词</label>
         <textarea id="textPrompt" rows="9" placeholder="描述想要的画面…" spellcheck="false"></textarea>
+        <div class="text-templates"><span>示例风格</span><div id="textTemplates"></div></div>
         <div class="text-options">
           <div class="text-field"><span>画幅</span><div class="mini-seg" id="textAspect"><button data-aspect="1:1" class="on">1:1</button><button data-aspect="4:5">4:5</button><button data-aspect="3:4">3:4</button><button data-aspect="16:9">16:9</button><button data-aspect="9:16">9:16</button></div></div>
           <div class="text-field"><span>画质</span><div class="mini-seg" id="textQuality"><button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button></div></div>
@@ -1168,6 +1182,37 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="text-result-actions" id="textActions" hidden>
           <button class="result-action" id="textView">查看大图</button>
           <button class="result-action" id="textDownload">下载</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap text-page seedream-page" id="seedreamPage" hidden>
+    <div class="text-head">
+      <div><h2>Seedream</h2><span id="seedreamKeyHint">火山方舟 · 文生图 / 图片编辑</span></div>
+    </div>
+    <div class="text-layout">
+      <div class="text-form">
+        <div class="seedream-mode" id="seedreamMode"><button data-seedream-mode="text" class="on">文生图</button><button data-seedream-mode="edit">图片编辑</button></div>
+        <div class="seedream-edit" id="seedreamEditBox" hidden>
+          <button class="set-action" id="seedreamPick">选择图片</button>
+          <input id="seedreamFile" type="file" accept="image/*" hidden>
+          <img id="seedreamSource" alt="Seedream 图片编辑输入" hidden>
+        </div>
+        <label class="text-label" for="seedreamPrompt">提示词</label>
+        <textarea id="seedreamPrompt" rows="7" placeholder="描述想要的画面或编辑要求…" spellcheck="false"></textarea>
+        <div class="text-options">
+          <div class="text-field"><span>画幅</span><div class="mini-seg" id="seedreamAspect"><button data-aspect="1:1" class="on">1:1</button><button data-aspect="4:5">4:5</button><button data-aspect="3:4">3:4</button><button data-aspect="16:9">16:9</button><button data-aspect="9:16">9:16</button></div></div>
+          <div class="text-field"><span>画质</span><div class="mini-seg" id="seedreamQuality"><button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button></div></div>
+        </div>
+        <div class="text-form-foot"><span id="seedreamCost"></span><button class="go" id="seedreamGenerate">生成</button></div>
+      </div>
+      <div class="text-result" id="seedreamResult">
+        <div class="text-empty" id="seedreamEmpty">还没有结果</div>
+        <img id="seedreamImage" alt="Seedream 结果" hidden>
+        <div class="text-result-actions" id="seedreamActions" hidden>
+          <button class="result-action" id="seedreamView">查看大图</button>
+          <button class="result-action" id="seedreamDownload">下载</button>
         </div>
       </div>
     </div>
@@ -1243,6 +1288,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
         <div class="set-row"><span>本次</span><b id="usageText">0 张 · ¥0.00</b></div>
         <div class="set-links"><button class="set-action" id="billingLink">刷新用量</button></div>
+      </section>
+
+      <section class="set-sec">
+        <div class="set-title"><span>Seedream</span></div>
+        <div class="set-row"><span>API Key</span><b id="seedreamKeyState" class="key-state warn">未配置</b></div>
+        <div class="key-edit" id="seedreamKeyEdit" hidden>
+          <input id="seedreamKeyInput" type="password" placeholder="ARK API Key" autocomplete="off">
+          <button class="set-action" id="seedreamKeySave">保存</button>
+        </div>
+        <div class="set-links"><button class="set-action" id="seedreamKeyChange">更换 Key</button></div>
+        <div class="set-field"><span class="lab">模型</span><div class="mini-seg" id="seedreamModelGroup" data-group="seedream"><button data-seedream-model="doubao-seedream-4-0-250828" class="on">Seedream 4.0</button><button data-seedream-model="doubao-seedream-4-5-251128">4.5</button></div></div>
       </section>
 
       <section class="set-sec">
@@ -1520,6 +1576,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-seal', name: '金石印谱', renderer: 'model', eta: '25s', desc: '3:4 双格 · 肖形印蜕', previewBase: 'poster', fixedRatio: '3:4', prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。') },
     { id: 'h3-refine', name: '二次编辑', renderer: 'model', hidden: true, eta: '25s', desc: '对已生成图片再次编辑' },
     { id: 'h3-text', name: '纯文生图', renderer: 'model', hidden: true, eta: '25s', desc: '纯提示词生成' },
+    { id: 'seedream', name: 'Seedream', renderer: 'model', hidden: true, eta: '20s', desc: '火山方舟 Seedream' },
   ];
 
   STYLES.forEach(function (s) {
@@ -2753,7 +2810,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.29.0',
+        version: '0.30.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3300,6 +3357,107 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   var textState = { aspect: '1:1', quality: '2K', busy: false, result: null };
+  var TEXT_TEMPLATES = [
+    { name: '东方印谱', prompt: '以【主体】为唯一主体，做一张3:4东方印谱海报：上方50%保留【主体】的真实照片感，下方50%是一页印谱，一方朱砂肖形印蜕与一条边款墨拓错落放置；宣纸白不少于70%，朱砂红、墨黑、纸白，刀痕古拙，纸白留白；【主色】只以极小铅笔注记出现；不要数码印章素材、满版印章、廉价国潮、3D。' },
+    { name: '白石雕塑', prompt: '把【主体】转化为白色大理石/石膏雕塑，保留主体身份、数量、姿态与构图；纯黑虚空，背后一圈极细白色霓虹光环，冷银灰单色，石材凿痕、石粉与细裂纹；【场景】只作为远处云团或石台承托；不要活体毛发、森林、彩色、3D游戏或复杂背景。' },
+    { name: '玄黄版画', prompt: '2D丝网印刷/木刻版画，不是3D场景：把【主体】压缩成深青色硬边剪影，保留身份、姿态与关键轮廓；深青、墨蓝、明黄、琥珀四色平涂；巨大黄色日轮，木刻龙形卷云与同心圆线；纸纹、套色偏移、旧印刷磨损；【情绪】通过构图与留白表达；不要写实风景、照片、体积云、3D、景深。' },
+    { name: '产品海报', prompt: '为【产品】做一张高级产品海报：主体居中偏下，保留包装结构与品牌色【品牌色】；背景为【场景】，柔和侧光与真实接触阴影；留出大面积干净留白，画面角落一行极小说明；像真实棚拍与平面设计结合，不要塑料3D、过度高光、模板化大字、水印或无关文字。' },
+  ];
+  var seedreamState = { mode: 'text', aspect: '1:1', quality: '2K', source: null, busy: false, result: null };
+
+  function renderTextTemplates() {
+    var box = $('#textTemplates');
+    if (!box || box.dataset.ready) return;
+    box.dataset.ready = '1';
+    box.innerHTML = TEXT_TEMPLATES.map(function (t, i) {
+      return '<button type="button" data-text-template="' + i + '">' + t.name + '</button>';
+    }).join('');
+  }
+
+  function renderSeedreamPage() {
+    if (!$('#seedreamPage')) return;
+    var settings = state.settings || {};
+    var keyState = $('#seedreamKeyHint');
+    if (keyState) keyState.textContent = settings.hasSeedreamKey
+      ? '火山方舟 · 已配置 · 尾号 ' + (settings.seedreamKeyHint || '****')
+      : '火山方舟 · 未配置 Key';
+    $$('#seedreamMode button').forEach(function (b) { b.classList.toggle('on', b.dataset.seedreamMode === seedreamState.mode); });
+    $$('#seedreamAspect button').forEach(function (b) { b.classList.toggle('on', b.dataset.aspect === seedreamState.aspect); });
+    $$('#seedreamQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.quality === seedreamState.quality); });
+    $('#seedreamEditBox').hidden = seedreamState.mode !== 'edit';
+    var size = textTargetSize(seedreamState.aspect, seedreamState.quality);
+    $('#seedreamCost').textContent = 'Seedream · ' + size + ' · 约 ¥0.20/张';
+    var needsSource = seedreamState.mode === 'edit' && !(seedreamState.source && seedreamState.source.url);
+    $('#seedreamGenerate').disabled = seedreamState.busy || !settings.hasSeedreamKey || !$('#seedreamPrompt').value.trim() || needsSource;
+    $('#seedreamGenerate').textContent = seedreamState.busy ? '生成中…' : '生成';
+    if (seedreamState.source && seedreamState.source.url) {
+      $('#seedreamSource').src = seedreamState.source.url;
+      $('#seedreamSource').hidden = false;
+    } else {
+      $('#seedreamSource').hidden = true;
+    }
+  }
+
+  function setSeedreamResult(result) {
+    seedreamState.result = result;
+    $('#seedreamEmpty').hidden = true;
+    $('#seedreamActions').hidden = false;
+    $('#seedreamImage').src = result.url;
+    $('#seedreamImage').hidden = false;
+  }
+
+  async function startSeedream() {
+    if (seedreamState.busy) return;
+    var settings = state.settings || {};
+    if (!settings.hasSeedreamKey) { toast('先在设置里保存 Seedream API Key'); openSettings(); return; }
+    var prompt = $('#seedreamPrompt').value.trim();
+    if (!prompt) { toast('填写提示词'); $('#seedreamPrompt').focus(); return; }
+    if (seedreamState.mode === 'edit' && !(seedreamState.source && seedreamState.source.url)) { toast('先选择一张图片'); return; }
+    if (settings.privacyConfirm) {
+      var ok = window.confirm('Seedream 会请求火山方舟，约 ¥0.20/张。\n\n继续？');
+      if (!ok) return;
+    }
+    var size = textTargetSize(seedreamState.aspect, seedreamState.quality);
+    seedreamState.busy = true;
+    renderSeedreamPage();
+    try {
+      var body = { prompt: prompt, size: size };
+      var path = '/seedream/text';
+      if (seedreamState.mode === 'edit') {
+        path = '/seedream/edit';
+        body.imageDataUrl = seedreamState.source.url;
+      }
+      var res = await apiFetch(path, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw cloudError(data.error || ('Seedream 请求失败 ' + res.status), data.code);
+      setSeedreamResult(data);
+      loadAllHistory(true);
+      toast('Seedream 完成');
+    } catch (err) {
+      toast(err.message || 'Seedream 失败');
+    } finally {
+      seedreamState.busy = false;
+      renderSeedreamPage();
+    }
+  }
+
+  function viewSeedreamResult() {
+    if (!seedreamState.result) return;
+    openBig({
+      key: resultKey({ id: 'seedream', cloud: true, url: seedreamState.result.url }),
+      url: seedreamState.result.url,
+      title: 'Seedream',
+      meta: 'Seedream · ' + seedreamState.result.w + ' × ' + seedreamState.result.h,
+      info: '',
+      w: seedreamState.result.w,
+      h: seedreamState.result.h,
+      border: 'none', resultId: null, styleId: 'seedream', cloud: true,
+    });
+  }
+
+  var textState = { aspect: '1:1', quality: '2K', busy: false, result: null };
 
   function textTargetSize(aspect, quality) {
     var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[quality] || 4194304;
@@ -3393,15 +3551,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function switchView(view) {
     var recent = view === 'recent';
     var text = view === 'text';
+    var seedream = view === 'seedream';
     $('.work').hidden = view !== 'studio';
     $('#recentPage').hidden = !recent;
     $('#textPage').hidden = !text;
+    $('#seedreamPage').hidden = !seedream;
     $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
     if (recent) {
       renderRecentPage();
       if (!recentLoaded) loadAllHistory();
     }
-    if (text) renderTextPage();
+    if (text) { renderTextTemplates(); renderTextPage(); }
+    if (seedream) renderSeedreamPage();
   }
 
   function currentHistory() {
@@ -3714,6 +3875,41 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       el.classList.add('warn');
     }
   }
+  function setSeedreamKeyState(s) {
+    var el = $('#seedreamKeyState');
+    if (!el) return;
+    if (s && s.hasSeedreamKey) {
+      el.textContent = '已配置 · 尾号 ' + (s.seedreamKeyHint || '****');
+      el.classList.remove('warn');
+    } else {
+      el.textContent = '未配置';
+      el.classList.add('warn');
+    }
+    $$('#seedreamModelGroup button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.seedreamModel === (s && s.seedreamModel ? s.seedreamModel : 'doubao-seedream-4-0-250828'));
+    });
+  }
+  function saveSeedreamKeyOnly() {
+    var key = $('#seedreamKeyInput').value.trim();
+    if (!key) { toast('请输入 Seedream Key'); return; }
+    apiFetch('/seedream/key', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: key }),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.error || '保存失败');
+        return data;
+      });
+    }).then(function (s) {
+      if (disposed) return;
+      state.settings = s;
+      setSeedreamKeyState(s);
+      renderSeedreamPage();
+      $('#seedreamKeyInput').value = '';
+      $('#seedreamKeyEdit').hidden = true;
+      toast('Seedream Key 已更新');
+    }).catch(function (err) { toast(err.message || 'Seedream Key 保存失败'); });
+  }
+
   function loadSettings() {
     apiFetch('/settings', { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('settings');
@@ -3732,6 +3928,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       setMiniSeg('model', s.model === 'highspeed' ? 'H3 极速' : 'H3 标准');
       setMiniSeg('bill', s.billing === 'mplan' ? 'M Plan' : '按量');
       setKeyState(s);
+      setSeedreamKeyState(s);
       updateUI();
     }).catch(function () {
       if (disposed) return;
@@ -3761,6 +3958,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       base: currentSeg('base') === '国际站' ? 'intl' : 'cn',
       model: currentSeg('model') === 'H3 极速' ? 'highspeed' : 'standard',
       billing: currentSeg('bill') === 'M Plan' ? 'mplan' : 'payg',
+      seedreamModel: ($('#seedreamModelGroup button.on') && $('#seedreamModelGroup button.on').dataset.seedreamModel) || 'doubao-seedream-4-0-250828',
       enableCloud: !!(state.settings && state.settings.hasKey)
     };
     var key = $('#keyInput').value.trim();
@@ -3775,6 +3973,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       setMiniSeg('model', s.model === 'highspeed' ? 'H3 极速' : 'H3 标准');
       setMiniSeg('bill', s.billing === 'mplan' ? 'M Plan' : '按量');
       setKeyState(s);
+      setSeedreamKeyState(s);
       $('#keyInput').value = '';
       $('#keyEdit').hidden = true;
       closeSettings();
@@ -3789,6 +3988,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (disposed) return;
       state.settings = s;
       setKeyState(s);
+      setSeedreamKeyState(s);
       $('#keyInput').value = '';
       $('#keyEdit').hidden = true;
       toast('Key 已更新');
@@ -4510,7 +4710,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.29.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.30.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4646,6 +4846,52 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#recentRefresh').addEventListener('click', function () { loadAllHistory(true); });
     $('#textPrompt').addEventListener('input', renderTextPage);
+    $('#textTemplates').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-text-template]');
+      if (!b) return;
+      var t = TEXT_TEMPLATES[Number(b.dataset.textTemplate)];
+      if (!t) return;
+      $('#textPrompt').value = t.prompt;
+      $('#textPrompt').focus();
+      renderTextPage();
+    });
+    $$('#seedreamMode button').forEach(function (b) {
+      b.addEventListener('click', function () { seedreamState.mode = b.dataset.seedreamMode; renderSeedreamPage(); });
+    });
+    $('#seedreamPrompt').addEventListener('input', renderSeedreamPage);
+    $('#seedreamAspect').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-aspect]');
+      if (!b) return;
+      seedreamState.aspect = b.dataset.aspect;
+      renderSeedreamPage();
+    });
+    $('#seedreamQuality').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-quality]');
+      if (!b) return;
+      seedreamState.quality = b.dataset.quality;
+      renderSeedreamPage();
+    });
+    $('#seedreamPick').addEventListener('click', function () { $('#seedreamFile').click(); });
+    $('#seedreamFile').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          seedreamState.source = { url: reader.result, w: img.naturalWidth, h: img.naturalHeight, name: file.name };
+          renderSeedreamPage();
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+      this.value = '';
+    });
+    $('#seedreamGenerate').addEventListener('click', startSeedream);
+    $('#seedreamView').addEventListener('click', viewSeedreamResult);
+    $('#seedreamDownload').addEventListener('click', function () {
+      if (seedreamState.result) triggerDownload(seedreamState.result.url, 'seedream-' + Date.now() + '.jpg');
+    });
     $('#textAspect').addEventListener('click', function (e) {
       var b = e.target.closest('[data-aspect]');
       if (!b) return;
@@ -4885,6 +5131,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!box.hidden) $('#keyInput').focus();
     });
     $('#keySave').addEventListener('click', saveKeyOnly);
+    $('#seedreamKeyChange').addEventListener('click', function () {
+      var box = $('#seedreamKeyEdit');
+      box.hidden = !box.hidden;
+      if (!box.hidden) $('#seedreamKeyInput').focus();
+    });
+    $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
+    $('#seedreamModelGroup').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-seedream-model]');
+      if (!b) return;
+      $$('#seedreamModelGroup button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    });
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;

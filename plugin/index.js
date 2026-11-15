@@ -1,6 +1,7 @@
 // 图像风格工作台 — Host 半侧。
 // P1 设置/示例图 + P2 原图/批次/历史/导出；P3 云端能力默认关闭（config.cloudEnabled）。
 import { createReadStream } from 'node:fs'
+import { randomBytes } from 'node:crypto'
 import { chmod, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -8,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
+import { generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL } from './lib/seedream.js'
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -16,6 +18,7 @@ const CONFIG = join(ROOT, 'config.json')
 const SAMPLE = join(HERE, 'assets', 'sample.jpg')
 const STYLE_PREVIEW_DIR = join(HERE, 'assets', 'style-previews')
 const CREDENTIAL = 'dsh-image-workbench/minimax'
+const SEEDREAM_CREDENTIAL = 'dsh-image-workbench/seedream'
 const SIZES = ['640', '960', '1200']
 const MAX_BODY = 64 * 1024
 const MAX_ASSET_BODY = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 2 * 1024 * 1024
@@ -23,6 +26,7 @@ const MAX_BATCH_BODY = 64 * 1024 * 1024
 const MAX_STYLE_BODY = 4 * 1024 * 1024
 const MAX_EXPORT_BODY = Math.ceil((MAX_EXPORT_BYTES * 4) / 3) + 8 * 1024 * 1024
 const MAX_CLOUD_BODY = 256 * 1024
+const MAX_SEEDREAM_BODY = 48 * 1024 * 1024
 const DEFAULTS = Object.freeze({
   budget: 10,
   privacyConfirm: true,
@@ -31,6 +35,7 @@ const DEFAULTS = Object.freeze({
   base: 'cn',
   model: 'standard',
   billing: 'payg',
+  seedreamModel: SEEDREAM_DEFAULT_MODEL,
 })
 
 function json(res, status, body) {
@@ -102,6 +107,10 @@ function sanitizeConfig(body, current) {
     if (!['payg', 'mplan'].includes(body.billing)) fail('计费方式无效')
     next.billing = body.billing
   }
+  if (body.seedreamModel !== undefined) {
+    if (!['doubao-seedream-4-0-250828', 'doubao-seedream-4-5-251128'].includes(body.seedreamModel)) fail('Seedream 模型无效')
+    next.seedreamModel = body.seedreamModel
+  }
   if (body.enableCloud === true) next.cloudEnabled = true
   return next
 }
@@ -130,10 +139,41 @@ async function keyInfo(ctx) {
   return { hasKey: true, keyHint: key.slice(-4).toUpperCase() }
 }
 
+async function readSeedreamKeyValue(ctx) {
+  try {
+    const record = await ctx.get('credentials')?.readRecord(SEEDREAM_CREDENTIAL)
+    if (record?.kind !== 'api-key' || !record.key) return null
+    return String(record.key)
+  } catch {
+    return null
+  }
+}
+
+async function seedreamKeyInfo(ctx) {
+  const key = await readSeedreamKeyValue(ctx)
+  if (!key) return { hasSeedreamKey: false, seedreamKeyHint: '' }
+  return { hasSeedreamKey: true, seedreamKeyHint: key.slice(-4).toUpperCase() }
+}
+
 async function publicSettings(ctx) {
   const config = await readConfig()
   const key = await keyInfo(ctx)
-  return { ...config, ...key, cloud: config.cloudEnabled === true && key.hasKey, phase: 'P2' }
+  const seedream = await seedreamKeyInfo(ctx)
+  return { ...config, ...key, ...seedream, cloud: config.cloudEnabled === true && key.hasKey, phase: 'P2' }
+}
+
+async function applySeedreamKey(ctx, body) {
+  const store = ctx.get('credentials')
+  if (body.clearKey === true) {
+    if (store) await store.deleteRecord(SEEDREAM_CREDENTIAL)
+    return
+  }
+  if (typeof body.key !== 'string') return
+  const key = body.key.trim()
+  if (!key) return
+  if (key.length > 4096) fail('API Key 太长')
+  if (!store) fail('当前 Harness 没有可用的凭据存储')
+  await store.modifyRecord(SEEDREAM_CREDENTIAL, async () => ({ kind: 'api-key', key }))
 }
 
 async function applyKey(ctx, body) {
@@ -489,6 +529,30 @@ export default {
     })
     registerImageTool(ctx, cloud, storage)
 
+    async function saveSeedreamResult(result) {
+      const id = `seed_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
+      const dir = join(ROOT, 'outputs', id)
+      await mkdir(dir, { recursive: true })
+      const file = join(dir, 'seedream.jpg')
+      await writeFile(file, result.buffer, { mode: 0o644 })
+      const url = `/image-workbench/result/${id}/seedream.jpg`
+      const size = /^(\d{3,5})x(\d{3,5})$/i.exec(String(result.rawMeta?.size ?? ''))
+      await storage.indexCloudJob({
+        id,
+        createdAt: new Date().toISOString(),
+        assetId: '',
+        styleIds: ['seedream'],
+        results: [{ styleId: 'seedream', url, w: size ? Number(size[1]) : 0, h: size ? Number(size[2]) : 0 }],
+      }).catch(() => {})
+      return {
+        url,
+        w: size ? Number(size[1]) : 0,
+        h: size ? Number(size[2]) : 0,
+        costYuan: 0.2,
+        model: result.rawMeta?.model || null,
+      }
+    }
+
     const route = async (req, res) => {
       const rejection = ctx.get('connection')?.requestRejection?.({ headers: req.headers })
       if (rejection) return json(res, rejection, { error: '未授权' })
@@ -607,6 +671,43 @@ export default {
         const config = await readConfig()
         if (config.cloudEnabled !== true) return json(res, 403, { error: '云端功能未启用' })
         return json(res, 200, await cloud.usage())
+      }
+      if (seg[0] === 'seedream') {
+        if (method === 'POST' && path === 'seedream/key') {
+          const body = await readBody(req, MAX_BODY)
+          await applySeedreamKey(ctx, body ?? {})
+          return json(res, 200, await publicSettings(ctx))
+        }
+        if (method === 'POST' && path === 'seedream/text') {
+          const body = await readBody(req, MAX_SEEDREAM_BODY)
+          const key = await readSeedreamKeyValue(ctx)
+          if (!key) fail('还没有保存 Seedream API Key', 400)
+          const result = await generateSeedream({
+            prompt: body?.prompt,
+            size: body?.size,
+            key,
+            model: (await readConfig()).seedreamModel || SEEDREAM_DEFAULT_MODEL,
+            baseUrl: SEEDREAM_DEFAULT_BASE,
+          })
+          return json(res, 200, await saveSeedreamResult(result))
+        }
+        if (method === 'POST' && path === 'seedream/edit') {
+          const body = await readBody(req, MAX_SEEDREAM_BODY)
+          const key = await readSeedreamKeyValue(ctx)
+          if (!key) fail('还没有保存 Seedream API Key', 400)
+          if (typeof body?.imageDataUrl !== 'string' || !body.imageDataUrl.startsWith('data:image/')) {
+            fail('图片数据无效')
+          }
+          const result = await generateSeedream({
+            prompt: body?.prompt,
+            size: body?.size,
+            images: [body.imageDataUrl],
+            key,
+            model: (await readConfig()).seedreamModel || SEEDREAM_DEFAULT_MODEL,
+            baseUrl: SEEDREAM_DEFAULT_BASE,
+          })
+          return json(res, 200, await saveSeedreamResult(result))
+        }
       }
       if (seg[0] === 'cloud') {
         await cloud.ready
