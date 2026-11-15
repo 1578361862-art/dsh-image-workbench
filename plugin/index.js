@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
-import { generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL } from './lib/seedream.js'
+import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL } from './lib/seedream.js'
 
 const SEEDREAM_MODELS = ['doubao-seedream-5-5-261028', 'doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828']
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
@@ -681,6 +681,20 @@ export default {
           const body = await readBody(req, MAX_BODY)
           await applySeedreamKey(ctx, body ?? {})
           return json(res, 200, await publicSettings(ctx))
+        }
+        if (method === 'POST' && path === 'seedream/decompose') {
+          const body = await readBody(req, MAX_SEEDREAM_BODY)
+          const key = await readSeedreamKeyValue(ctx)
+          if (!key) fail('还没有保存 Seedream API Key', 400)
+          if (typeof body?.imageDataUrl !== 'string' || !body.imageDataUrl.startsWith('data:image/')) fail('图片数据无效')
+          const result = await decomposeSeedream({
+            imageDataUrl: body.imageDataUrl,
+            maxImages: body?.maxImages,
+            key,
+            model: 'doubao-seedream-5-5-261028',
+            baseUrl: SEEDREAM_DEFAULT_BASE,
+          })
+          return json(res, 200, result)
         }
         if (method === 'POST' && path === 'seedream/text') {
           const body = await readBody(req, MAX_SEEDREAM_BODY)

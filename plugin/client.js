@@ -709,6 +709,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .refine-form textarea:focus{ outline:none; border-color:var(--p-hair); box-shadow:none; }
 .iw-root .refine-form textarea{ width:100%; min-height:170px; margin-top:6px; padding:10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.6; resize:vertical; }
 .iw-root .refine-note{ margin:8px 0 0; font-size:10px; line-height:1.5; color:var(--p-ink-4); }
+.iw-root .refine-options{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.iw-root .refine-options label{ font-size:10px; color:var(--p-ink-3); display:flex; align-items:center; gap:5px; }
+.iw-root .refine-options input[type="text"]{ width:100%; height:28px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-sans); font-size:10px; }
+.iw-root .refine-layer-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; max-height:150px; overflow:auto; }
+.iw-root .refine-layer-grid[hidden]{ display:none; }
+.iw-root .refine-layer-grid img{ width:100%; aspect-ratio:1; object-fit:contain; background:#fff; border:1px solid var(--p-hair); cursor:pointer; }
 .iw-root .refine-cost{ margin-top:auto; padding-top:12px; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
 .iw-root .refine-foot{ gap:12px; }
 .iw-root .refine-actions{ display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
@@ -1408,6 +1414,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <label class="refine-label" for="refinePrompt">编辑要求</label>
         <textarea id="refinePrompt" rows="7" spellcheck="false" placeholder="输入下一轮编辑要求…"></textarea>
         <p class="refine-note" id="refineNote">MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
+        <div class="refine-options">
+          <label><input type="checkbox" id="refineLayers"> 图层拆分（Seedream）</label>
+          <input type="text" id="refineRegion" placeholder="只修改位置，如：左上角招牌 / 人物右手">
+        </div>
+        <div class="refine-layer-grid" id="refineLayerGrid" hidden></div>
         <div class="model-seg" id="refineModel"><span>模型</span><button data-refine-model="minimax" class="on">MiniMax H3</button><button data-refine-model="seedream">Seedream 5.5</button></div>
         <div class="refine-cost" id="refineCost"></div>
       </div>
@@ -2406,6 +2417,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       .trim();
     return '以【主体】为主题，创作一张完整作品，不参考上传图片。' + base;
   }
+  function seedreamPromptFor(id) {
+    var base = defaultPrompt(id);
+    [CLOUD_EDIT_HEAD, CLOUD_EDIT_TAIL, CLOUD_SCENE_HEAD, CLOUD_SCENE_TAIL, CLOUD_LAYOUT_HEAD, CLOUD_LAYOUT_TAIL, CLOUD_REF_HEAD, CLOUD_SCENE_REF_HEAD].forEach(function (part) {
+      if (part) base = base.split(part).join('');
+    });
+    base = base.replace(/图1是[^。]*。?/g, '').replace(/图2[^。；\n]*[。；]?/g, '').replace(/图1[^。；\n]*[。；]?/g, '').trim();
+    return '参考图1是底图。只执行以下编辑，保持主体、构图、文字和画面外区域不变：' + base;
+  }
+
   function promptFor(id) {
     if (state.promptOverrides[id] !== undefined) return state.promptOverrides[id];
     return state.source.url ? defaultPrompt(id) : textPromptFor(id);
@@ -2819,7 +2839,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.34.0',
+        version: '0.35.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3118,7 +3138,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
             } else if (useSeedream) {
               var g = gcd(state.source.w, state.source.h);
               var asp = Math.round(state.source.w / g) + ':' + Math.round(state.source.h / g);
-              result = await runSeedreamWorkbench(promptFor(cid), textTargetSize(asp, state.cloudQuality), sourceData);
+              result = await runSeedreamWorkbench(seedreamPromptFor(cid), textTargetSize(asp, state.cloudQuality), sourceData);
             } else if (assetId) {
               var started = await startCloudJob(assetId, cid);
               var job = await waitCloudJob(started.id);
@@ -4623,6 +4643,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var cost = seedream ? 0.28 : (Number(cloudUnitPrice()) || 0);
     $('#refineCost').textContent = (seedream ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + size + ' · 约 ¥' + cost.toFixed(2);
     $$('#refineModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.refineModel === refine.model); });
+    var layerOpt = $('#refineLayers');
+    if (layerOpt) {
+      layerOpt.disabled = !seedream;
+      if (!seedream) layerOpt.checked = false;
+    }
     var note = $('#refineNote');
     if (note) note.textContent = seedream ? 'Seedream 5.5 直接基于当前图片和提示词编辑。' : 'MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。';
   }
@@ -4667,6 +4692,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
+    $('#refineLayerGrid').hidden = true;
+    $('#refineLayerGrid').innerHTML = '';
+    $('#refineRegion').value = '';
+    $('#refineLayers').checked = false;
     renderRefineThread();
     $('#refineStatus').textContent = '';
     $('#refineStatus').className = 'refine-status';
@@ -4703,6 +4732,35 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }
     var prompt = $('#refinePrompt').value.trim();
     if (!prompt) { toast('填写二次编辑要求'); $('#refinePrompt').focus(); return; }
+    var region = $('#refineRegion').value.trim();
+    var layerMode = seedream && $('#refineLayers').checked;
+    if (layerMode) {
+      refine.busy = true;
+      $('#refineStatus').textContent = '拆分图层…';
+      try {
+        var src = await refineDataUrl(refine.url);
+        var lr = await apiFetch('/seedream/decompose', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageDataUrl: src, maxImages: 30 }),
+        });
+        var ld = await lr.json().catch(function () { return {}; });
+        if (!lr.ok) throw cloudError(ld.error || '图层拆分失败', ld.code);
+        $('#refineLayerGrid').hidden = false;
+        $('#refineLayerGrid').innerHTML = ld.images.map(function (im) {
+          return '<img src="' + escapeHTML(im.url) + '" alt="' + escapeHTML(im.name || '图层') + '" data-layer-url="' + escapeHTML(im.url) + '">';
+        }).join('');
+        $('#refineStatus').textContent = '已拆出 ' + ld.images.length + ' 层';
+        toast('图层拆分完成');
+      } catch (err) {
+        $('#refineStatus').textContent = err.message || '图层拆分失败';
+        $('#refineStatus').className = 'refine-status error';
+      } finally {
+        refine.busy = false;
+      }
+      return;
+    }
+    if (region) prompt = '只修改指定位置：' + region + '；其余区域保持像素不变。' + prompt;
+    if (seedream) prompt = '参考图1是底图。' + prompt;
     var size = refineTargetSize(refine.w, refine.h);
     refine.thread.push({ role: 'user', text: prompt });
     renderRefineThread();
@@ -4980,7 +5038,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.34.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.35.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5076,6 +5134,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultRefine').addEventListener('click', openRefine);
     $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
     $('#refineStart').addEventListener('click', startRefine);
+    $('#refineLayerGrid').addEventListener('click', function (e) {
+      var img = e.target.closest('[data-layer-url]');
+      if (!img) return;
+      window.open(img.dataset.layerUrl, '_blank', 'noopener');
+    });
     $('#refineModel').addEventListener('click', function (e) {
       var b = e.target.closest('[data-refine-model]');
       if (!b) return;

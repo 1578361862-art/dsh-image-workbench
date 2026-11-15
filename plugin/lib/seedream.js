@@ -122,3 +122,55 @@ export async function generateSeedream({
 }
 
 export { DEFAULT_MODEL as SEEDREAM_DEFAULT_MODEL, DEFAULT_BASE as SEEDREAM_DEFAULT_BASE }
+
+/** Seedream 5.5 layer decomposition: returns remote layer URLs. */
+export async function decomposeSeedream({
+  imageDataUrl,
+  maxImages = 30,
+  key,
+  baseUrl = DEFAULT_BASE,
+  model = DEFAULT_MODEL,
+  timeoutMs = 600_000,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  if (typeof key !== 'string' || !key.trim()) throw apiError('还没有保存 Seedream API Key', 400, 'missing_key')
+  if (typeof imageDataUrl !== 'string' || !imageDataUrl.startsWith('data:image/')) throw apiError('图层拆分需要一张图片', 400, 'invalid_image')
+  const max = Math.min(100, Math.max(2, Number(maxImages) || 30))
+  let response
+  try {
+    response = await fetchImpl(`${String(baseUrl).replace(/\/+$/, '')}/images/generations`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key.trim()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        prompt: '将图片拆分为独立图层：每个可独立编辑的主体/文字/装饰元素各成一层，背景保留在底图；图层之间边界清晰，保留原文字和细节。',
+        image: imageDataUrl,
+        layer_decomposition: true,
+        layer_decomposition_options: { max_images: max },
+        response_format: 'url',
+        output_format: 'png',
+        watermark: false,
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+  } catch (err) {
+    throw Object.assign(new Error('Seedream 图层拆分网络失败'), { code: 'network', status: 0, unknown: true, cause: err })
+  }
+  const text = await response.text().catch(() => '')
+  let payload = null
+  try { payload = text ? JSON.parse(text) : null } catch { payload = null }
+  if (!response.ok) throw apiError(payload?.error?.message || text.slice(0, 500) || `Seedream HTTP ${response.status}`, response.status)
+  const items = Array.isArray(payload?.data) ? payload.data : []
+  const images = items.filter(function (x) { return x && x.url }).map(function (x, i) {
+    return {
+      url: x.url,
+      name: x.name || ('图层 ' + (i + 1)),
+      index: x.z_index ?? i,
+      description: x.description || '',
+      w: x.size ? Number(String(x.size).split('x')[0]) : 0,
+      h: x.size ? Number(String(x.size).split('x')[1]) : 0,
+    }
+  })
+  if (!images.length) throw apiError('Seedream 没有返回图层', 502, 'bad_response')
+  return { images, usage: payload.usage || null, model, requestId: payload.request_id || null }
+}
