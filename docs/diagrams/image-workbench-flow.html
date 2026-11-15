@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>图像生成流程</title>
+<style>
+  :root{
+    --paper:#f4eee2; --paper2:#fbf7ef; --ink:#1b1813; --ink2:#4a443a; --ink3:#777064;
+    --hair:rgba(27,24,19,.18); --signal:#a8452f; --green:#4d6b52; --indigo:#2b3a67;
+    --serif:"Songti SC","Iowan Old Style","Source Han Serif SC","Noto Serif SC",Georgia,serif;
+    --sans:"PingFang SC","Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper)}
+  body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .canvas{width:1600px;height:1500px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(circle at 15% 0%,rgba(255,255,255,.55),transparent 34%),
+      linear-gradient(180deg,#f7f1e6 0%,#f1e9db 100%);
+  }
+  .grain{position:absolute;inset:0;opacity:.16;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+  }
+  .top{position:absolute;left:64px;top:42px;right:64px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--hair);padding-bottom:18px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--signal);text-transform:uppercase}
+  h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1;margin:10px 0 8px;letter-spacing:-.02em}
+  .sub{margin:0;font-size:14px;color:var(--ink3);letter-spacing:.02em}
+  .legend{display:flex;gap:16px;align-items:center;font-family:var(--mono);font-size:10px;color:var(--ink3);padding-top:8px}
+  .legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border:1px solid var(--hair);vertical-align:-1px}
+  .legend .d{background:var(--signal)} .legend .p{background:var(--paper2)} .legend .o{background:var(--indigo)}
+  .arrows{position:absolute;inset:0;z-index:1;overflow:visible}
+  .arrows path{fill:none;stroke:var(--ink2);stroke-width:2}
+  .arrows path.dash{stroke-dasharray:5 7;stroke:var(--ink3)}
+  .label{position:absolute;z-index:3;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink2);background:var(--paper);padding:2px 5px}
+  .card{position:absolute;z-index:2;background:var(--paper2);border:1px solid var(--hair);padding:18px 22px;box-shadow:0 1px 0 rgba(27,24,19,.04)}
+  .num{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--paper2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px}
+  .start{position:absolute;z-index:2;left:710px;top:136px;width:180px;height:48px;border-radius:999px;background:var(--ink);color:var(--paper2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;letter-spacing:.12em}
+  .decision{left:600px;top:232px;width:400px;height:98px;text-align:center;border-color:var(--signal)}
+  .decision .k{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.12em}
+  .decision h2{font-family:var(--serif);font-size:25px;font-weight:600;margin:7px 0 4px}
+  .decision p{margin:0;font-size:11px;color:var(--ink3)}
+  .branch{width:570px;height:116px;top:410px}
+  .branch.left{left:150px}.branch.right{left:880px}
+  .branch .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--signal)}
+  .branch h3{font-family:var(--serif);font-size:24px;margin:6px 0 4px;font-weight:600}
+  .branch p{margin:0;font-size:12px;line-height:1.65;color:var(--ink2)}
+  .branch .tag{position:absolute;right:18px;top:16px;font-family:var(--mono);font-size:10px;padding:3px 7px;border:1px solid var(--hair);color:var(--ink3)}
+  .wide{left:150px;width:1300px}
+  .step2{top:580px;height:154px}
+  .step2 .head{display:flex;align-items:baseline;gap:12px}
+  .step-title{font-family:var(--serif);font-size:24px;font-weight:600;margin:0}
+  .step-note{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.04em}
+  .models{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .model{border:1px solid var(--hair);padding:11px 13px;background:#fffaf1}
+  .model .name{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--signal)}
+  .model b{display:block;font-family:var(--serif);font-size:19px;margin-top:2px}
+  .model span{display:block;font-size:11px;line-height:1.6;color:var(--ink3);margin-top:3px}
+  .step3{top:778px;height:188px}
+  .prompt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .prompt-col{border-left:2px solid var(--hair);padding:2px 0 0 14px}
+  .prompt-col .k{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.08em}
+  .prompt-col h4{font-family:var(--serif);font-size:18px;margin:3px 0 6px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-family:var(--mono);font-size:10px;color:var(--ink2);border:1px solid var(--hair);padding:3px 7px;background:#f8f2e8}
+  .step3 .foot{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--ink3);border-top:1px solid var(--hair);padding-top:8px}
+  .step4{top:1010px;height:130px}
+  .res-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+  .res{border:1px solid var(--hair);padding:10px 12px;background:#fffaf1}
+  .res .k{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.08em}
+  .res b{display:block;font-family:var(--serif);font-size:18px;margin:3px 0}
+  .res span{display:block;font-size:11px;line-height:1.55;color:var(--ink3)}
+  .step5{top:1184px;height:178px}
+  .out-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  .out{border:1px solid var(--hair);padding:10px 12px;background:#fffaf1;position:relative}
+  .out b{display:block;font-family:var(--serif);font-size:17px}
+  .out span{display:block;font-size:10.5px;line-height:1.6;color:var(--ink3);margin-top:4px}
+  .out:after{content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;border-top:1px solid var(--ink3);border-right:1px solid var(--ink3);transform:translateY(-50%) rotate(45deg);background:var(--paper2)}
+  .out:last-child:after{display:none}
+  .bottom{position:absolute;left:150px;right:150px;top:1396px;border-top:1px solid var(--hair);padding-top:11px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+  .bottom b{font-weight:500;color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="grain"></div>
+  <header class="top">
+    <div>
+      <div class="eyebrow">Image Workbench / Pipeline</div>
+      <h1>一张图的生成流程</h1>
+      <p class="sub">从“是否上传图片”开始，到模型、提示词、分辨率，最后输出与归档。</p>
+    </div>
+    <div class="legend"><span><i class="d"></i>决策</span><span><i class="p"></i>处理</span><span><i class="o"></i>输出</span></div>
+  </header>
+
+  <svg class="arrows" viewBox="0 0 1600 1500" aria-hidden="true">
+    <defs>
+      <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+        <path d="M0 0 L9 4.5 L0 9 Z" fill="#4a443a"/>
+      </marker>
+    </defs>
+    <path d="M800 184 V232" marker-end="url(#arrow)"/>
+    <path d="M800 330 V356 H435 V410" marker-end="url(#arrow)"/>
+    <path d="M800 330 V356 H1165 V410" marker-end="url(#arrow)"/>
+    <path d="M435 526 V554 H800" marker-end="url(#arrow)"/>
+    <path d="M1165 526 V554 H800" marker-end="url(#arrow)"/>
+    <path d="M800 554 V580" marker-end="url(#arrow)"/>
+    <path d="M800 734 V778" marker-end="url(#arrow)"/>
+    <path d="M800 966 V1010" marker-end="url(#arrow)"/>
+    <path d="M800 1140 V1184" marker-end="url(#arrow)"/>
+  </svg>
+
+  <div class="start">START · 新建图像</div>
+
+  <section class="card decision">
+    <div class="k">DECISION</div>
+    <h2>1. 是否上传图片？</h2>
+    <p>上传：以图生图 / 编辑；不上传：纯文生图</p>
+  </section>
+
+  <div class="label" style="left:600px;top:342px;color:var(--green)">是 · 上传</div>
+  <div class="label" style="left:994px;top:342px;color:var(--indigo)">否 · 不上传</div>
+
+  <section class="card branch left">
+    <div class="k">PATH A · IMAGE</div>
+    <h3>图片编辑</h3>
+    <p>图1 是源图；图2..N 只承担指定角色。一次只改一项，并列出主体、脸、姿态、镜头、文字与光线的保真清单。</p>
+    <span class="tag">REFERENCE</span>
+  </section>
+
+  <section class="card branch right">
+    <div class="k">PATH B · TEXT</div>
+    <h3>纯文生图</h3>
+    <p>没有参考图，先把画面类型、主体、辅助元素、构图、场景与光线写清楚；文字逐字加引号。</p>
+    <span class="tag">PROMPT ONLY</span>
+  </section>
+
+  <section class="card wide step2">
+    <div class="num">2</div>
+    <div class="head"><h2 class="step-title">选择模型</h2><span class="step-note">像素级任务与提示词写法在这里分叉</span></div>
+    <div class="models">
+      <div class="model">
+        <div class="name">MINIMAX H3</div><b>H3 · 保真编辑 / 风格化</b>
+        <span>1–16 张参考图；图片编辑强制提示词增强；支持局部裁切合成；提示词偏详细保真。</span>
+      </div>
+      <div class="model">
+        <div class="name">SEEDREAM 5.5</div><b>Seedream · 多轮 / 图层</b>
+        <span>1–10 张参考图；适合自然语言短指令、多轮编辑、图层拆分与透明素材。</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card wide step3">
+    <div class="num">3</div>
+    <div class="head"><h2 class="step-title">提示词构建</h2><span class="step-note">先确定“改什么 / 保什么”，再写风格</span></div>
+    <div class="prompt-grid">
+      <div class="prompt-col">
+        <div class="k">IF IMAGE</div>
+        <h4>参考图角色 + 保真清单</h4>
+        <div class="chips"><span class="chip">图1 源图</span><span class="chip">图2..N 只取指定特征</span><span class="chip">只改一项</span><span class="chip">保持主体/脸/姿态/文字</span></div>
+      </div>
+      <div class="prompt-col">
+        <div class="k">IF TEXT</div>
+        <h4>五段式画面 brief</h4>
+        <div class="chips"><span class="chip">画面类型</span><span class="chip">主体</span><span class="chip">辅助元素</span><span class="chip">构图</span><span class="chip">场景/光线</span><span class="chip">文字/避免</span></div>
+      </div>
+    </div>
+    <div class="foot">H3：详细中文保真模板 · Seedream：自然语言短指令；两者都把“不要什么”写成完整句子，不使用独立 negative 字段。</div>
+  </section>
+
+  <section class="card wide step4">
+    <div class="num">4</div>
+    <div class="head"><h2 class="step-title">图像分辨率设置</h2><span class="step-note">先定画幅，再定像素</span></div>
+    <div class="res-grid">
+      <div class="res"><div class="k">1 · ASPECT</div><b>先选画幅</b><span>原图比例 / 1:1 / 4:5 / 3:4 / 16:9 / 9:16；先定构图，避免后裁切切掉主体。</span></div>
+      <div class="res"><div class="k">2 · SIZE</div><b>再选分辨率</b><span>1K / 2K / 4K，或固定 W×H；不要同时混用 aspect+area 与固定 size。</span></div>
+      <div class="res"><div class="k">3 · LIMITS</div><b>模型约束</b><span>H3 比例约 1:3–3:1；Seedream 约 1:16–16；输出尺寸以 API 返回为准。</span></div>
+    </div>
+  </section>
+
+  <section class="card wide step5">
+    <div class="num">5</div>
+    <div class="head"><h2 class="step-title">图像输出</h2><span class="step-note">结果不是终点，而是下一轮的输入</span></div>
+    <div class="out-grid">
+      <div class="out"><b>预览 / 对比</b><span>查看大图、原图对照、失败原因。</span></div>
+      <div class="out"><b>多轮编辑</b><span>结果作为下一轮源图；区域/蒙版可继续叠加。</span></div>
+      <div class="out"><b>本地保存</b><span>outputs/&lt;id&gt;/ + index.jsonl，刷新后仍在。</span></div>
+      <div class="out"><b>历史 / 队列</b><span>最近、归档、取消/重试；图层可打 ZIP。</span></div>
+    </div>
+  </section>
+
+  <footer class="bottom">
+    <span><b>数据路径</b> ~/Data/dsh-image-workbench/ · outputs / index.jsonl / jobs</span>
+    <span><b>注意</b> Seedream 图层拆分远端 URL 需及时下载；H3 编辑强制增强</span>
+  </footer>
+</div>
+</body>
+</html>
