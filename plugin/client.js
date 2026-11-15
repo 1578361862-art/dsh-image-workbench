@@ -337,57 +337,72 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .flow-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding-bottom:12px; border-bottom:1px solid var(--p-hair); }
 .iw-root .flow-head h2{ margin:2px 0 4px; font-family:var(--p-serif); font-size:34px; font-weight:600; letter-spacing:var(--pk-ls-title); }
 .iw-root .flow-head p{ margin:0; font-size:11px; color:var(--p-ink-3); }
-.iw-root .flow-stepper{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; margin:16px 0 14px; border:1px solid var(--p-hair); background:var(--p-paper-2); }
-.iw-root .flow-stepper div{ position:relative; display:flex; align-items:center; gap:8px; min-width:0; padding:10px 12px; border-right:1px solid var(--p-hair); color:var(--p-ink-4); }
-.iw-root .flow-stepper div:last-child{ border-right:0; }
-.iw-root .flow-stepper b{ width:26px; height:26px; flex:none; display:flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); font-family:var(--p-mono); font-size:10px; font-weight:400; }
-.iw-root .flow-stepper span{ font-family:var(--p-mono); font-size:10px; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.iw-root .flow-stepper div.on{ color:var(--p-ink); background:var(--p-signal-plate); }
-.iw-root .flow-stepper div.on b{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
-.iw-root .flow-stepper div.done{ color:var(--p-ink-2); }
-.iw-root .flow-stepper div.done b{ color:var(--p-paper); background:var(--p-ink-3); border-color:var(--p-ink-3); }
-.iw-root .flow-body{ min-height:430px; border:1px solid var(--p-hair); background:var(--p-paper-2); padding:20px 22px; }
-.iw-root .flow-step[hidden]{ display:none; }
-.iw-root .flow-step-head span{ font-family:var(--p-mono); font-size:9px; letter-spacing:.12em; color:var(--p-signal); }
-.iw-root .flow-step-head h3{ margin:4px 0 3px; font-family:var(--p-serif); font-size:26px; font-weight:600; }
-.iw-root .flow-step-head p{ margin:0 0 16px; font-size:11px; color:var(--p-ink-3); }
-.iw-root .flow-choices{ display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:880px; }
-.iw-root .flow-choice{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; min-height:116px; padding:14px 16px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
+.iw-root .flow-head-right{ display:flex; align-items:center; gap:10px; }
+.iw-root .flow-cost{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .flow-graph-wrap{ margin-top:14px; border:1px solid var(--p-hair); background:var(--p-paper-2); overflow:auto; }
+.iw-root .flow-graph{ position:relative; min-width:1000px; height:760px; background:#faf5ec; }
+.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.55; background-image:radial-gradient(circle,rgba(27,24,19,.16) 1px,transparent 1px); background-size:18px 18px; }
+.iw-root .flow-edges{ position:absolute; inset:0; width:1000px; height:760px; z-index:1; pointer-events:none; overflow:visible; }
+.iw-root .flow-edges path{ fill:none; stroke:var(--p-ink-4); stroke-width:1.5; }
+.iw-root .flow-node{ position:absolute; z-index:2; background:rgba(251,247,239,.97); border:1px solid var(--p-hair); box-shadow:0 1px 0 rgba(27,24,19,.04); display:flex; flex-direction:column; }
+.iw-root .flow-node header{ display:flex; align-items:baseline; gap:7px; padding:8px 11px; border-bottom:1px solid var(--p-hair); background:rgba(244,238,226,.72); }
+.iw-root .flow-node header .node-num{ font-family:var(--p-mono); font-size:9px; color:var(--p-signal); }
+.iw-root .flow-node header b{ font-family:var(--p-serif); font-size:16px; font-weight:600; }
+.iw-root .flow-node header small{ margin-left:auto; font-family:var(--p-mono); font-size:8px; letter-spacing:.08em; color:var(--p-ink-4); }
+.iw-root .node-body{ padding:10px 11px 11px; min-height:0; overflow:auto; }
+.iw-root .flow-node .port{ position:absolute; width:9px; height:9px; border:1px solid var(--p-ink-4); background:var(--p-paper-2); border-radius:50%; z-index:3; }
+.iw-root .flow-node .port.left{ left:-5px; top:50%; }
+.iw-root .flow-node .port.right{ right:-5px; top:50%; }
+.iw-root .flow-node .port.top{ top:-5px; left:50%; transform:translateX(-50%); }
+.iw-root .flow-node .port.bottom{ bottom:-5px; left:50%; transform:translateX(-50%); }
+.iw-root .node-input{ left:60px; top:30px; width:380px; height:150px; }
+.iw-root .node-model{ left:560px; top:30px; width:380px; height:150px; }
+.iw-root .node-prompt{ left:150px; top:220px; width:700px; height:250px; }
+.iw-root .node-resolution{ left:60px; top:520px; width:380px; height:150px; }
+.iw-root .node-output{ left:560px; top:520px; width:380px; height:210px; }
+.iw-root .flow-choices{ display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.iw-root .flow-choice{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:52px; padding:7px 8px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
 .iw-root .flow-choice:hover{ border-color:var(--p-ink-3); }
 .iw-root .flow-choice.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
-.iw-root .flow-choice .fc-k{ font-family:var(--p-mono); font-size:9px; letter-spacing:.08em; color:var(--p-signal); }
-.iw-root .flow-choice b{ font-family:var(--p-serif); font-size:20px; font-weight:600; }
-.iw-root .flow-choice small{ font-size:11px; line-height:1.6; color:var(--p-ink-3); }
-.iw-root .flow-source{ display:flex; gap:12px; align-items:center; margin-top:14px; padding:9px; border:1px solid var(--p-hair); background:var(--p-paper); max-width:520px; }
+.iw-root .flow-choice .fc-k{ font-family:var(--p-mono); font-size:8px; color:var(--p-signal); letter-spacing:.06em; }
+.iw-root .flow-choice b{ font-family:var(--p-sans); font-size:11px; font-weight:600; }
+.iw-root .flow-source{ display:flex; gap:7px; align-items:center; margin-top:7px; padding:5px; border:1px solid var(--p-hair); background:var(--p-paper); }
 .iw-root .flow-source[hidden]{ display:none; }
-.iw-root .flow-source img{ width:92px; height:68px; object-fit:cover; border:1px solid var(--p-hair); background:var(--p-sunken); }
-.iw-root .flow-source b{ display:block; font-size:12px; }
-.iw-root .flow-source span{ display:block; margin:3px 0 7px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
-.iw-root .flow-field-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.iw-root .flow-field-row label,.iw-root .flow-label{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .flow-field-row select{ height:30px; min-width:240px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:11px; padding:0 7px; }
-.iw-root .flow-field-row button{ margin-left:auto; }
-.iw-root .flow-label{ display:block; margin:12px 0 5px; }
-.iw-root #flowPrompt{ width:100%; min-height:250px; padding:11px 12px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.75; resize:vertical; }
+.iw-root .flow-source img{ width:52px; height:40px; object-fit:cover; border:1px solid var(--p-hair); }
+.iw-root .flow-source b{ display:block; max-width:92px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; }
+.iw-root .flow-source span{ display:block; margin:2px 0 3px; font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); }
+.iw-root .flow-source button{ height:19px; padding:0 5px; font-size:8px; }
+.iw-root .node-model-list{ display:flex; flex-direction:column; gap:5px; }
+.iw-root .node-model-option{ display:grid; grid-template-columns:auto auto 1fr; align-items:baseline; gap:5px; padding:7px 8px; border:1px solid var(--p-hair); background:var(--p-paper); text-align:left; cursor:pointer; }
+.iw-root .node-model-option span{ font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); }
+.iw-root .node-model-option b{ font-family:var(--p-serif); font-size:15px; }
+.iw-root .node-model-option small{ font-size:9px; color:var(--p-ink-3); }
+.iw-root .node-model-option.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
+.iw-root .flow-prompt-head{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.iw-root .flow-prompt-head select{ flex:1; min-width:0; height:27px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:10px; padding:0 5px; }
+.iw-root .flow-prompt-head button{ height:27px; padding:0 7px; font-size:9px; }
+.iw-root #flowPrompt{ width:100%; height:126px; padding:8px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:11px; line-height:1.65; resize:vertical; }
 .iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:var(--p-hair); box-shadow:none; }
-.iw-root .flow-note{ margin:8px 0 0; font-family:var(--p-mono); font-size:9px; line-height:1.6; color:var(--p-ink-4); }
-.iw-root .flow-ratios{ margin-bottom:4px; }
-.iw-root .flow-summary{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-.iw-root .flow-sum-item{ padding:9px 10px; border:1px solid var(--p-hair); background:var(--p-paper); }
-.iw-root .flow-sum-item span{ display:block; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-4); }
-.iw-root .flow-sum-item b{ display:block; margin-top:3px; font-size:12px; font-weight:500; line-height:1.5; }
-.iw-root .flow-sum-prompt{ grid-column:1 / -1; }
-.iw-root .flow-sum-prompt b{ font-family:var(--p-sans); font-size:11px; font-weight:400; color:var(--p-ink-2); max-height:72px; overflow:auto; white-space:pre-wrap; }
-.iw-root .flow-result{ display:flex; gap:16px; align-items:flex-start; margin-top:14px; padding-top:14px; border-top:1px solid var(--p-hair); }
+.iw-root .flow-note{ margin:6px 0 0; font-family:var(--p-mono); font-size:8px; line-height:1.55; color:var(--p-ink-4); }
+.iw-root .flow-label{ display:block; margin:6px 0 4px; font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); }
+.iw-root .flow-ratios{ display:flex; flex-wrap:wrap; gap:2px; border:0; }
+.iw-root .flow-ratios button{ height:23px; padding:0 6px; border:1px solid var(--p-hair); background:var(--p-paper); font-family:var(--p-mono); font-size:9px; color:var(--p-ink-3); cursor:pointer; }
+.iw-root .flow-ratios button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .node-resolution #flowQuality{ border:1px solid var(--p-hair); border-radius:4px; }
+.iw-root .node-resolution #flowQuality button{ height:23px; padding:0 7px; font-size:9px; }
+.iw-root .node-summary{ display:flex; flex-direction:column; gap:4px; }
+.iw-root .node-sum-item{ display:flex; justify-content:space-between; gap:6px; padding:3px 0; border-bottom:1px solid var(--p-hair-2); font-size:9px; color:var(--p-ink-3); }
+.iw-root .node-sum-item b{ font-weight:500; color:var(--p-ink); text-align:right; }
+.iw-root .node-sum-item.prompt{ display:block; max-height:48px; overflow:auto; white-space:pre-wrap; line-height:1.5; color:var(--p-ink-2); font-size:9px; }
+.iw-root .node-output-actions{ margin-top:8px; }
+.iw-root .node-output-actions .go{ width:100%; height:32px; margin:0; }
+.iw-root .node-output #flowStatus{ max-height:38px; overflow:auto; }
+.iw-root .flow-result{ display:flex; flex-direction:column; gap:5px; margin-top:7px; padding-top:7px; border-top:1px solid var(--p-hair); }
 .iw-root .flow-result[hidden]{ display:none; }
-.iw-root .flow-result img{ width:min(420px,55%); max-height:420px; object-fit:contain; border:1px solid var(--p-hair); background:var(--p-sunken); }
-.iw-root .flow-result-actions{ display:flex; flex-direction:column; gap:6px; }
-.iw-root .flow-foot{ display:flex; align-items:center; gap:12px; margin-top:12px; }
-.iw-root .flow-cost{ margin-left:auto; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .flow-foot-actions{ display:flex; gap:6px; }
-.iw-root .flow-foot .go{ width:auto; min-width:120px; padding:0 18px; margin:0; }
-.iw-root .flow-foot .ghost-btn{ height:36px; }
-@media (max-width:900px){.iw-root .flow-choices,.iw-root .flow-summary{grid-template-columns:1fr;} .iw-root .flow-stepper span{display:none;} .iw-root .flow-result{flex-direction:column;} .iw-root .flow-result img{width:100%;}}
+.iw-root .flow-result img{ width:100%; max-height:120px; object-fit:contain; border:1px solid var(--p-hair); background:var(--p-sunken); }
+.iw-root .flow-result-actions{ display:flex; gap:3px; }
+.iw-root .flow-result-actions button{ height:21px; padding:0 5px; font-size:8px; }
+@media (max-width:760px){.iw-root .flow-head{flex-direction:column;} .iw-root .flow-head-right{width:100%;justify-content:space-between;}}
 .iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
 .iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
@@ -1301,60 +1316,78 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   <section class="wrap flow-page" id="flowPage" hidden>
     <div class="flow-head">
-      <div><div class="eyebrow">Fixed Pipeline</div><h2>固定工作流</h2><p>按顺序完成五步，生成一张图；流程固定，只需要选内容。</p></div>
-      <button class="ghost-btn" id="flowReset">重新开始</button>
+      <div><div class="eyebrow">Fixed Node Graph</div><h2>固定工作流</h2><p>节点和连线固定；只填写每个节点里的内容。</p></div>
+      <div class="flow-head-right"><span class="flow-cost" id="flowCost">约 ¥0.00</span><button class="ghost-btn" id="flowReset">重新开始</button></div>
     </div>
-    <div class="flow-stepper" id="flowStepper">
-      <div data-flow-step="1"><b>01</b><span>上传</span></div>
-      <div data-flow-step="2"><b>02</b><span>模型</span></div>
-      <div data-flow-step="3"><b>03</b><span>提示词</span></div>
-      <div data-flow-step="4"><b>04</b><span>分辨率</span></div>
-      <div data-flow-step="5"><b>05</b><span>输出</span></div>
+    <div class="flow-graph-wrap">
+      <div class="flow-graph" id="flowGraph">
+        <div class="flow-dotgrid"></div>
+        <svg class="flow-edges" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
+          <defs><marker id="flowArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#777064"/></marker></defs>
+          <path d="M440 100 H558" marker-end="url(#flowArrow)"/>
+          <path d="M750 170 C750 200 500 190 500 218" marker-end="url(#flowArrow)"/>
+          <path d="M500 470 C500 500 250 490 250 518" marker-end="url(#flowArrow)"/>
+          <path d="M440 610 H558" marker-end="url(#flowArrow)"/>
+        </svg>
+
+        <article class="flow-node node-input" data-node="1">
+          <i class="port out right"></i>
+          <header><span class="node-num">01</span><b>输入</b><small>INPUT</small></header>
+          <div class="node-body">
+            <div class="flow-choices" id="flowUploadChoice">
+              <button type="button" class="flow-choice" data-flow-upload="no"><span class="fc-k">TEXT</span><b>不传图片</b></button>
+              <button type="button" class="flow-choice" data-flow-upload="yes"><span class="fc-k">IMAGE</span><b>上传图片</b></button>
+            </div>
+            <input type="file" id="flowFile" accept="image/*" hidden>
+            <div class="flow-source" id="flowSource" hidden><img id="flowSourceImg" alt="工作流源图"><div><b id="flowSourceName"></b><span id="flowSourceMeta"></span><button class="ghost-btn" id="flowRemoveSource">移除</button></div></div>
+          </div>
+        </article>
+
+        <article class="flow-node node-model" data-node="2">
+          <i class="port in left"></i><i class="port out bottom"></i>
+          <header><span class="node-num">02</span><b>模型</b><small>MODEL</small></header>
+          <div class="node-body">
+            <div class="node-model-list">
+              <button type="button" class="node-model-option" data-flow-model="minimax"><span>MINIMAX</span><b>H3</b><small>保真编辑 / 风格化</small></button>
+              <button type="button" class="node-model-option" data-flow-model="seedream"><span>SEEDREAM</span><b>5.5</b><small>多轮 / 图层</small></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="flow-node node-prompt" data-node="3">
+          <i class="port in top"></i><i class="port out bottom"></i>
+          <header><span class="node-num">03</span><b>提示词构建</b><small>PROMPT</small></header>
+          <div class="node-body">
+            <div class="flow-prompt-head"><select id="flowStyle" aria-label="选择风格"></select><button class="ghost-btn" id="flowPromptReset">恢复默认</button></div>
+            <textarea id="flowPrompt" rows="8" spellcheck="false" placeholder="按模板填写内容…"></textarea>
+            <p class="flow-note" id="flowPromptNote"></p>
+          </div>
+        </article>
+
+        <article class="flow-node node-resolution" data-node="4">
+          <i class="port in top"></i><i class="port out right"></i>
+          <header><span class="node-num">04</span><b>分辨率</b><small>SIZE</small></header>
+          <div class="node-body">
+            <label class="flow-label">画幅</label>
+            <div class="mini-seg flow-ratios" id="flowRatio"></div>
+            <label class="flow-label">分辨率</label>
+            <div class="mini-seg" id="flowQuality"><button data-flow-quality="1K">1K</button><button data-flow-quality="2K" class="on">2K</button><button data-flow-quality="4K">4K</button></div>
+            <p class="flow-note" id="flowSizeNote"></p>
+          </div>
+        </article>
+
+        <article class="flow-node node-output" data-node="5">
+          <i class="port in left"></i>
+          <header><span class="node-num">05</span><b>输出</b><small>OUTPUT</small></header>
+          <div class="node-body">
+            <div class="node-summary" id="flowSummary"></div>
+            <div class="node-output-actions"><button class="go" id="flowGenerate">生成 1 版</button></div>
+            <p class="flow-note" id="flowStatus"></p>
+            <div class="flow-result" id="flowResult" hidden><img id="flowResultImg" alt="工作流结果"><div class="flow-result-actions"><button class="ghost-btn" id="flowViewResult">大图</button><button class="ghost-btn" id="flowDownloadResult">下载</button><button class="ghost-btn" id="flowEditResult">多轮编辑</button></div></div>
+          </div>
+        </article>
+      </div>
     </div>
-    <div class="flow-body">
-      <section class="flow-step" data-flow-panel="1">
-        <div class="flow-step-head"><span>STEP 01</span><h3>是否上传图片？</h3><p>上传后走图片编辑；不上传走纯文生图。</p></div>
-        <div class="flow-choices" id="flowUploadChoice">
-          <button type="button" class="flow-choice" data-flow-upload="no"><span class="fc-k">TEXT TO IMAGE</span><b>不传图片</b><small>从空白画面开始，只用提示词生成。</small></button>
-          <button type="button" class="flow-choice" data-flow-upload="yes"><span class="fc-k">IMAGE EDIT</span><b>上传图片</b><small>以一张图作为源图，只改指定内容。</small></button>
-        </div>
-        <input type="file" id="flowFile" accept="image/*" hidden>
-        <div class="flow-source" id="flowSource" hidden><img id="flowSourceImg" alt="工作流源图"><div><b id="flowSourceName"></b><span id="flowSourceMeta"></span><button class="ghost-btn" id="flowRemoveSource">移除图片</button></div></div>
-      </section>
-      <section class="flow-step" data-flow-panel="2" hidden>
-        <div class="flow-step-head"><span>STEP 02</span><h3>选择模型</h3><p>模型决定提示词写法和可用能力。</p></div>
-        <div class="flow-choices">
-          <button type="button" class="flow-choice" data-flow-model="minimax"><span class="fc-k">MINIMAX H3</span><b>H3 · 保真编辑</b><small>详细保真提示词；适合风格化和图片编辑。</small></button>
-          <button type="button" class="flow-choice" data-flow-model="seedream"><span class="fc-k">SEEDREAM 5.5</span><b>Seedream · 多轮 / 图层</b><small>自然语言指令；适合多轮编辑和图层拆分。</small></button>
-        </div>
-      </section>
-      <section class="flow-step" data-flow-panel="3" hidden>
-        <div class="flow-step-head"><span>STEP 03</span><h3>提示词构建</h3><p>选一个风格，再按模板填写主体、场景和文字。</p></div>
-        <div class="flow-field-row"><label for="flowStyle">风格</label><select id="flowStyle"></select><button class="ghost-btn" id="flowPromptReset">恢复默认提示词</button></div>
-        <label class="flow-label" for="flowPrompt">提示词</label>
-        <textarea id="flowPrompt" rows="12" spellcheck="false" placeholder="按模板填写内容…"></textarea>
-        <p class="flow-note" id="flowPromptNote"></p>
-      </section>
-      <section class="flow-step" data-flow-panel="4" hidden>
-        <div class="flow-step-head"><span>STEP 04</span><h3>图像分辨率</h3><p>先定画幅，再选 1K / 2K / 4K。</p></div>
-        <label class="flow-label">画幅</label>
-        <div class="mini-seg flow-ratios" id="flowRatio"></div>
-        <label class="flow-label">分辨率</label>
-        <div class="mini-seg" id="flowQuality"><button data-flow-quality="1K">1K</button><button data-flow-quality="2K" class="on">2K</button><button data-flow-quality="4K">4K</button></div>
-        <p class="flow-note" id="flowSizeNote"></p>
-      </section>
-      <section class="flow-step" data-flow-panel="5" hidden>
-        <div class="flow-step-head"><span>STEP 05</span><h3>图像输出</h3><p>确认内容后生成；结果会进入最近生成。</p></div>
-        <div class="flow-summary" id="flowSummary"></div>
-        <div class="flow-result" id="flowResult" hidden><img id="flowResultImg" alt="工作流结果"><div class="flow-result-actions"><button class="ghost-btn" id="flowViewResult">查看大图</button><button class="ghost-btn" id="flowDownloadResult">下载</button><button class="ghost-btn" id="flowEditResult">多轮编辑</button></div></div>
-        <p class="flow-note" id="flowStatus"></p>
-      </section>
-    </div>
-    <footer class="flow-foot">
-      <button class="ghost-btn" id="flowBack" hidden>上一步</button>
-      <span class="flow-cost" id="flowCost"></span>
-      <div class="flow-foot-actions"><button class="go" id="flowNext">下一步</button><button class="go" id="flowGenerate" hidden>生成 1 版</button></div>
-    </footer>
   </section>
 
   <section class="wrap recent-page" id="recentPage" hidden>
@@ -3147,7 +3180,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.3',
+        version: '0.37.4',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4121,8 +4154,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
-  /* ————— 固定工作流 ————— */
-  var flow = { step: 1, useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null };
+  /* ————— 固定工作流：节点编排 ————— */
+  var flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
   var FLOW_RATIOS = ['原图', '1:1', '4:5', '3:4', '16:9', '9:16'];
 
   function flowStyles() {
@@ -4138,9 +4171,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return '1:1';
   }
   function flowSize() { return textTargetSize(flowAspect(), flow.quality); }
-  function flowCost() {
-    return flow.model === 'seedream' ? 0.28 : (Number(cloudUnitPrice()) || 0);
-  }
+  function flowCost() { return flow.model === 'seedream' ? 0.28 : (Number(cloudUnitPrice()) || 0); }
   function flowDefaultPrompt() {
     var id = flow.styleId;
     if (flow.model === 'seedream') return flow.source ? seedreamImagePrompt(id) : seedreamTextPrompt(id);
@@ -4153,33 +4184,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var area = $('#flowPrompt');
     if (area) area.value = flow.prompt;
   }
-  function flowSetStep(step) {
-    flow.step = Math.max(1, Math.min(5, step));
-    renderFlow();
+  function flowReady() {
+    return !!flow.styleId && !!flow.prompt.trim() && (!flow.useImage || !!flow.source);
   }
-  function flowNext() {
-    if (flow.busy) return;
-    if (flow.step === 1 && flow.useImage && !flow.source) { toast('先选择一张图片，或改为不传图片'); return; }
-    if (flow.step === 2 && !flow.model) { toast('先选择模型'); return; }
-    if (flow.step === 3) {
-      var area = $('#flowPrompt');
-      if (area) flow.prompt = area.value;
-      if (!flow.prompt.trim()) { toast('提示词不能为空'); area && area.focus(); return; }
-    }
-    if (flow.step >= 5) return;
-    if (flow.step === 3) { /* keep edited text */ }
-    if (flow.step === 2) flowLoadPrompt(false);
-    flowSetStep(flow.step + 1);
-  }
-  function flowBack() { if (flow.busy) return; flowSetStep(flow.step - 1); }
   function flowRender() {
-    var stepper = $('#flowStepper');
-    if (stepper) $$('#flowStepper [data-flow-step]').forEach(function (el) {
-      var n = Number(el.dataset.flowStep);
-      el.classList.toggle('on', n === flow.step);
-      el.classList.toggle('done', n < flow.step);
-    });
-    $$('[data-flow-panel]').forEach(function (el) { el.hidden = Number(el.dataset.flowPanel) !== flow.step; });
     $$('[data-flow-upload]').forEach(function (b) {
       b.classList.toggle('on', b.dataset.flowUpload === (flow.useImage ? 'yes' : 'no'));
     });
@@ -4199,42 +4207,40 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (style) {
       var styles = flowStyles();
       style.innerHTML = styles.map(function (st) { return '<option value="' + st.id + '">' + escapeHTML(st.name) + '</option>'; }).join('');
+      if (!styleById(flow.styleId) && styles[0]) flow.styleId = styles[0].id;
       style.value = flow.styleId;
     }
-    var promptArea = $('#flowPrompt');
-    if (promptArea && !flow.prompt) flowLoadPrompt(true);
-    if (promptArea && document.activeElement !== promptArea && !flow.promptDirty) promptArea.value = flow.prompt;
+    if (!flow.source && flow.ratio === '原图') flow.ratio = '1:1';
+    var area = $('#flowPrompt');
+    if (area && document.activeElement !== area && !flow.promptDirty) area.value = flow.prompt || flowDefaultPrompt();
+    if (!flow.prompt) flow.prompt = flowDefaultPrompt();
     var note = $('#flowPromptNote');
-    if (note) {
-      note.textContent = (flow.model === 'seedream' ? 'Seedream 5.5 · 自然语言详细指令' : 'MiniMax H3 · 详细保真模板') + (flow.source ? ' · 图片编辑' : ' · 纯文生图');
-    }
+    if (note) note.textContent = (flow.model === 'seedream' ? 'Seedream 5.5 · 自然语言详细指令' : 'MiniMax H3 · 详细保真模板') + (flow.source ? ' · 图片编辑' : ' · 纯文生图');
     var ratio = $('#flowRatio');
     if (ratio) {
       var choices = flow.source ? FLOW_RATIOS : FLOW_RATIOS.filter(function (r) { return r !== '原图'; });
       ratio.innerHTML = choices.map(function (r) { return '<button type="button" data-flow-ratio="' + r + '" class="' + (r === flow.ratio ? 'on' : '') + '">' + r + '</button>'; }).join('');
-      ratio.style.display = 'inline-flex';
     }
     $$('#flowQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.flowQuality === flow.quality); });
     var sizeNote = $('#flowSizeNote');
-    if (sizeNote) sizeNote.textContent = '目标尺寸：' + flowSize() + ' · ' + (flow.source ? '以源图比例或所选画幅输出' : '无源图，从所选画幅生成');
+    if (sizeNote) sizeNote.textContent = '目标：' + flowSize();
     var summary = $('#flowSummary');
     if (summary) {
       var st = flowStyle();
       summary.innerHTML =
-        '<div class="flow-sum-item"><span>模式</span><b>' + (flow.source ? '图片编辑' : '纯文生图') + '</b></div>' +
-        '<div class="flow-sum-item"><span>模型</span><b>' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + '</b></div>' +
-        '<div class="flow-sum-item"><span>风格</span><b>' + escapeHTML(st.name) + '</b></div>' +
-        '<div class="flow-sum-item"><span>尺寸</span><b>' + flowSize() + '</b></div>' +
-        '<div class="flow-sum-item flow-sum-prompt"><span>提示词</span><b>' + escapeHTML(flow.prompt || flowDefaultPrompt()) + '</b></div>';
+        '<div class="node-sum-item"><span>模式</span><b>' + (flow.source ? '图片编辑' : '纯文生图') + '</b></div>' +
+        '<div class="node-sum-item"><span>模型</span><b>' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + '</b></div>' +
+        '<div class="node-sum-item"><span>风格</span><b>' + escapeHTML(st ? st.name : '—') + '</b></div>' +
+        '<div class="node-sum-item"><span>尺寸</span><b>' + flowSize() + '</b></div>';
     }
-    var cost = $('#flowCost');
-    if (cost) cost.textContent = '约 ¥' + flowCost().toFixed(2);
-    var back = $('#flowBack');
-    if (back) back.hidden = flow.step === 1 || flow.busy;
-    var next = $('#flowNext');
-    if (next) { next.hidden = flow.step === 5 || flow.busy; next.disabled = flow.busy; next.textContent = '下一步'; }
+    var cost = $('#flowCost'); if (cost) cost.textContent = '约 ¥' + flowCost().toFixed(2);
+    var status = $('#flowStatus');
+    if (status && !flow.message) status.textContent = flowReady() ? '节点已就绪，点击生成' : '先补全输入与提示词';
     var generate = $('#flowGenerate');
-    if (generate) { generate.hidden = flow.step !== 5; generate.disabled = flow.busy; generate.textContent = flow.busy ? '生成中…' : '生成 1 版'; }
+    if (generate) {
+      generate.disabled = flow.busy || !flowReady();
+      generate.textContent = flow.busy ? '生成中…' : '生成 1 版';
+    }
     var result = $('#flowResult');
     if (result) {
       result.hidden = !flow.result;
@@ -4244,10 +4250,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function renderFlow() { flowRender(); }
   function flowReset() {
     if (flow.busy) return;
-    flow = { step: 1, useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null };
-    var st = $('#flowStatus'); if (st) st.textContent = '';
+    flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
     var f = $('#flowFile'); if (f) f.value = '';
-    renderFlow();
+    flowLoadPrompt(true);
+    flowRender();
   }
   function flowReadFile(file) {
     if (!file) return;
@@ -4260,7 +4266,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         flow.ratio = '原图';
         flow.promptDirty = false;
         flowLoadPrompt(true);
-        flowSetStep(1);
+        flowRender();
         toast('已载入 ' + file.name);
       };
       img.onerror = function () { toast('这张图解不开'); };
@@ -4268,7 +4274,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     };
     reader.readAsDataURL(file);
   }
-
   async function flowUploadAsset() {
     var src = flow.source;
     var dataUrl = src.url;
@@ -4298,13 +4303,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   async function flowGenerate() {
     if (flow.busy) return;
-    if (!flow.prompt.trim()) { toast('提示词不能为空'); return; }
+    if (!flowReady()) { toast('先补全输入与提示词'); return; }
     var st = flowStyle();
-    if (!st) { toast('请选择风格'); return; }
     flow.busy = true;
     flow.result = null;
-    $('#flowStatus').textContent = flow.model === 'seedream' ? 'Seedream 生成中…' : (flow.source ? '上传源图并提交 H3…' : '提交 H3 文生图…');
-    renderFlow();
+    flow.message = flow.model === 'seedream' ? 'Seedream 生成中…' : (flow.source ? '上传源图并提交 H3…' : '提交 H3 文生图…');
+    flowRender();
     try {
       var prompt = flow.prompt;
       var size = flowSize();
@@ -4319,15 +4323,16 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         result = await runH3TextWorkbench(prompt, size);
       }
       flow.result = { url: result.url, w: result.w, h: result.h, cost: result.cost || flowCost(), styleId: st.id, model: flow.model, prompt: prompt };
-      $('#flowStatus').textContent = '完成 · ' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + result.w + ' × ' + result.h;
+      flow.message = '完成 · ' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + result.w + ' × ' + result.h;
       loadAllHistory(true);
       toast('工作流完成');
     } catch (err) {
-      $('#flowStatus').textContent = err.message || '生成失败';
+      flow.message = err.message || '生成失败';
       toast(err.message || '生成失败');
     } finally {
       flow.busy = false;
-      renderFlow();
+      flowRender();
+      var status = $('#flowStatus'); if (status) status.textContent = flow.message;
     }
   }
   function flowOpenResult() {
@@ -6707,8 +6712,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       flow.quality = b.dataset.flowQuality;
       renderFlow();
     });
-    $('#flowNext').addEventListener('click', flowNext);
-    $('#flowBack').addEventListener('click', flowBack);
     $('#flowReset').addEventListener('click', flowReset);
     $('#flowGenerate').addEventListener('click', flowGenerate);
     $('#flowViewResult').addEventListener('click', flowOpenResult);
