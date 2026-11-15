@@ -936,36 +936,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .chip.on .ctag{color:var(--p-signal)}
 .iw-root .proof-status{font-family:var(--p-mono);font-size:10px;letter-spacing:var(--pk-ls-ui);color:var(--p-ink-3);margin-left:4px}
 .iw-root .proof-status.dirty{color:var(--p-signal)}
-.iw-root .matrix-layer{position:fixed;inset:0;z-index:70;display:none}
-.iw-root .matrix-layer.open{display:block}
-.iw-root .matrix-dialog{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,calc(100vw - 40px));max-height:calc(100vh - 60px);display:flex;flex-direction:column;background:var(--p-paper-2);border:1px solid var(--p-hair);box-shadow:0 30px 90px rgba(0,0,0,.2)}
-.iw-root .matrix-dialog .drawer-foot{flex-direction:row;align-items:center;gap:8px;padding:8px 16px 12px;border-top:1px solid var(--p-hair)}
-.iw-root .matrix-dialog .drawer-foot .go{width:auto;flex:none;height:34px;padding:0 18px;margin:0}
-.iw-root .matrix-dialog .drawer-foot .ghost-btn{height:34px;flex:none}
-.iw-root .matrix-dialog .drawer-foot .ins-note{flex:1;margin:0;font-size:10px}
-.iw-root .cloud-price-hint{margin-top:4px;font-family:var(--p-mono);font-size:10px;line-height:1.45;color:var(--p-ink-4)}
-.iw-root .prompt-preview{margin-top:4px;padding:4px 8px;border-left:2px solid var(--p-hair);background:var(--p-sunken);font-family:var(--p-mono);font-size:10px;line-height:1.5;color:var(--p-ink-3);max-height:100px;overflow:auto;white-space:pre-wrap}
-.iw-root .prompt-tabs{ display:flex; flex-wrap:wrap; gap:4px; margin:4px 0; }
-.iw-root .prompt-tabs button{ height:24px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
-.iw-root .prompt-tabs button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
-.iw-root .prompt-select{ width:100%; height:24px; margin-top:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; color:var(--p-ink-2); }
-.iw-root .prompt-textarea{ width:100%; box-sizing:border-box; margin-top:4px; padding:6px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; line-height:1.55; color:var(--p-ink-2); resize:vertical; min-height:92px; }
-.iw-root .prompt-textarea:focus{ outline:none; border-color:var(--p-ink-3); }
-.iw-root .prompt-actions{ display:flex; gap:10px; margin-top:4px; }
-.iw-root .prompt-actions .ghost-btn{ height:auto; padding:0; color:var(--p-signal-ink); text-decoration:underline; text-underline-offset:2px; }
-.iw-root .matrix-body{padding:12px 16px;overflow:auto;min-height:120px}
-.iw-root .matrix-note{font-family:var(--p-mono);font-size:10px;line-height:1.5;color:var(--p-ink-3);margin:0 0 8px}
-.iw-root .matrix-pick-row{display:flex;align-items:center;gap:8px}
-.iw-root .matrix-pick-row span{font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3)}
-.iw-root .matrix-sources{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
-.iw-root .matrix-source{position:relative;border:1px solid var(--p-hair);background:var(--p-paper)}
-.iw-root .matrix-source img{width:100%;aspect-ratio:1.1;object-fit:cover;display:block}
-.iw-root .matrix-source span{display:block;padding:4px 4px;font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.iw-root .matrix-results{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
-.iw-root .matrix-result{border:1px solid var(--p-hair);background:var(--p-paper);position:relative}
-.iw-root .matrix-result img{width:100%;display:block}
-.iw-root .matrix-result .mlabel{display:block;padding:4px 4px;font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.iw-root .matrix-result .mdl{position:absolute;right:4px;top:4px;height:22px;width:34px;border:1px solid var(--p-hair);background:var(--p-paper-2);font-family:var(--p-mono);font-size:10px;color:var(--p-ink-3);cursor:pointer}
 .iw-root .p3-banner{margin:8px 0 2px;padding:8px 8px;border-left:2px solid var(--p-ink-4);background:var(--p-sunken);font-size:10px;line-height:1.55;color:var(--p-ink-2)}
 .iw-root .p3-banner b{font-weight:600;color:var(--p-ink)}
 .iw-root .p3-field{opacity:.62}
@@ -1532,7 +1502,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   var toastTimer = null;
   var previewTimer = null;
   var previewToken = 0;
-  var matrix = { sources: [], results: [] };
   var hostHistory = [];
   var hostHistoryReady = false;
   var historyTotal = 0;
@@ -2907,7 +2876,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.9',
+        version: '0.36.10',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -5200,157 +5169,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   /* ————— 批量矩阵 ————— */
-  function openMatrix() {
-    var layer = $('#matrixLayer');
-    if (!layer) return;
-    layer.inert = false;
-    layer.classList.add('open');
-    layer.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeMatrix() {
-    var layer = $('#matrixLayer');
-    if (!layer) return;
-    layer.classList.remove('open');
-    layer.setAttribute('aria-hidden', 'true');
-    layer.inert = true;
-  }
-
-  function readMatrixFile(file) {
-    return new Promise(function (resolve) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        var img = new Image();
-        img.onload = function () {
-          resolve({ name: file.name, url: reader.result, w: img.naturalWidth, h: img.naturalHeight, img: img });
-        };
-        img.onerror = function () { resolve(null); };
-        img.src = reader.result;
-      };
-      reader.onerror = function () { resolve(null); };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function addMatrixFiles(files) {
-    var room = 4 - matrix.sources.length;
-    var picked = Array.prototype.slice.call(files || []).filter(function (f) {
-      return /^image\//.test(f.type);
-    }).slice(0, Math.max(0, room));
-    if (!picked.length) return;
-    Promise.all(picked.map(readMatrixFile)).then(function (list) {
-      matrix.sources = matrix.sources.concat(list.filter(Boolean));
-      renderMatrixSources();
-      matrixHint('已加入 ' + matrix.sources.length + ' 张；生成时不会上传。');
-    });
-  }
-
-  function renderMatrixSources() {
-    var box = $('#matrixSources');
-    if (!box) return;
-    $('#matrixCount').textContent = matrix.sources.length + ' / 4';
-    box.innerHTML = matrix.sources.map(function (src) {
-      return '<div class="matrix-source"><img src="' + src.url + '" alt=""><span>' + escapeHTML(src.name) + '</span></div>';
-    }).join('');
-    $('#matrixRun').disabled = !matrix.sources.length;
-  }
-
-  function renderMatrixResults() {
-    var box = $('#matrixResults');
-    if (!box) return;
-    box.innerHTML = matrix.results.map(function (r, i) {
-      return '<div class="matrix-result"><img src="' + r.url + '" alt="">' +
-        '<button class="mdl" data-matrix-dl="' + i + '">下载</button>' +
-        '<span class="mlabel">' + escapeHTML(r.sourceName) + ' · ' + escapeHTML(r.styleName) + '</span></div>';
-    }).join('');
-    $('#matrixZip').disabled = !matrix.results.length;
-  }
-
-  function matrixHint(text) {
-    var el = $('#matrixHint');
-    if (el) el.textContent = text;
-  }
-
-  function matrixSize(src) {
-    var long = state.params.size === '640' ? 640 : state.params.size === '1200' ? 1200 : 960;
-    var r = state.frame === '原图' ? src.h / src.w : frameRatio();
-    if (r >= 1) return { w: Math.round(long / r), h: long };
-    return { w: long, h: Math.round(long * r) };
-  }
-
-  function runMatrix() {
-    if (!matrix.sources.length) { matrixHint('先选择至少一张图片'); return; }
-    var styles = state.selected.map(styleById).filter(function (s) { return s && s.renderer !== 'model'; });
-    if (!styles.length) { matrixHint('当前没有选本机风格'); return; }
-    var btn = $('#matrixRun');
-    btn.disabled = true;
-    btn.textContent = '生成中…';
-    matrixHint('正在生成 ' + matrix.sources.length + ' 图 × ' + styles.length + ' 风格…');
-    matrix.results = [];
-    var previous = SRC;
-    (async function () {
-      for (var si = 0; si < matrix.sources.length; si++) {
-        var src = matrix.sources[si];
-        var size = matrixSize(src);
-        SRC = src.img;
-        for (var st = 0; st < styles.length; st++) {
-          if (disposed) return;
-          var c = await renderStyleAsync(styles[st].id, size.w, size.h).catch(function () { return null; });
-          if (c) {
-            matrix.results.push({
-              sourceName: src.name,
-              styleName: styles[st].name,
-              url: c.toDataURL('image/jpeg', 0.92),
-              w: size.w,
-              h: size.h
-            });
-          }
-          renderMatrixResults();
-          matrixHint('已完成 ' + matrix.results.length + ' 张');
-        }
-      }
-      SRC = previous;
-      btn.textContent = '重新生成矩阵';
-      btn.disabled = false;
-      matrixHint('完成 ' + matrix.results.length + ' 张；可逐张下载或打包。');
-    })();
-  }
-
-  function matrixDownload(index) {
-    var r = matrix.results[index];
-    if (!r) return;
-    var a = document.createElement('a');
-    a.href = r.url;
-    a.download = 'matrix-' + ('0' + (index + 1)).slice(-2) + '-' + r.styleName + '.jpg';
-    a.click();
-  }
-
-  function matrixZip() {
-    if (!matrix.results.length) { matrixHint('还没有结果'); return; }
-    matrixHint('正在打包…');
-    var files = matrix.results.map(function (r, i) {
-      return { name: ('0' + (i + 1)).slice(-2) + '-' + r.styleName + '.jpg', dataUrl: r.url };
-    });
-    fetch(API + '/export', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.9', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
-      }),
-    }).then(function (res) {
-      if (!res.ok) throw new Error('export');
-      return res.blob();
-    }).then(function (blob) {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'image-matrix-' + new Date().toISOString().slice(0, 10) + '.zip';
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
-      matrixHint('ZIP 已导出（可能由浏览器提示保存）');
-    }).catch(function () { matrixHint('打包失败；请检查 Host'); });
-  }
-
   /* ————— 提示 ————— */
   function toast(msg) {
     var el = $('#toast');
@@ -5927,7 +5745,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         e.preventDefault(); moveStylePreview(e.key === 'ArrowLeft' ? -1 : 1); return;
       }
       if (e.key === 'Escape' && setLayer.classList.contains('open')) closeSettings();
-      if (e.key === 'Escape' && $('#matrixLayer')?.classList.contains('open')) closeMatrix();
       if (e.key === 'Escape' && state.comparing) {
         state.comparing = false;
         $('#print').classList.remove('compare');

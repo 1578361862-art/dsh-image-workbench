@@ -68,3 +68,13 @@ DSH 面板插件：左栏「图像风格」打开 1120 宽工作台。P1 做本�
 - 区域框选：在编辑图上拖出红框，生成时把红框烧进输入并明确要求只改框内、去掉红框。
 - 归档改为 Host 历史行 `archived` 标记，跨刷新保留；清理任务跳过已归档历史。
 - Seedream 费用写入同一 ledger，最近记录带 costYuan。
+
+
+## 0.36.10
+
+- 原生多参考图：H3 多 assetId / Seedream 多 imageDataUrls，场景组合不再拼图。
+- Seedream 图层落盘 + 可调 max_images + ZIP + OCR 提示。
+- 编辑区域红框：把框烧进输入图，并要求只改框内、去掉红框。
+- 归档迁到 Host 历史行，刷新/重启保持，清理跳过归档。
+- Seedream 费用写入 ledger，最近记录带 costYuan。
+- 移除遗留的矩阵批量代码。
