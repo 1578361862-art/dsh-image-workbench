@@ -533,6 +533,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   color: var(--p-ink-4); font-size: 11.5px; line-height: 1; flex: none;
 }
 .iw-root .chip .x:hover{ color: var(--p-signal); }
+.iw-root .prompt-textarea{ width:100%; min-height:112px; margin-top:6px; padding:9px 10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:12px; line-height:1.65; resize:vertical; }
+.iw-root .prompt-textarea:focus, .iw-root .prompt-textarea:focus-visible{ outline:none; border-color:var(--p-hair); box-shadow:none; }
+.iw-root .prompt-actions{ display:flex; justify-content:flex-end; gap:4px; margin-top:4px; }
 .iw-root .chips-empty{ padding: 10px 0; font-family: var(--p-mono); font-size: 10px; color: var(--p-ink-4); }
 .iw-root .ins-group{ margin-top: 10px; border: 1px solid var(--p-hair); background: var(--p-paper-2); }
 .iw-root .ins-group>summary{ list-style: none; cursor: pointer; display: flex; align-items: center; gap: 7px; padding: 8px; background: var(--p-sunken); color: var(--p-ink-2); }
@@ -2874,7 +2877,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.11',
+        version: '0.36.12',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
