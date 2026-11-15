@@ -339,13 +339,21 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .flow-head p{ margin:0; font-size:11px; color:var(--p-ink-3); }
 .iw-root .flow-head-right{ display:flex; align-items:center; gap:10px; }
 .iw-root .flow-cost{ font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
-.iw-root .flow-graph-wrap{ margin-top:14px; border:1px solid var(--p-hair); background:var(--p-paper-2); overflow:auto; }
-.iw-root .flow-graph{ position:relative; min-width:1000px; height:760px; background:#faf5ec; }
-.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.55; background-image:radial-gradient(circle,rgba(27,24,19,.16) 1px,transparent 1px); background-size:18px 18px; }
+.iw-root .flow-canvas-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; padding:8px 10px; border:1px solid var(--p-hair); border-bottom:0; background:var(--p-paper-2); }
+.iw-root .canvas-id{ display:flex; align-items:baseline; gap:8px; min-width:0; }
+.iw-root .canvas-id span{ font-family:var(--p-mono); font-size:8px; letter-spacing:.12em; color:var(--p-signal); }
+.iw-root .canvas-id b{ font-family:var(--p-sans); font-size:11px; }
+.iw-root .canvas-id small{ font-family:var(--p-mono); font-size:8px; color:var(--p-ink-4); white-space:nowrap; }
+.iw-root .canvas-tools{ display:flex; align-items:center; gap:4px; }
+.iw-root .canvas-tools .ghost-btn{ height:23px; padding:0 7px; font-size:8px; }
+.iw-root .canvas-tools span{ min-width:38px; text-align:center; font-family:var(--p-mono); font-size:8px; color:var(--p-ink-3); }
+.iw-root .flow-graph-wrap{ margin-top:0; border:1px solid var(--p-hair); background:var(--p-paper-2); overflow:auto; overscroll-behavior:contain; }
+.iw-root .flow-graph{ position:relative; min-width:1000px; height:760px; background:var(--p-sunken); transform-origin:top center; }
+.iw-root .flow-dotgrid{ position:absolute; inset:0; opacity:.7; background-image:radial-gradient(circle,var(--p-hair) 1px,transparent 1px); background-size:18px 18px; }
 .iw-root .flow-edges{ position:absolute; inset:0; width:1000px; height:760px; z-index:1; pointer-events:none; overflow:visible; }
 .iw-root .flow-edges path{ fill:none; stroke:var(--p-ink-4); stroke-width:1.5; }
-.iw-root .flow-node{ position:absolute; z-index:2; background:rgba(251,247,239,.97); border:1px solid var(--p-hair); box-shadow:0 1px 0 rgba(27,24,19,.04); display:flex; flex-direction:column; }
-.iw-root .flow-node header{ display:flex; align-items:baseline; gap:7px; padding:8px 11px; border-bottom:1px solid var(--p-hair); background:rgba(244,238,226,.72); }
+.iw-root .flow-node{ position:absolute; z-index:2; background:var(--p-paper); border:1px solid var(--p-hair); box-shadow:0 1px 0 var(--p-hair-2); display:flex; flex-direction:column; }
+.iw-root .flow-node header{ display:flex; align-items:baseline; gap:7px; padding:8px 11px; border-bottom:1px solid var(--p-hair); background:var(--p-paper-2); }
 .iw-root .flow-node header .node-num{ font-family:var(--p-mono); font-size:9px; color:var(--p-signal); }
 .iw-root .flow-node header b{ font-family:var(--p-serif); font-size:16px; font-weight:600; }
 .iw-root .flow-node header small{ margin-left:auto; font-family:var(--p-mono); font-size:8px; letter-spacing:.08em; color:var(--p-ink-4); }
@@ -380,7 +388,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .node-model-option.on{ border-color:var(--p-ink); box-shadow:inset 0 0 0 1px var(--p-ink); }
 .iw-root .flow-prompt-head{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
 .iw-root .flow-prompt-head select{ flex:1; min-width:0; height:27px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:10px; padding:0 5px; }
-.iw-root .flow-prompt-head button{ height:27px; padding:0 7px; font-size:9px; }
+.iw-root .flow-prompt-head button{ height:27px; padding:0 7px; font-size:9px; color:var(--p-ink-2); }
 .iw-root #flowPrompt{ width:100%; height:126px; padding:8px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink); font-family:var(--p-sans); font-size:11px; line-height:1.65; resize:vertical; }
 .iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:var(--p-hair); box-shadow:none; }
 .iw-root .flow-note{ margin:6px 0 0; font-family:var(--p-mono); font-size:8px; line-height:1.55; color:var(--p-ink-4); }
@@ -1319,8 +1327,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div><div class="eyebrow">Fixed Node Graph</div><h2>固定工作流</h2><p>节点和连线固定；只填写每个节点里的内容。</p></div>
       <div class="flow-head-right"><span class="flow-cost" id="flowCost">约 ¥0.00</span><button class="ghost-btn" id="flowReset">重新开始</button></div>
     </div>
+    <div class="flow-canvas-bar">
+      <div class="canvas-id"><span>NODE CANVAS</span><b>固定拓扑</b><small>节点不可拖动 · 只填内容</small></div>
+      <div class="canvas-tools" role="group" aria-label="画布缩放">
+        <button type="button" class="ghost-btn" data-flow-zoom="fit">适应</button>
+        <button type="button" class="ghost-btn" data-flow-zoom="out" aria-label="缩小画布">−</button>
+        <span id="flowZoomValue" aria-live="polite">100%</span>
+        <button type="button" class="ghost-btn" data-flow-zoom="in" aria-label="放大画布">+</button>
+      </div>
+    </div>
     <div class="flow-graph-wrap">
-      <div class="flow-graph" id="flowGraph">
+      <div class="flow-graph" id="flowGraph" role="group" aria-label="固定工作流节点画布">
         <div class="flow-dotgrid"></div>
         <svg class="flow-edges" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
           <defs><marker id="flowArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#777064"/></marker></defs>
@@ -1330,7 +1347,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <path d="M440 610 H558" marker-end="url(#flowArrow)"/>
         </svg>
 
-        <article class="flow-node node-input" data-node="1">
+        <article class="flow-node node-input" data-node="1" aria-label="输入节点">
           <i class="port out right"></i>
           <header><span class="node-num">01</span><b>输入</b><small>INPUT</small></header>
           <div class="node-body">
@@ -1343,7 +1360,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           </div>
         </article>
 
-        <article class="flow-node node-model" data-node="2">
+        <article class="flow-node node-model" data-node="2" aria-label="模型节点">
           <i class="port in left"></i><i class="port out bottom"></i>
           <header><span class="node-num">02</span><b>模型</b><small>MODEL</small></header>
           <div class="node-body">
@@ -1354,35 +1371,35 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           </div>
         </article>
 
-        <article class="flow-node node-prompt" data-node="3">
+        <article class="flow-node node-prompt" data-node="3" aria-label="提示词构建节点">
           <i class="port in top"></i><i class="port out bottom"></i>
           <header><span class="node-num">03</span><b>提示词构建</b><small>PROMPT</small></header>
           <div class="node-body">
             <div class="flow-prompt-head"><select id="flowStyle" aria-label="选择风格"></select><button class="ghost-btn" id="flowPromptReset">恢复默认</button></div>
-            <textarea id="flowPrompt" rows="8" spellcheck="false" placeholder="按模板填写内容…"></textarea>
+            <textarea id="flowPrompt" rows="8" spellcheck="false" placeholder="按模板填写内容…" aria-label="工作流提示词"></textarea>
             <p class="flow-note" id="flowPromptNote"></p>
           </div>
         </article>
 
-        <article class="flow-node node-resolution" data-node="4">
+        <article class="flow-node node-resolution" data-node="4" aria-label="分辨率节点">
           <i class="port in top"></i><i class="port out right"></i>
           <header><span class="node-num">04</span><b>分辨率</b><small>SIZE</small></header>
           <div class="node-body">
             <label class="flow-label">画幅</label>
             <div class="mini-seg flow-ratios" id="flowRatio"></div>
             <label class="flow-label">分辨率</label>
-            <div class="mini-seg" id="flowQuality"><button data-flow-quality="1K">1K</button><button data-flow-quality="2K" class="on">2K</button><button data-flow-quality="4K">4K</button></div>
+            <div class="mini-seg" id="flowQuality"><button type="button" data-flow-quality="1K">1K</button><button type="button" data-flow-quality="2K" class="on">2K</button><button type="button" data-flow-quality="4K">4K</button></div>
             <p class="flow-note" id="flowSizeNote"></p>
           </div>
         </article>
 
-        <article class="flow-node node-output" data-node="5">
+        <article class="flow-node node-output" data-node="5" aria-label="输出节点">
           <i class="port in left"></i>
           <header><span class="node-num">05</span><b>输出</b><small>OUTPUT</small></header>
           <div class="node-body">
             <div class="node-summary" id="flowSummary"></div>
             <div class="node-output-actions"><button class="go" id="flowGenerate">生成 1 版</button></div>
-            <p class="flow-note" id="flowStatus"></p>
+            <p class="flow-note" id="flowStatus" role="status" aria-live="polite"></p>
             <div class="flow-result" id="flowResult" hidden><img id="flowResultImg" alt="工作流结果"><div class="flow-result-actions"><button class="ghost-btn" id="flowViewResult">大图</button><button class="ghost-btn" id="flowDownloadResult">下载</button><button class="ghost-btn" id="flowEditResult">多轮编辑</button></div></div>
           </div>
         </article>
@@ -3180,7 +3197,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.37.4',
+        version: '0.37.5',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -4155,7 +4172,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
 
   /* ————— 固定工作流：节点编排 ————— */
-  var flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
+  var flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '', zoom: 1 };
   var FLOW_RATIOS = ['原图', '1:1', '4:5', '3:4', '16:9', '9:16'];
 
   function flowStyles() {
@@ -4189,16 +4206,22 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   }
   function flowRender() {
     $$('[data-flow-upload]').forEach(function (b) {
-      b.classList.toggle('on', b.dataset.flowUpload === (flow.useImage ? 'yes' : 'no'));
+      var on = b.dataset.flowUpload === (flow.useImage ? 'yes' : 'no');
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     $$('[data-flow-model]').forEach(function (b) {
-      b.classList.toggle('on', b.dataset.flowModel === flow.model);
+      var on = b.dataset.flowModel === flow.model;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     var src = $('#flowSource');
     if (src) {
       src.hidden = !flow.source;
       if (flow.source) {
         $('#flowSourceImg').src = flow.source.url;
+        $('#flowSourceImg').width = flow.source.w || 0;
+        $('#flowSourceImg').height = flow.source.h || 0;
         $('#flowSourceName').textContent = flow.source.name || '已上传图片';
         $('#flowSourceMeta').textContent = flow.source.w + ' × ' + flow.source.h;
       }
@@ -4244,16 +4267,37 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var result = $('#flowResult');
     if (result) {
       result.hidden = !flow.result;
-      if (flow.result) $('#flowResultImg').src = flow.result.url;
+      if (flow.result) { $('#flowResultImg').src = flow.result.url; $('#flowResultImg').width = flow.result.w || 0; $('#flowResultImg').height = flow.result.h || 0; }
     }
+    flowApplyZoom();
+  }
+  function flowApplyZoom() {
+    var graph = $('#flowGraph');
+    if (graph) graph.style.transform = 'scale(' + flow.zoom.toFixed(3) + ')';
+    var wrap = $('.flow-graph-wrap');
+    if (wrap) wrap.style.height = Math.round(760 * flow.zoom) + 'px';
+    var label = $('#flowZoomValue');
+    if (label) label.textContent = Math.round(flow.zoom * 100) + '%';
+  }
+  function flowZoom(action) {
+    if (action === 'in') flow.zoom = Math.min(1.35, flow.zoom + 0.1);
+    else if (action === 'out') flow.zoom = Math.max(0.55, flow.zoom - 0.1);
+    else {
+      var wrap = $('.flow-graph-wrap');
+      var width = wrap ? wrap.clientWidth - 2 : 1000;
+      var height = Math.max(0, window.innerHeight - 330);
+      flow.zoom = Math.max(0.55, Math.min(1.15, Math.min(width / 1000, height / 760 || 1.15)));
+    }
+    flowApplyZoom();
   }
   function renderFlow() { flowRender(); }
   function flowReset() {
     if (flow.busy) return;
-    flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
+    flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '', zoom: 1 };
     var f = $('#flowFile'); if (f) f.value = '';
     flowLoadPrompt(true);
     flowRender();
+    flowZoom('fit');
   }
   function flowReadFile(file) {
     if (!file) return;
@@ -4364,7 +4408,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     }
     if (text) { renderTextTemplates(); renderTextPage(); }
     if (seedream) renderSeedreamPage();
-    if (workflow) renderFlow();
+    if (workflow) { renderFlow(); flowZoom('fit'); }
   }
 
   function currentHistory() {
@@ -6713,6 +6757,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       renderFlow();
     });
     $('#flowReset').addEventListener('click', flowReset);
+    $$('[data-flow-zoom]').forEach(function (b) { b.addEventListener('click', function () { flowZoom(b.dataset.flowZoom); }); });
     $('#flowGenerate').addEventListener('click', flowGenerate);
     $('#flowViewResult').addEventListener('click', flowOpenResult);
     $('#flowDownloadResult').addEventListener('click', function () {
