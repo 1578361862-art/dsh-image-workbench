@@ -10,6 +10,8 @@ import { createCloud } from './lib/cloud.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL } from './lib/seedream.js'
+
+const SEEDREAM_MODELS = ['doubao-seedream-5-5-261028', 'doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828']
 import { MAX_EXPORT_BYTES, MAX_IMAGE_BYTES, createStorage } from './lib/storage.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -35,7 +37,7 @@ const DEFAULTS = Object.freeze({
   base: 'cn',
   model: 'standard',
   billing: 'payg',
-  seedreamModel: SEEDREAM_DEFAULT_MODEL,
+  seedreamModel: 'doubao-seedream-5-5-261028',
 })
 
 function json(res, status, body) {
@@ -108,7 +110,7 @@ function sanitizeConfig(body, current) {
     next.billing = body.billing
   }
   if (body.seedreamModel !== undefined) {
-    if (!['doubao-seedream-4-0-250828', 'doubao-seedream-4-5-251128'].includes(body.seedreamModel)) fail('Seedream 模型无效')
+    if (!SEEDREAM_MODELS.includes(body.seedreamModel)) fail('Seedream 模型无效')
     next.seedreamModel = body.seedreamModel
   }
   if (body.enableCloud === true) next.cloudEnabled = true
@@ -686,7 +688,7 @@ export default {
             prompt: body?.prompt,
             size: body?.size,
             key,
-            model: (await readConfig()).seedreamModel || SEEDREAM_DEFAULT_MODEL,
+            model: SEEDREAM_MODELS.includes(body?.model) ? body.model : ((await readConfig()).seedreamModel || 'doubao-seedream-5-5-261028'),
             baseUrl: SEEDREAM_DEFAULT_BASE,
           })
           return json(res, 200, await saveSeedreamResult(result))
@@ -703,7 +705,7 @@ export default {
             size: body?.size,
             images: [body.imageDataUrl],
             key,
-            model: (await readConfig()).seedreamModel || SEEDREAM_DEFAULT_MODEL,
+            model: SEEDREAM_MODELS.includes(body?.model) ? body.model : ((await readConfig()).seedreamModel || 'doubao-seedream-5-5-261028'),
             baseUrl: SEEDREAM_DEFAULT_BASE,
           })
           return json(res, 200, await saveSeedreamResult(result))

@@ -298,6 +298,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .text-templates>span{ flex:none; }
 .iw-root .text-templates button{ height:24px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper-2); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
 .iw-root .text-templates button:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
+.iw-root .model-seg{ display:flex; align-items:center; gap:6px; margin:8px 0 2px; flex-wrap:wrap; font-family:var(--p-mono); font-size:10px; color:var(--p-ink-3); }
+.iw-root .model-seg>span{ margin-right:2px; }
+.iw-root .model-seg button{ height:26px; padding:0 8px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
+.iw-root .model-seg button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
+.iw-root .text-model{ display:flex; align-items:center; gap:6px; margin-top:8px; }
 .iw-root .seedream-mode{ display:flex; gap:6px; margin-bottom:10px; }
 .iw-root .seedream-mode button{ height:28px; padding:0 10px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:10px; cursor:pointer; }
 .iw-root .seedream-mode button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
@@ -1163,13 +1168,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   <section class="wrap text-page" id="textPage" hidden>
     <div class="text-head">
-      <div><h2>纯文生图</h2><span>Prompt 增强已关闭 · 不读取参考图</span></div>
+      <div><h2>纯文生图</h2><span id="textModeHint">Prompt 增强已关闭 · 不读取参考图</span></div>
     </div>
     <div class="text-layout">
       <div class="text-form">
         <label class="text-label" for="textPrompt">提示词</label>
         <textarea id="textPrompt" rows="9" placeholder="描述想要的画面…" spellcheck="false"></textarea>
         <div class="text-templates"><span>示例风格</span><div id="textTemplates"></div></div>
+        <div class="text-model" id="textModel"><span>模型</span><button data-model="minimax" class="on">MiniMax H3</button><button data-model="seedream">Seedream 5.5</button></div>
         <div class="text-options">
           <div class="text-field"><span>画幅</span><div class="mini-seg" id="textAspect"><button data-aspect="1:1" class="on">1:1</button><button data-aspect="4:5">4:5</button><button data-aspect="3:4">3:4</button><button data-aspect="16:9">16:9</button><button data-aspect="9:16">9:16</button></div></div>
           <div class="text-field"><span>画质</span><div class="mini-seg" id="textQuality"><button data-quality="1K">1K</button><button data-quality="2K" class="on">2K</button><button data-quality="4K">4K</button></div></div>
@@ -1194,6 +1200,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     <div class="text-layout">
       <div class="text-form">
         <div class="seedream-mode" id="seedreamMode"><button data-seedream-mode="text" class="on">文生图</button><button data-seedream-mode="edit">图片编辑</button></div>
+        <div class="model-seg" id="seedreamModel"><span>模型</span><button data-seedream-model="doubao-seedream-5-5-261028" class="on">5.5</button><button data-seedream-model="doubao-seedream-4-5-251128">4.5</button><button data-seedream-model="doubao-seedream-4-0-250828">4.0</button></div>
         <div class="seedream-edit" id="seedreamEditBox" hidden>
           <button class="set-action" id="seedreamPick">选择图片</button>
           <input id="seedreamFile" type="file" accept="image/*" hidden>
@@ -1253,18 +1260,17 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
     <div class="drawer-body">
       <section class="set-sec">
-        <div class="set-title"><span>云端与费用</span></div>
-        <div class="set-row"><span>API Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
+        <div class="set-title"><span>模型与密钥</span></div>
+        <div class="set-row"><span>MiniMax Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
         <div class="key-edit" id="keyEdit" hidden>
           <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off">
           <button class="set-action" id="keySave">保存</button>
         </div>
         <div class="set-links">
           <button class="set-action" id="keyChange">更换 Key</button>
-          <button class="set-action" id="keyTest">检查 Key</button>
         </div>
         <details class="p3-details">
-          <summary>云端配置</summary>
+          <summary>MiniMax 配置</summary>
           <div class="set-field p3-field">
             <span class="lab">接口地址</span>
             <div class="mini-seg" data-group="base"><button class="on">国内站</button><button>国际站</button></div>
@@ -1283,6 +1289,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
             <div class="mini-seg" data-group="conc"><button>1</button><button class="on">2</button><button>3</button><button>4</button></div>
           </div>
         </details>
+        <div class="set-row"><span>Seedream Key</span><b id="seedreamKeyState" class="key-state warn">未配置</b></div>
+        <div class="key-edit" id="seedreamKeyEdit" hidden>
+          <input id="seedreamKeyInput" type="password" placeholder="ARK API Key" autocomplete="off">
+          <button class="set-action" id="seedreamKeySave">保存</button>
+        </div>
+        <div class="set-links"><button class="set-action" id="seedreamKeyChange">更换 Key</button></div>
+        <div class="set-field"><span class="lab">模型</span><div class="mini-seg" id="seedreamModelGroup" data-group="seedream"><button data-seedream-model="doubao-seedream-5-5-261028" class="on">5.5</button><button data-seedream-model="doubao-seedream-4-5-251128">4.5</button><button data-seedream-model="doubao-seedream-4-0-250828">4.0</button></div></div>
+
         <div class="set-subtitle"><span>用量</span></div>
         <div class="set-row"><span>今日云端</span><b id="usageToday">—</b></div>
         <div class="set-row"><span>本月云端</span><b id="usageMonth">—</b></div>
@@ -1290,16 +1304,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <div class="set-links"><button class="set-action" id="billingLink">刷新用量</button></div>
       </section>
 
-      <section class="set-sec">
-        <div class="set-title"><span>Seedream</span></div>
-        <div class="set-row"><span>API Key</span><b id="seedreamKeyState" class="key-state warn">未配置</b></div>
-        <div class="key-edit" id="seedreamKeyEdit" hidden>
-          <input id="seedreamKeyInput" type="password" placeholder="ARK API Key" autocomplete="off">
-          <button class="set-action" id="seedreamKeySave">保存</button>
-        </div>
-        <div class="set-links"><button class="set-action" id="seedreamKeyChange">更换 Key</button></div>
-        <div class="set-field"><span class="lab">模型</span><div class="mini-seg" id="seedreamModelGroup" data-group="seedream"><button data-seedream-model="doubao-seedream-4-0-250828" class="on">Seedream 4.0</button><button data-seedream-model="doubao-seedream-4-5-251128">4.5</button></div></div>
-      </section>
 
       <section class="set-sec">
         <div class="set-title"><span>输出与隐私</span></div>
@@ -1425,6 +1429,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <label class="refine-label" for="refinePrompt">编辑要求</label>
         <textarea id="refinePrompt" rows="7" spellcheck="false"></textarea>
         <p class="refine-note">图片编辑接口会强制进行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
+        <div class="model-seg" id="refineModel"><span>模型</span><button data-refine-model="minimax" class="on">MiniMax H3</button><button data-refine-model="seedream">Seedream 5.5</button></div>
         <div class="refine-cost" id="refineCost"></div>
       </div>
     </div>
@@ -2810,7 +2815,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.30.0',
+        version: '0.31.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3356,14 +3361,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
-  var textState = { aspect: '1:1', quality: '2K', busy: false, result: null };
+  var textState = { model: 'minimax', aspect: '1:1', quality: '2K', busy: false, result: null };
   var TEXT_TEMPLATES = [
     { name: '东方印谱', prompt: '以【主体】为唯一主体，做一张3:4东方印谱海报：上方50%保留【主体】的真实照片感，下方50%是一页印谱，一方朱砂肖形印蜕与一条边款墨拓错落放置；宣纸白不少于70%，朱砂红、墨黑、纸白，刀痕古拙，纸白留白；【主色】只以极小铅笔注记出现；不要数码印章素材、满版印章、廉价国潮、3D。' },
     { name: '白石雕塑', prompt: '把【主体】转化为白色大理石/石膏雕塑，保留主体身份、数量、姿态与构图；纯黑虚空，背后一圈极细白色霓虹光环，冷银灰单色，石材凿痕、石粉与细裂纹；【场景】只作为远处云团或石台承托；不要活体毛发、森林、彩色、3D游戏或复杂背景。' },
     { name: '玄黄版画', prompt: '2D丝网印刷/木刻版画，不是3D场景：把【主体】压缩成深青色硬边剪影，保留身份、姿态与关键轮廓；深青、墨蓝、明黄、琥珀四色平涂；巨大黄色日轮，木刻龙形卷云与同心圆线；纸纹、套色偏移、旧印刷磨损；【情绪】通过构图与留白表达；不要写实风景、照片、体积云、3D、景深。' },
     { name: '产品海报', prompt: '为【产品】做一张高级产品海报：主体居中偏下，保留包装结构与品牌色【品牌色】；背景为【场景】，柔和侧光与真实接触阴影；留出大面积干净留白，画面角落一行极小说明；像真实棚拍与平面设计结合，不要塑料3D、过度高光、模板化大字、水印或无关文字。' },
   ];
-  var seedreamState = { mode: 'text', aspect: '1:1', quality: '2K', source: null, busy: false, result: null };
+  var seedreamState = { mode: 'text', model: 'doubao-seedream-5-5-261028', aspect: '1:1', quality: '2K', source: null, busy: false, result: null };
 
   function renderTextTemplates() {
     var box = $('#textTemplates');
@@ -3382,11 +3387,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       ? '火山方舟 · 已配置 · 尾号 ' + (settings.seedreamKeyHint || '****')
       : '火山方舟 · 未配置 Key';
     $$('#seedreamMode button').forEach(function (b) { b.classList.toggle('on', b.dataset.seedreamMode === seedreamState.mode); });
+    $$('#seedreamModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.seedreamModel === seedreamState.model); });
     $$('#seedreamAspect button').forEach(function (b) { b.classList.toggle('on', b.dataset.aspect === seedreamState.aspect); });
     $$('#seedreamQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.quality === seedreamState.quality); });
     $('#seedreamEditBox').hidden = seedreamState.mode !== 'edit';
     var size = textTargetSize(seedreamState.aspect, seedreamState.quality);
-    $('#seedreamCost').textContent = 'Seedream · ' + size + ' · 约 ¥0.20/张';
+    var sModel = seedreamState.model === 'doubao-seedream-5-5-261028' ? 'Seedream 5.5' : seedreamState.model === 'doubao-seedream-4-5-251128' ? 'Seedream 4.5' : 'Seedream 4.0';
+    var sPrice = seedreamState.model === 'doubao-seedream-5-5-261028' ? 0.28 : 0.20;
+    $('#seedreamCost').textContent = sModel + ' · ' + size + ' · 约 ¥' + sPrice.toFixed(2) + '/张';
     var needsSource = seedreamState.mode === 'edit' && !(seedreamState.source && seedreamState.source.url);
     $('#seedreamGenerate').disabled = seedreamState.busy || !settings.hasSeedreamKey || !$('#seedreamPrompt').value.trim() || needsSource;
     $('#seedreamGenerate').textContent = seedreamState.busy ? '生成中…' : '生成';
@@ -3421,7 +3429,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     seedreamState.busy = true;
     renderSeedreamPage();
     try {
-      var body = { prompt: prompt, size: size };
+      var body = { prompt: prompt, size: size, model: seedreamState.model };
       var path = '/seedream/text';
       if (seedreamState.mode === 'edit') {
         path = '/seedream/edit';
@@ -3465,32 +3473,73 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var ratio = Number(parts[0]) / Number(parts[1]);
     var width = Math.round(Math.sqrt(target * ratio));
     var height = Math.round(width / ratio);
+    while (width * height > 16777216) { width -= 1; height = Math.round(width / ratio); }
+    while (width * height < 921600) { width += 1; height = Math.round(width / ratio); }
     return width + 'x' + height;
+  }
+
+  function textModelName() {
+    return textState.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3';
+  }
+
+  function textPrice() {
+    return textState.model === 'seedream' ? 0.28 : Number(cloudUnitPrice(textState.quality));
   }
 
   function renderTextPage() {
     if (!$('#textPage')) return;
+    $$('#textModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.model === textState.model); });
     $$('#textAspect button').forEach(function (b) { b.classList.toggle('on', b.dataset.aspect === textState.aspect); });
     $$('#textQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.quality === textState.quality); });
     var size = textTargetSize(textState.aspect, textState.quality);
-    $('#textCost').textContent = textState.quality + ' · ' + size + ' · 约 ¥' + Number(cloudUnitPrice(textState.quality)).toFixed(4);
-    $('#textGenerate').disabled = textState.busy || !$('#textPrompt').value.trim();
+    var seedream = textState.model === 'seedream';
+    $('#textModeHint').textContent = seedream ? 'Seedream 5.5 · 不读取参考图' : 'Prompt 增强已关闭 · 不读取参考图';
+    $('#textCost').textContent = textModelName() + ' · ' + size + ' · 约 ¥' + textPrice().toFixed(2);
+    var needsKey = seedream ? !state.settings.hasSeedreamKey : !cloudReady();
+    $('#textGenerate').disabled = textState.busy || needsKey || !$('#textPrompt').value.trim();
     $('#textGenerate').textContent = textState.busy ? '生成中…' : '生成';
+  }
+
+  function showTextResult(data) {
+    textState.result = { url: data.url, w: data.w, h: data.h, model: textState.model };
+    $('#textEmpty').hidden = true;
+    $('#textActions').hidden = false;
+    var img = $('#textImage');
+    img.src = data.url;
+    img.hidden = false;
+    $('#textPage').classList.add('has-result');
+    loadAllHistory(true);
+    toast('文生图完成');
   }
 
   async function startTextJob() {
     if (textState.busy) return;
     var prompt = $('#textPrompt').value.trim();
     if (!prompt) { toast('填写提示词'); $('#textPrompt').focus(); return; }
-    if (!cloudReady()) { toast('先在设置里保存 API Key'); openSettings(); return; }
+    var seedream = textState.model === 'seedream';
+    if (seedream ? !state.settings.hasSeedreamKey : !cloudReady()) {
+      toast(seedream ? '先在设置里保存 Seedream Key' : '先在设置里保存 API Key');
+      openSettings();
+      return;
+    }
     var size = textTargetSize(textState.aspect, textState.quality);
     if (state.settings.privacyConfirm) {
-      var ok = window.confirm('纯文生图会请求 MiniMax，预计 ¥' + Number(cloudUnitPrice(textState.quality)).toFixed(4) + '。\n\n继续？');
+      var ok = window.confirm(textModelName() + ' 纯文生图，预计 ¥' + textPrice().toFixed(2) + '。\n\n继续？');
       if (!ok) return;
     }
     textState.busy = true;
     renderTextPage();
     try {
+      if (seedream) {
+        var sr = await apiFetch('/seedream/text', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: prompt, size: size, model: 'doubao-seedream-5-5-261028' }),
+        });
+        var sd = await sr.json().catch(function () { return {}; });
+        if (!sr.ok) throw cloudError(sd.error || ('Seedream 请求失败 ' + sr.status), sd.code);
+        showTextResult(sd);
+        return;
+      }
       var res = await fetch(API + '/cloud/text-jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3503,8 +3552,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           ' · 预算 ¥' + Number(data.budgetYuan || 0).toFixed(2) + '。\n\n仍要生成吗？';
         if (!window.confirm(msg)) throw cloudError('已取消文生图', 'budget_cancelled');
         res = await fetch(API + '/cloud/text-jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: prompt, size: size, allowOverBudget: true }),
         });
         data = await res.json().catch(function () { return {}; });
@@ -3514,15 +3562,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (job.status !== 'succeeded' || !job.output) {
         throw cloudError((job.error && job.error.message) || ('文生图作业 ' + job.status), (job.error && job.error.code) || job.status);
       }
-      textState.result = { url: job.output.url, w: job.output.w, h: job.output.h };
-      $('#textEmpty').hidden = true;
-      $('#textActions').hidden = false;
-      var img = $('#textImage');
-      img.src = job.output.url;
-      img.hidden = false;
-      $('#textPage').classList.add('has-result');
-      loadAllHistory(true);
-      toast('文生图完成');
+      showTextResult(job.output);
     } catch (err) {
       toast(err.message || '文生图失败');
     } finally {
@@ -3533,17 +3573,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   function viewTextResult() {
     if (!textState.result) return;
+    var seedream = textState.result.model === 'seedream';
     openBig({
-      key: resultKey({ id: 'h3-text', cloud: true, url: textState.result.url }),
+      key: resultKey({ id: seedream ? 'seedream' : 'h3-text', cloud: true, url: textState.result.url }),
       url: textState.result.url,
-      title: '纯文生图',
-      meta: '文生图 · ' + textState.result.w + ' × ' + textState.result.h + ' · Prompt 增强已关闭',
+      title: seedream ? 'Seedream 5.5' : 'MiniMax H3',
+      meta: seedream ? 'Seedream 5.5 · ' + textState.result.w + ' × ' + textState.result.h : '文生图 · ' + textState.result.w + ' × ' + textState.result.h + ' · Prompt 增强已关闭',
       info: '',
       w: textState.result.w,
       h: textState.result.h,
       border: 'none',
       resultId: null,
-      styleId: 'h3-text',
+      styleId: seedream ? 'seedream' : 'h3-text',
       cloud: true,
     });
   }
@@ -3886,7 +3927,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       el.classList.add('warn');
     }
     $$('#seedreamModelGroup button').forEach(function (b) {
-      b.classList.toggle('on', b.dataset.seedreamModel === (s && s.seedreamModel ? s.seedreamModel : 'doubao-seedream-4-0-250828'));
+      b.classList.toggle('on', b.dataset.seedreamModel === (s && s.seedreamModel ? s.seedreamModel : 'doubao-seedream-5-5-261028'));
     });
   }
   function saveSeedreamKeyOnly() {
@@ -3958,7 +3999,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       base: currentSeg('base') === '国际站' ? 'intl' : 'cn',
       model: currentSeg('model') === 'H3 极速' ? 'highspeed' : 'standard',
       billing: currentSeg('bill') === 'M Plan' ? 'mplan' : 'payg',
-      seedreamModel: ($('#seedreamModelGroup button.on') && $('#seedreamModelGroup button.on').dataset.seedreamModel) || 'doubao-seedream-4-0-250828',
+      seedreamModel: ($('#seedreamModelGroup button.on') && $('#seedreamModelGroup button.on').dataset.seedreamModel) || 'doubao-seedream-5-5-261028',
       enableCloud: !!(state.settings && state.settings.hasKey)
     };
     var key = $('#keyInput').value.trim();
@@ -4350,7 +4391,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   /* ————— 二次编辑 ————— */
   var REFINE_PROMPT = '在保持当前图片构图、主体身份、主体数量、画面文字和整体风格不变的前提下进行二次优化：修正细节结构、边缘和材质，提升清晰度、光影层次与完成度，减少伪影；不要新增主体、文字或改变画幅。';
-  var refine = { url: '', title: '', w: 0, h: 0, busy: false, result: null };
+  var refine = { url: '', title: '', w: 0, h: 0, model: 'minimax', busy: false, result: null };
 
   function refineTargetSize(w, h) {
     var target = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[state.cloudQuality] || 4194304;
@@ -4388,16 +4429,43 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     return saved.id;
   }
 
+  async function refineDataUrl(url) {
+    if (url.indexOf('data:') === 0) return url;
+    var fetched = await fetch(url);
+    if (!fetched.ok) throw cloudError('二次编辑原图读取失败', 'asset_read_failed');
+    return blobToDataUrl(await fetched.blob());
+  }
+
   function syncRefineCost() {
-    var cost = Number(cloudUnitPrice()) || 0;
-    $('#refineCost').textContent = state.cloudQuality + ' · ' + refineTargetSize(refine.w, refine.h) + ' · 约 ¥' + cost.toFixed(4);
+    var size = refineTargetSize(refine.w, refine.h);
+    var seedream = refine.model === 'seedream';
+    var cost = seedream ? 0.28 : (Number(cloudUnitPrice()) || 0);
+    $('#refineCost').textContent = (seedream ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + size + ' · 约 ¥' + cost.toFixed(2);
+    $$('#refineModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.refineModel === refine.model); });
+  }
+
+  function finishRefineResult(result) {
+    refine.result = { url: result.url, w: result.w, h: result.h };
+    refine.url = result.url;
+    refine.w = result.w;
+    refine.h = result.h;
+    $('#refineSource').src = result.url;
+    $('#refineMeta').textContent = '二次编辑 · ' + result.w + ' × ' + result.h;
+    $('#refineStatus').textContent = '完成 · 已加入最近生成';
+    $('#refineStatus').className = 'refine-status';
+    $('#refineStart').hidden = true;
+    $('#refineView').hidden = false;
+    $('#refineDownload').hidden = false;
+    $('#refineAgain').hidden = false;
+    loadAllHistory(true);
+    toast('二次优化完成');
   }
 
   function openRefine() {
     if (!bigState || !bigState.url) return;
     var source = { url: bigState.url, title: bigState.title || '生成图片', w: bigState.w || 0, h: bigState.h || 0 };
     closeResultBig();
-    refine = { url: source.url, title: source.title, w: source.w, h: source.h, busy: false, result: null };
+    refine = { url: source.url, title: source.title, w: source.w, h: source.h, model: 'minimax', busy: false, result: null };
     $('#refineMeta').textContent = (refine.title || '生成图片') + ' · ' + (refine.w && refine.h ? refine.w + ' × ' + refine.h : '');
     $('#refineSource').src = refine.url;
     $('#refinePrompt').value = REFINE_PROMPT;
@@ -4409,6 +4477,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineStart').hidden = false;
     $('#refineStart').disabled = false;
     $('#refineStart').textContent = '开始二次优化';
+    refine.model = 'minimax';
     syncRefineCost();
     $('#refineLayer').inert = false;
     $('#refineLayer').classList.add('open');
@@ -4427,12 +4496,18 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   async function startRefine() {
     if (refine.busy) return;
-    if (!cloudReady()) { toast('先在设置里保存 API Key 启用云端'); openSettings(); return; }
+    var seedream = refine.model === 'seedream';
+    if (seedream ? !state.settings.hasSeedreamKey : !cloudReady()) {
+      toast(seedream ? '先在设置里保存 Seedream Key' : '先在设置里保存 API Key 启用云端');
+      openSettings();
+      return;
+    }
     var prompt = $('#refinePrompt').value.trim();
     if (!prompt) { toast('填写二次编辑要求'); $('#refinePrompt').focus(); return; }
+    var size = refineTargetSize(refine.w, refine.h);
     if (state.settings.privacyConfirm) {
-      var ok = window.confirm('二次编辑会把当前生成图上传到 MiniMax（国内站，按量）。\n' +
-        state.cloudQuality + ' · 预计 ¥' + Number(cloudUnitPrice()).toFixed(4) + '。\n\n继续？');
+      var ok = window.confirm('二次编辑会把当前图片上传到 ' + (seedream ? '火山方舟' : 'MiniMax') + '（按量）。\n' +
+        (seedream ? 'Seedream 5.5' : state.cloudQuality) + ' · 预计 ¥' + (seedream ? '0.28' : Number(cloudUnitPrice()).toFixed(2)) + '。\n\n继续？');
       if (!ok) return;
     }
     refine.busy = true;
@@ -4442,13 +4517,24 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#refineStatus').textContent = '读取原图…';
     $('#refineStatus').className = 'refine-status';
     try {
+      if (seedream) {
+        var dataUrl = await refineDataUrl(refine.url);
+        var sr = await apiFetch('/seedream/edit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: prompt, size: size, imageDataUrl: dataUrl, model: 'doubao-seedream-5-5-261028' }),
+        });
+        var sd = await sr.json().catch(function () { return {}; });
+        if (!sr.ok) throw cloudError(sd.error || ('Seedream 请求失败 ' + sr.status), sd.code);
+        finishRefineResult(sd);
+        return;
+      }
       var assetId = await uploadRefineSource(refine.url);
       $('#refineStatus').textContent = '上传完成，提交作业…';
       var body = {
         assetId: assetId,
         styleId: 'h3-refine',
         prompt: prompt,
-        size: refineTargetSize(refine.w, refine.h),
+        size: size,
         params: {},
       };
       var res = await fetch(API + '/cloud/jobs', {
@@ -4473,19 +4559,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (job.status !== 'succeeded' || !job.output) {
         throw cloudError((job.error && job.error.message) || ('云端作业 ' + job.status), (job.error && job.error.code) || job.status);
       }
-      refine.result = { url: job.output.url, w: job.output.w, h: job.output.h, cost: Number(cloudUnitPrice()) };
-      refine.url = refine.result.url;
-      refine.w = refine.result.w;
-      refine.h = refine.result.h;
-      $('#refineSource').src = refine.result.url;
-      $('#refineMeta').textContent = '二次编辑 · ' + refine.result.w + ' × ' + refine.result.h;
-      $('#refineStatus').textContent = '完成 · 已加入最近生成';
-      startBtn.hidden = true;
-      $('#refineView').hidden = false;
-      $('#refineDownload').hidden = false;
-      $('#refineAgain').hidden = false;
-      loadAllHistory(true);
-      toast('二次优化完成');
+      finishRefineResult(job.output);
     } catch (err) {
       $('#refineStatus').textContent = err.message || '二次优化失败';
       $('#refineStatus').className = 'refine-status error';
@@ -4710,7 +4784,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.30.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.31.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -4790,6 +4864,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#resultRefine').addEventListener('click', openRefine);
     $$('[data-refine-close]').forEach(function (el) { el.addEventListener('click', closeRefine); });
     $('#refineStart').addEventListener('click', startRefine);
+    $('#refineModel').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-refine-model]');
+      if (!b) return;
+      refine.model = b.dataset.refineModel;
+      syncRefineCost();
+    });
     $('#refineView').addEventListener('click', function () {
       if (!refine.result) return;
       var result = refine.result;
@@ -4846,6 +4926,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#recentRefresh').addEventListener('click', function () { loadAllHistory(true); });
     $('#textPrompt').addEventListener('input', renderTextPage);
+    $('#textModel').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-model]');
+      if (!b) return;
+      textState.model = b.dataset.model;
+      renderTextPage();
+    });
     $('#textTemplates').addEventListener('click', function (e) {
       var b = e.target.closest('[data-text-template]');
       if (!b) return;
@@ -4857,6 +4943,12 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $$('#seedreamMode button').forEach(function (b) {
       b.addEventListener('click', function () { seedreamState.mode = b.dataset.seedreamMode; renderSeedreamPage(); });
+    });
+    $('#seedreamModel').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-seedream-model]');
+      if (!b) return;
+      seedreamState.model = b.dataset.seedreamModel;
+      renderSeedreamPage();
     });
     $('#seedreamPrompt').addEventListener('input', renderSeedreamPage);
     $('#seedreamAspect').addEventListener('click', function (e) {
@@ -5124,7 +5216,6 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#cloudSettings').addEventListener('click', openSettings);
     $$('[data-close]').forEach(function (el) { el.addEventListener('click', closeSettings); });
     $('#saveSettings').addEventListener('click', saveSettings);
-    $('#keyTest').addEventListener('click', testKey);
     $('#keyChange').addEventListener('click', function () {
       var box = $('#keyEdit');
       box.hidden = !box.hidden;
