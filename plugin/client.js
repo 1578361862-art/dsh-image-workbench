@@ -921,6 +921,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .matrix-dialog .drawer-foot .ins-note{flex:1;margin:0;font-size:10px}
 .iw-root .cloud-price-hint{margin-top:4px;font-family:var(--p-mono);font-size:10px;line-height:1.45;color:var(--p-ink-4)}
 .iw-root .prompt-preview{margin-top:4px;padding:4px 8px;border-left:2px solid var(--p-hair);background:var(--p-sunken);font-family:var(--p-mono);font-size:10px;line-height:1.5;color:var(--p-ink-3);max-height:100px;overflow:auto;white-space:pre-wrap}
+.iw-root .prompt-tabs{ display:flex; flex-wrap:wrap; gap:4px; margin:4px 0; }
+.iw-root .prompt-tabs button{ height:24px; padding:0 7px; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; cursor:pointer; }
+.iw-root .prompt-tabs button.on{ background:var(--p-ink); border-color:var(--p-ink); color:var(--p-paper); }
 .iw-root .prompt-select{ width:100%; height:24px; margin-top:4px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; color:var(--p-ink-2); }
 .iw-root .prompt-textarea{ width:100%; box-sizing:border-box; margin-top:4px; padding:6px; border:1px solid var(--p-hair); background:var(--p-paper-2); font-family:var(--p-mono); font-size:10px; line-height:1.55; color:var(--p-ink-2); resize:vertical; min-height:92px; }
 .iw-root .prompt-textarea:focus{ outline:none; border-color:var(--p-ink-3); }
@@ -1116,9 +1119,11 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         <summary><span>提示词</span><span class="ins-group-hint">云端 H3</span></summary>
         <div class="field">
           <div class="lab"><span id="promptStyleName">云端风格</span><span class="val" id="promptState">默认</span></div>
-          <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格"></select>
+          <div class="prompt-tabs" id="promptTabs"></div>
+          <select class="prompt-select" id="cloudPromptSelect" aria-label="选择云端风格" hidden></select>
           <textarea class="prompt-textarea" id="cloudPrompt" rows="5" spellcheck="false" aria-label="云端提示词"></textarea>
           <div class="prompt-actions">
+            <button class="ghost-btn" id="cloudPromptSave">保存为本地</button>
             <button class="ghost-btn" id="cloudPromptReset">恢复默认</button>
           </div>
         </div>
@@ -1464,6 +1469,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 
   var HISTORY_KEY = 'dsh-image-workbench/history/v1';
   var HIDDEN_KEY = 'dsh-image-workbench/hidden-styles/v1';
+  var PROMPT_KEY = 'dsh-image-workbench/prompt-overrides/v1';
   var hiddenStyles = readHiddenStyles();
   var FEEDBACK_KEY = 'dsh-image-workbench/feedback/v1';
   var FAVORITES_KEY = 'dsh-image-workbench/favorites/v1';
@@ -1604,7 +1610,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     isSample: false,
     thumbs: {},
     settings: null
-  };
+  }
+  try { var storedPrompts = JSON.parse(localStorage.getItem(PROMPT_KEY) || '{}'); if (storedPrompts && typeof storedPrompts === 'object' && !Array.isArray(storedPrompts)) state.promptOverrides = storedPrompts; } catch (e) {};
 
   function make(w, h) {
     var c = document.createElement('canvas');
@@ -2394,9 +2401,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   function currentCloudStyleId() {
     var ids = selectedCloudIds();
     if (!ids.length) return '';
+    if (state.focus && ids.indexOf(state.focus) >= 0) return state.focus;
     var sel = $('#cloudPromptSelect') ? $('#cloudPromptSelect').value : '';
     if (sel && ids.indexOf(sel) >= 0) return sel;
-    if (state.focus && ids.indexOf(state.focus) >= 0) return state.focus;
     return ids[0];
   }
 
@@ -2444,8 +2451,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
         var st = styleById(id);
         return '<option value="' + id + '">' + escapeHTML(st ? st.name : id) + '</option>';
       }).join('');
-      select.hidden = ids.length <= 1;
+      select.hidden = true;
     }
+    var tabs = $('#promptTabs');
+    if (tabs) tabs.innerHTML = ids.map(function (id) {
+      var st = styleById(id);
+      return '<button type="button" data-prompt-style="' + id + '" class="' + (id === currentCloudStyleId() ? 'on' : '') + '">' + escapeHTML(st ? st.name : id) + '</button>';
+    }).join('');
+    if (select) select.value = currentCloudStyleId();
     var id = currentCloudStyleId();
     if (!id) return;
     if (select) select.value = id;
@@ -2455,13 +2468,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var area = $('#cloudPrompt');
     if (area && document.activeElement !== area) area.value = promptFor(id);
     var stateEl = $('#promptState');
-    if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '已改写' : '默认';
+    if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '本地' : '默认';
   }
 
   function resetPrompt() {
     var id = currentCloudStyleId();
     if (!id) return;
     delete state.promptOverrides[id];
+    try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
     var area = $('#cloudPrompt');
     if (area) area.value = defaultPrompt(id);
     $('#promptState').textContent = '默认';
@@ -2839,7 +2853,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.35.1',
+        version: '0.36.0',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -5038,7 +5052,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.35.1', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.0', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5485,6 +5499,28 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
     $('#seedreamKeySave').addEventListener('click', saveSeedreamKeyOnly);
     $('#cloudPromptReset').addEventListener('click', resetPrompt);
+    $('#cloudPromptSave').addEventListener('click', function () {
+      var id = currentCloudStyleId();
+      if (!id) return;
+      var area = $('#cloudPrompt');
+      if (!area) return;
+      var val = area.value;
+      if (val.trim() === defaultPrompt(id).trim()) delete state.promptOverrides[id];
+      else state.promptOverrides[id] = val;
+      try { localStorage.setItem(PROMPT_KEY, JSON.stringify(state.promptOverrides)); } catch (e) {}
+      var stateEl = $('#promptState'); if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '本地' : '默认';
+      if (state.results.length) state.dirty = true;
+      toast('已保存为本机提示词');
+    });
+    $('#promptTabs').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-prompt-style]');
+      if (!b) return;
+      state.focus = b.dataset.promptStyle;
+      var sel = $('#cloudPromptSelect'); if (sel) sel.value = state.focus;
+      renderPromptPanel();
+      renderChips();
+      updateUI();
+    });
     $('#cloudPromptSelect').addEventListener('change', function (e) {
       state.focus = e.target.value;
       renderChips();
@@ -5497,7 +5533,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (val.trim() === defaultPrompt(id).trim()) delete state.promptOverrides[id];
       else state.promptOverrides[id] = val;
       var stateEl = $('#promptState');
-      if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '已改写' : '默认';
+      if (stateEl) stateEl.textContent = state.promptOverrides[id] !== undefined ? '未保存' : '默认';
       if (state.results.length) state.dirty = true;
     });
     $('#clearHistory').addEventListener('click', function () {
