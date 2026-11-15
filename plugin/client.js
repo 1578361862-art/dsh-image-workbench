@@ -343,6 +343,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .recent-card:hover .recent-edit{ border-color:var(--p-ink-3); color:var(--p-ink); }
 .iw-root .recent-card:hover{ border-color:var(--p-ink-3); }
 .iw-root .recent-head-actions{ display:flex; gap:6px; align-items:center; }
+.iw-root .recent-archive-btn{ display:inline-flex; align-items:center; gap:5px; }
+.iw-root .recent-archive-btn b{ min-width:15px; height:15px; padding:0 4px; display:inline-flex; align-items:center; justify-content:center; background:var(--p-sunken); color:var(--p-ink-3); font-family:var(--p-mono); font-size:9px; font-weight:400; }
+.iw-root .recent-archive-btn.on{ color:var(--p-signal); border-color:var(--p-signal); background:var(--p-signal-plate); }
+.iw-root .recent-archive-btn.on b{ background:var(--p-signal); color:var(--p-paper); }
 .iw-root .recent-actions{ display:flex; gap:3px; margin-top:5px; }
 .iw-root .rc-action{ width:24px; height:22px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--p-hair); background:var(--p-paper); color:var(--p-ink-4); cursor:pointer; padding:0; }
 .iw-root .rc-action:hover{ color:var(--p-ink); border-color:var(--p-ink-3); }
@@ -1192,7 +1196,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
   <section class="wrap recent-page" id="recentPage" hidden>
     <div class="recent-head">
       <div><h2>最近生成</h2><span id="recentMeta"></span></div>
-      <div class="recent-head-actions"><button class="ghost-btn" id="recentArchiveToggle">归档 <span id="archiveCount">0</span></button><button class="ghost-btn" id="recentRefresh">刷新</button></div>
+      <div class="recent-head-actions"><button class="ghost-btn recent-archive-btn" id="recentArchiveToggle" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h11v3h-11z"/><path d="M3.5 6.5v6h9v-6M6.5 9.5h3"/></svg><span id="archiveLabel">归档</span><b id="archiveCount">0</b></button><button class="ghost-btn" id="recentRefresh">刷新</button></div>
     </div>
     <div class="recent-grid" id="recentGrid"></div>
   </section>
@@ -1589,6 +1593,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     { id: 'h3-ramayana', name: '罗摩衍那', renderer: 'model', eta: '25s', desc: '红金史诗、战车', previewBase: 'riso', previewParams: {'ink': 'vermilion'}, prompt: cloudSceneRefPrompt('印度史诗《罗摩衍那》油画/古典插画：红金主色，强烈动态对角线，战车、黑马、弓与箭、飘动红披风、金色珠宝与繁复纹样；厚涂油画与古典插画质感，烟尘和夕阳；主体成为史诗英雄或神祇，保留身份、姿态、服装轮廓和关键特征；允许战车与马匹作为环境叙事元素，不替换主体；不要现代照片、3DCG、文字或UI。') },
     { id: 'h3-cosmic', name: '星河神性', renderer: 'model', eta: '25s', desc: '黑洞星云、古典油画', previewBase: 'duotone', previewParams: {'ink': 'ink'}, prompt: cloudSceneRefPrompt('星河神性/超现实古典油画：深黑星空与金色星云、黑洞吸积盘，云海翻涌；主体以古典衣褶坐在悬崖或岩石上，背对或侧对观众，仰望深渊；古典油画厚涂、金色神光、巨大尺度、神圣敬畏；保留主体身份、姿态和服装轮廓；允许宇宙环境替换背景；不要普通星空照片、科幻UI、塑料3D或文字。') },
     { id: 'h3-seal', name: '金石印谱', renderer: 'model', eta: '25s', desc: '3:4 双格 · 肖形印蜕', previewBase: 'poster', fixedRatio: '3:4', prompt: cloudSealPrompt('图1是唯一参考照片。请将这张照片制作成一张独立的高级设计海报，不多图拼接，单张输出。整体采用3:4竖版构图，上下两个区域高度严格1:1，各占画面50%。上下两格在中线处直接、干净地拼接，不加粗分隔条、边框、额外画格或标签；所有风格化处理、纸张肌理与色彩变化都只发生在下半部分。\n\n上半部分保留原始照片，保持主体身份、数量、结构、姿态、朝向、真实质感、自然光影与原有色彩氛围，仅进行轻微高级调色，使其具有艺术摄影与东方展览图像质感。为适配画幅，可自然扩展环境背景，但不得拉伸、扭曲、镜像或改变主体；若上传的图像本身是插画，则上半部分照原样保留。\n\n下半部分是一页印谱：中央偏上是一方用朱砂印泥钤出的肖形印印蜕，印面把上方照片中最具识别性的主体压缩为一个篆刻式的剪影符号，刀痕可见、线条古拙、正负形分明，可以是朱文或白文，方形、圆形或随形边框。\n\n下半部分按题材只保留让主体一眼可辨的最少信息：人物保留数量、姿态、朝向、发型与服装主色，不刻画五官细节；动物保留物种特征、花纹与姿态；建筑保留屋顶走势、主要入口与比例；交通工具保留朝向、车轮或船身弧线；风景保留一条地平线、山脊或岸线。删除密集植被、重复窗格、杂乱背景与广告招牌。\n\n印蜕旁边是这方印侧面边款的墨拓：黑色拓片中隐约可见几行刻字与刀痕，形成一红一黑、一印一拓的呼应关系。\n\n材质强调真实篆刻：印泥的颗粒与压印不均、边框的残破与刀口的崩口、宣纸的纤维与轻微晕染、墨拓的浓淡与纸面凹凸。避免数码印章素材、完美矢量边框和3D渲染。\n\n构图：印蜕只占下半部分宽度约20%–25%，边款拓片更窄更长，两者错落放置，纸白不少于70%。\n\n色彩：朱砂红、墨黑与宣纸白构成全部色彩，只允许从上方照片中提取一种颜色以极小的铅笔注记出现。\n\n文字：边款拓片中的刻字与页面角落一行极小的小字说明（印名、尺寸），不限制语种。\n\n整体呈现肖形印蜕、边款墨拓、刀痕古拙与大量纸白构成的东方金石视觉。核心原则是：把一个瞬间，刻进一方石头，再印下来。避免数码印章素材、满版印章、廉价国潮、过度对称、卡通感和模板化 logo。') },
+    { id: 'seedream-fashion', name: 'Seedream 时尚墨镜', renderer: 'model', eta: '25s', desc: '官方示例 · 杂志肖像 / 直闪墨镜', prompt: cloudPrompt('高级时装杂志肖像：人物近景，脸部与肩部占画面主体，戴一副夸张的黑色墨镜；单灯直闪或硬质棚拍光，干净背景，真实皮肤质感与细微高光；保留人物身份、面部特征、发型、服装轮廓和姿态；配饰与妆容克制，画面像一页完整的高级时尚大片，不是塑料3D、过度磨皮或广告大字。') },
+    { id: 'seedream-animal', name: 'Seedream 动物绘本', renderer: 'model', eta: '25s', desc: '官方示例 · 透明图层 / 动物群像', prompt: cloudPrompt('儿童绘本式动物群像：多种动物在同一片自然场景中，各自姿态清晰、轮廓完整、颜色明快；平面插画与柔和纸纹，动物之间不遮挡关键特征，背景简洁；像一页可以拆分成独立角色的绘本插画，主体边缘干净，不要写实照片、3D塑料感或复杂UI。') },
+    { id: 'seedream-acrylic', name: 'Seedream 亚克力立牌', renderer: 'model', eta: '25s', desc: '官方示例 · 透明基材 / 产品质感', prompt: cloudPrompt('透明亚克力立牌产品图：矩形轮廓，四周一圈白色细描边，中心是【主体】的贴纸式插画；复古红、森林绿、香槟金与米白，手账拼贴风，边缘有亚克力厚度带来的高光折射；像真实产品摄影，不是平面海报、塑料3D或模板化大标题。') },
+    { id: 'seedream-sticker', name: 'Seedream 贴纸拼版', renderer: 'model', eta: '25s', desc: '官方示例 · 独立贴纸 / 透明边缘', prompt: cloudPrompt('把【主体】做成一组独立贴纸拼版：每枚贴纸轮廓完整、边缘留白清晰、互不重叠，保留原有文字、颜色和关键细节；排列整齐，像一张可直接裁切的贴纸版；不要复杂背景、水印、UI或把贴纸融进场景。') },
     { id: 'h3-refine', name: '二次编辑', renderer: 'model', hidden: true, eta: '25s', desc: '对已生成图片再次编辑' },
     { id: 'h3-text', name: '纯文生图', renderer: 'model', hidden: true, eta: '25s', desc: '纯提示词生成' },
     { id: 'seedream', name: 'Seedream', renderer: 'model', hidden: true, eta: '20s', desc: '火山方舟 Seedream' },
@@ -2887,7 +2895,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       if (!files.length) throw new Error('empty');
       var manifest = {
         app: 'dsh-image-workbench',
-        version: '0.36.6',
+        version: '0.36.7',
         createdAt: new Date().toISOString(),
         source: { name: state.source.name, w: state.source.w, h: state.source.h },
         frame: state.frame,
@@ -3467,10 +3475,13 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#recentTabCount').textContent = String(items.length);
     $('#archiveCount').textContent = String(archCount);
     var toggle = $('#recentArchiveToggle');
+    var archiveLabel = $('#archiveLabel');
     if (toggle) {
       toggle.classList.toggle('on', showArchived);
       toggle.setAttribute('aria-pressed', showArchived ? 'true' : 'false');
+      toggle.title = showArchived ? '返回最近生成' : '查看已归档图片';
     }
+    if (archiveLabel) archiveLabel.textContent = showArchived ? '返回最近' : '归档';
     $('#recentMeta').textContent = recentLoading ? '载入中…' : (showArchived ? '已归档 · ' + items.length + ' 张' : (items.length ? items.length + ' 张 · ' + currentHistory().length + ' 次生成' : ''));
     if (!items.length) {
       grid.innerHTML = '<div class="recent-empty">' + (recentLoading ? '载入中…' : (showArchived ? '还没有归档图片' : '还没有生成记录')) + '</div>';
@@ -3484,7 +3495,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       var fav = favoriteIndex(key) >= 0;
       var isArch = archivedIndex(key) >= 0;
       return '<article class="recent-card">'
-        + '<button class="recent-open" data-recent-open="' + i + '" aria-label="查看 ' + escapeHTML(s.name) + '"><img loading="lazy" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
+        + '<button class="recent-open" data-recent-open="' + i + '" aria-label="查看 ' + escapeHTML(s.name) + '"><img loading="lazy" data-recent-key="' + escapeHTML(key) + '" src="' + escapeHTML(r.url) + '" alt="' + escapeHTML(s.name) + '">'
         + '<span class="rc-style">' + escapeHTML(s.name) + '</span>'
         + '<span class="rc-meta">' + escapeHTML(dateTimeLabel(item.entry.at)) + ' · ' + r.w + ' × ' + r.h + (r.cloud ? ' · 云端' : ' · 本机') + '</span></button>'
         + '<div class="recent-actions">'
@@ -3584,6 +3595,9 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     });
   }
 
+  function resultModelName(r) {
+    return /^seedream/.test(String(r && r.id || '')) ? 'Seedream 5.5' : 'MiniMax H3';
+  }
   function openRecentImage(index) {
     var item = recentItems()[index];
     if (!item) return;
@@ -3593,7 +3607,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       key: resultKey(r),
       url: r.url,
       title: s.name,
-      meta: dateTimeLabel(item.entry.at) + ' · ' + (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h,
+      meta: dateTimeLabel(item.entry.at) + ' · ' + resultModelName(r) + ' · ' + (r.w && r.h ? r.w + ' × ' + r.h : '读取尺寸…'),
       info: '历史生成 · ' + r.w + ' × ' + r.h,
       w: r.w,
       h: r.h,
@@ -4477,6 +4491,14 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     if (!layer) return;
     $('#resultTitle').textContent = opts.title || '结果';
     $('#resultMeta').textContent = opts.meta || '';
+    $('#resultBig').onload = function () {
+      var w = this.naturalWidth, h = this.naturalHeight;
+      if (!w || !h) return;
+      if (!bigState || !bigState.url) return;
+      if (!bigState.w || !bigState.h) { bigState.w = w; bigState.h = h; }
+      var meta = $('#resultMeta');
+      if (meta) meta.textContent = meta.textContent.replace(/读取尺寸…|0 × 0/g, w + ' × ' + h);
+    };
     $('#resultBig').src = opts.url;
     $('#resultBig').alt = (opts.title || '结果') + ' 大图';
     var infoEl = $('#resultInfo'); if (infoEl) infoEl.textContent = opts.info || '';
@@ -4500,7 +4522,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       key: resultKey(r),
       url: r.url,
       title: s.name,
-      meta: (r.cloud ? '云端 H3' : '本机') + ' · ' + r.w + ' × ' + r.h + ratioMeta,
+      meta: (state.genModel === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + r.w + ' × ' + r.h + ratioMeta,
       info: (state.border === 'polaroid' ? '宝丽来 4:5 · ' : '原图尺寸 · ') + r.w + ' × ' + r.h + ' · 可用底部按钮下载',
       w: r.w,
       h: r.h,
@@ -5194,7 +5216,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         files: files,
-        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.6', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
+        manifest: { app: 'dsh-image-workbench', kind: 'matrix', version: '0.36.7', createdAt: new Date().toISOString(), sources: matrix.sources.map(function (s) { return s.name; }), items: matrix.results.map(function (r) { return { source: r.sourceName, style: r.styleName, w: r.w, h: r.h }; }) },
       }),
     }).then(function (res) {
       if (!res.ok) throw new Error('export');
@@ -5423,6 +5445,15 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     $('#textDownload').addEventListener('click', function () {
       if (textState.result) triggerDownload(textState.result.url, '文生图-' + Date.now() + '.jpg');
     });
+    $('#recentGrid').addEventListener('load', function (e) {
+      var img = e.target;
+      if (!img || img.tagName !== 'IMG' || !img.dataset.recentKey) return;
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if (!w || !h) return;
+      var card = img.closest('.recent-card');
+      var meta = card && card.querySelector('.rc-meta');
+      if (meta) meta.textContent = meta.textContent.replace(/0 × 0/g, w + ' × ' + h);
+    }, true);
     $('#recentGrid').addEventListener('click', function (e) {
       var action = e.target.closest('[data-recent-action]');
       if (action) {
