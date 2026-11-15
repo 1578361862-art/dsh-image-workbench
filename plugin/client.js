@@ -1312,7 +1312,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
         <label class="toggle-row"><span>云端生成前确认费用</span><input type="checkbox" id="confirmCloud" checked></label>
-        <div class="set-row"><span>提示词增强</span><b>图片编辑强制 · 文生图关闭</b></div>
+        <div class="set-row"><span>提示词增强</span><b>MiniMax 强制 · 文生图关闭</b></div>
       </section>
 
       <section class="set-sec last">
@@ -1428,7 +1428,7 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
       <div class="refine-form">
         <label class="refine-label" for="refinePrompt">编辑要求</label>
         <textarea id="refinePrompt" rows="7" spellcheck="false"></textarea>
-        <p class="refine-note">图片编辑接口会强制进行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
+        <p class="refine-note" id="refineNote">MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。</p>
         <div class="model-seg" id="refineModel"><span>模型</span><button data-refine-model="minimax" class="on">MiniMax H3</button><button data-refine-model="seedream">Seedream 5.5</button></div>
         <div class="refine-cost" id="refineCost"></div>
       </div>
@@ -4442,6 +4442,8 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
     var cost = seedream ? 0.28 : (Number(cloudUnitPrice()) || 0);
     $('#refineCost').textContent = (seedream ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + size + ' · 约 ¥' + cost.toFixed(2);
     $$('#refineModel button').forEach(function (b) { b.classList.toggle('on', b.dataset.refineModel === refine.model); });
+    var note = $('#refineNote');
+    if (note) note.textContent = seedream ? 'Seedream 5.5 直接基于当前图片和提示词编辑。' : 'MiniMax 图片编辑会强制执行一次 Prompt 增强；这里输入你的原始编辑要求。';
   }
 
   function finishRefineResult(result) {
