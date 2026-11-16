@@ -34,14 +34,14 @@ export function createJobQueue({ store = createMemoryJobStore(), runner, clock =
   function findByIdempotency(key) {
     return store.list().find(job => job.idempotencyKey === key) || null
   }
-  function enqueue({ idempotencyKey, snapshot, provider = 'minimax' } = {}) {
+  function enqueue({ idempotencyKey, snapshot, provider = 'minimax', meta = {} } = {}) {
     if (typeof idempotencyKey !== 'string' || !idempotencyKey) throw new Error('idempotencyKey required')
     const existing = findByIdempotency(idempotencyKey)
     if (existing) return existing
     const now = clock().toISOString()
     const job = {
       id: `job_${Date.now().toString(36)}_${randomBytes(4).toString('hex')}`,
-      idempotencyKey, provider, status: 'queued', snapshot, createdAt: now, updatedAt: now,
+      idempotencyKey, provider, status: 'queued', snapshot, meta, createdAt: now, updatedAt: now,
       error: null, result: null, layerManifest: null,
     }
     save(job)

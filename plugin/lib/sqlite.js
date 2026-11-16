@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS assets (
 CREATE TABLE IF NOT EXISTS jobs (
   id TEXT PRIMARY KEY, idempotency_key TEXT NOT NULL UNIQUE, status TEXT NOT NULL,
   snapshot_json TEXT NOT NULL, provider_task_id TEXT, original_asset_id TEXT, layer_manifest_id TEXT,
+  provider TEXT, meta_json TEXT, result_json TEXT, retryable INTEGER,
   error_code TEXT, error_message TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS style_drafts (
