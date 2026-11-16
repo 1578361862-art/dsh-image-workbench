@@ -4287,7 +4287,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     format: 'png', compression: 90, enhance: false, background: 'auto', watermark: false,
     editModel: 'same', editSize: 'inherit', editPrompt: '', record: null, pending: false, busy: false,
     error: '', requestId: readJsonStore(flowHistoryKey, ''), timer: null, revealId: '', zoom: 1, x: 0, y: 0,
-    result: null, firstResult: null, editResult: null, artworkId: null, parentVersionId: null, jobKind: 'first', layerGroup: null,
+    result: null, firstResult: null, editResult: null, artworkId: null, parentVersionId: null, jobKind: 'first', layerGroup: null, layerGroupId: null,
   };
   var currentView = 'flow';
   var startupView = 'flow';
@@ -4446,9 +4446,31 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok) throw cloudError(data.error || '图层拆分失败', data.code);
       flow.layerGroup = data.images || [];
+      flow.layerGroupId = data.id || null;
       renderFlowLayers();
+      if (flow.layerGroupId) await persistFlowLayers(flow.layerGroupId);
       toast('已拆出 ' + flow.layerGroup.length + ' 张');
     } catch (error) { toast(error.message || '图层拆分失败'); }
+  }
+  async function persistFlowLayers(groupId) {
+    if (!flow.result?.artworkId || !flow.result?.versionId) return null;
+    try {
+      var res = await apiFetch('/v2/artworks/' + encodeURIComponent(flow.result.artworkId) + '/versions/' + encodeURIComponent(flow.result.versionId) + '/layers', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.error || '图层版本保存失败');
+      var v = data.version;
+      flow.result = {
+        artworkId: flow.result.artworkId, versionId: v.id, url: API + '/v2/artworks/' + encodeURIComponent(flow.result.artworkId) + '/versions/' + encodeURIComponent(v.id) + '/file',
+        w: v.width, h: v.height, file: v.file, sha256: v.sha256, layerManifest: data.manifest, provider: 'seedream',
+      };
+      flow.parentVersionId = v.id;
+      renderFlowLayers();
+      loadAllHistory(true);
+      return v;
+    } catch (error) { toast(error.message); return null; }
   }
   async function downloadWorkflowLayers() {
     if (!flow.layerGroup || !flow.layerGroup.length) return;

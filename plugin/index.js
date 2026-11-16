@@ -2,7 +2,7 @@
 // P1 设置/示例图 + P2 原图/批次/历史/导出；P3 云端能力默认关闭（config.cloudEnabled）。
 import { createReadStream } from 'node:fs'
 import { randomBytes } from 'node:crypto'
-import { chmod, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -980,6 +980,34 @@ export default {
         const services = await v2Services()
         if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
         return json(res, 200, services.artworks.get(seg[2]))
+      }
+      if (method === 'POST' && seg.length === 6 && seg[0] === 'v2' && seg[1] === 'artworks' && seg[3] === 'versions' && seg[5] === 'layers') {
+        const services = await v2Services()
+        if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        const body = await readBody(req, MAX_BODY)
+        if (!/^layer_[a-z0-9]+$/i.test(String(body?.groupId || ''))) fail('图层组无效')
+        const artwork = services.artworks.get(seg[2])
+        const parent = artwork.versions.find(item => item.id === seg[4])
+        if (!parent) return json(res, 404, { error: '源版本不存在' })
+        const groupDir = join(ROOT, 'outputs', body.groupId)
+        let names
+        try { names = await readdir(groupDir) } catch { return json(res, 404, { error: '图层组不存在' }) }
+        const layerNames = names.filter(name => /^layer-\d+\.png$/i.test(name)).sort()
+        if (layerNames.length < 2) return json(res, 409, { error: '没有可回写的图层' })
+        const source = await readFile(resolve(artwork.root, artwork.folder, parent.file))
+        const version = await services.artworks.addVersion({
+          artworkId: artwork.id, parentVersionId: parent.id, buffer: source,
+          format: parent.format, width: parent.width, height: parent.height,
+          prompt: parent.prompt, snapshot: { layerGroup: body.groupId, parentVersionId: parent.id }, status: 'succeeded',
+        })
+        const files = {}
+        for (const name of layerNames.slice(1)) files[name] = await readFile(join(groupDir, name))
+        const manifest = {
+          canvasWidth: parent.width, canvasHeight: parent.height,
+          layers: layerNames.slice(1).map((name, index) => ({ id: 'layer-' + (index + 1), file: name, zIndex: index + 1, x: 0, y: 0, opacity: 1, blendMode: 'normal' })),
+        }
+        await services.artworks.attachLayers(artwork.id, version.id, manifest, files)
+        return json(res, 201, { version, manifest })
       }
       if (method === 'GET' && seg.length === 6 && seg[0] === 'v2' && seg[1] === 'artworks' && seg[3] === 'versions' && seg[5] === 'layers.zip') {
         const services = await v2Services()
