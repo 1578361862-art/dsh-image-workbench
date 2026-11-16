@@ -462,6 +462,11 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
 .iw-root #wfHistory:not(:empty){padding:8px 0 12px;border-bottom:1px solid var(--p-hair)}
 .iw-root #wfHistory h3{font-size:13px;margin:0 0 5px}
 .iw-root #wfHistory button{margin:4px 8px 4px 0}
+.iw-root .wf-history-item{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--p-hair-2);padding:2px 0}
+.iw-root .wf-history-item>.ghost-btn{max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iw-root .wf-history-versions{display:flex;gap:3px;flex-wrap:wrap;margin-left:auto}
+.iw-root .wf-history-chip{height:20px;padding:0 5px;border:1px solid var(--p-hair);background:var(--p-paper);color:var(--p-ink-4);font:8px var(--p-mono);cursor:pointer}
+.iw-root .wf-history-chip:hover{border-color:var(--p-signal);color:var(--p-ink)}
 .iw-root .wf-final{animation:iw-wf-reveal .43s ease both}
 .iw-root .wf :is(button,select,input,textarea,a):focus-visible,.iw-root #workflowRun:focus-visible{outline:2px solid var(--wf-accent,#5576c1);outline-offset:2px}
 @container (min-width:900px){.iw-root .wf-workspace{grid-template-columns:minmax(0,1fr) minmax(294px,29%);min-height:570px}.iw-root .wf-inspect{border-top:0;border-left:1px solid var(--wf-rule)}.iw-root .wf-prompt-grid{grid-template-columns:1fr}}
@@ -4281,9 +4286,19 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   };
   var currentView = 'flow';
   var startupView = 'flow';
+  var flowCaps = null;
 
   function flowStyles() {
     return STYLES.filter(function (style) { return style.renderer === 'model' && !style.hidden; });
+  }
+  function flowCapsFor(provider) { return flowCaps?.[provider] || null; }
+  async function loadFlowCaps() {
+    if (flowCaps) return;
+    try {
+      var res = await apiFetch('/v2/capabilities', { cache: 'no-store' });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.ok && data.capabilities) flowCaps = data.capabilities;
+    } catch {}
   }
   function flowStyle() { return styleById(flow.styleId) || flowStyles()[0]; }
   function flowPreview(style) { return API + '/style-preview/' + encodeURIComponent(style.id) + '.jpg'; }
@@ -4442,7 +4457,9 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     } else if (node === 1) {
       area.innerHTML = flowOptions('wfModel', '首轮模型', Object.entries(flowModels), flow.provider);
     } else if (node === 2) {
-      area.innerHTML = flowOptions('wfFormat', '图像格式', flow.provider === 'minimax' ? ['jpeg', 'png', 'webp'] : ['jpeg', 'png'], flow.format);
+      var caps = flowCapsFor(flow.provider);
+      var formats = caps?.formats || (flow.provider === 'minimax' ? ['jpeg', 'png', 'webp'] : ['jpeg', 'png']);
+      area.innerHTML = flowOptions('wfFormat', '图像格式', formats, flow.format);
       if (flow.provider === 'minimax') {
         if (flow.format !== 'png') area.insertAdjacentHTML('beforeend', '<label class="wf-field">压缩质量<input id="wfCompression" type="number" min="0" max="100" value="' + flow.compression + '"></label>');
         if (!flow.source) area.insertAdjacentHTML('beforeend', flowOptions('wfEnhance', '提示词优化', [['true','开启'],['false','关闭']], String(flow.enhance)));
@@ -4459,10 +4476,12 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         + '<label class="wf-field wf-prompt-field"><textarea id="wfPrompt" aria-label="首轮提示词" rows="6" maxlength="32000"></textarea></label></div>';
       $('#wfPrompt').value = flowPrompt();
     } else if (node === 4) {
-      var ratios = ['1:1', '4:5', '3:4', '16:9', '9:16'];
-      if (flow.source) ratios.unshift('原图');
+      var caps = flowCapsFor(flow.provider);
+      var ratios = caps?.aspectRatios || ['1:1', '4:5', '3:4', '16:9', '9:16'];
+      if (flow.source) ratios = ['原图'].concat(ratios);
+      var tiers = caps?.tiers || (flow.provider === 'seedream' ? ['1K', '2K'] : ['1K', '2K', '4K']);
       area.innerHTML = flowOptions('wfRatio', '画面比例', ratios, flow.ratio)
-        + flowOptions('wfQuality', '分辨率', flow.provider === 'seedream' ? ['1K', '2K'] : ['1K', '2K', '4K'], flow.quality)
+        + flowOptions('wfQuality', '分辨率', tiers, flow.quality)
         + '<div class="wf-row"><label class="wf-field">自定义宽度<input id="wfWidth" type="number" min="128" max="8192" value="' + (flow.customWidth || '') + '"></label><label class="wf-field">自定义高度<input id="wfHeight" type="number" min="128" max="8192" value="' + (flow.customHeight || '') + '"></label></div>'
         + '<p class="wf-sub">目标尺寸 ' + flowSize().replace('x', ' × ') + '</p>';
     } else if (node === 5) {
@@ -4933,16 +4952,21 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       (data.artworks || []).forEach(function (art) {
         var latest = art.versions?.[art.versions.length - 1];
         if (!latest) return;
-        var button = document.createElement('button');
-        button.className = 'ghost-btn';
+        var item = document.createElement('article'); item.className = 'wf-history-item';
+        var button = document.createElement('button'); button.className = 'ghost-btn';
         button.textContent = (art.title || '未命名') + ' · ' + (art.versions.length) + ' 版 · ' + new Date(latest.created_at).toLocaleDateString();
-        button.addEventListener('click', function () {
-          var result = { artworkId: art.id, versionId: latest.id, url: API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(latest.id) + '/file', w: latest.width, h: latest.height };
-          flow.artworkId = art.id; flow.parentVersionId = latest.id; flow.result = result; flow.firstResult = result;
-          flow.editResult = null; flow.error = ''; flow.busy = false; flow.pending = false; flow.node = 5;
-          switchView('flow'); flowOpen(5);
+        var chips = document.createElement('div'); chips.className = 'wf-history-versions';
+        (art.versions || []).forEach(function (version, index) {
+          var chip = document.createElement('button'); chip.className = 'wf-history-chip'; chip.textContent = 'v' + String(index + 1).padStart(3, '0');
+          chip.addEventListener('click', function () {
+            var result = { artworkId: art.id, versionId: version.id, url: API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(version.id) + '/file', w: version.width, h: version.height };
+            flow.artworkId = art.id; flow.parentVersionId = version.id; flow.result = result; flow.firstResult = result;
+            flow.editResult = null; flow.error = ''; flow.busy = false; flow.pending = false; flow.node = 5;
+            switchView('flow'); flowOpen(5);
+          });
+          chips.append(chip);
         });
-        section.append(button);
+        item.append(button, chips); section.append(item);
       });
       history.append(section);
     } catch { /* v2 history unavailable on older host */ }
@@ -4972,7 +4996,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     if (text) { renderTextTemplates(); renderTextPage(); }
     if (seedream) renderSeedreamPage();
     if (!workflow && $('#wfDeck').open) { $('#wfDeck').close(); $('.wf-workspace').inert = false; }
-    if (workflow) renderFlow();
+    if (workflow) { loadFlowCaps(); renderFlow(); }
   }
 
   function currentHistory() {
