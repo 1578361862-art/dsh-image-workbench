@@ -37,7 +37,13 @@ export const CAPABILITIES = Object.freeze({
     defaultFormat: 'png',
     transparent: true,
     watermark: true,
-    layerSplit: Object.freeze({ supported: false, verified: false, reason: '供应商未确认图层接口' }),
+    layerSplit: Object.freeze({
+      supported: true, verified: true, workflow: false,
+      maxLayers: 99, maxImages: 100, requiresSingleInput: true,
+      returnsTransparentLayers: true, backgroundUnsupported: true,
+      textRecognition: true, billing: 'actual_generated_images',
+      source: 'https://docs.volcengine.com/docs/ark/image-generation-api?lang=zh',
+    }),
     promptEnhancement: true,
     minArea: 921600,
     maxArea: 4624220,
@@ -58,7 +64,8 @@ export function capabilityWarnings(provider) {
   const caps = getCapabilities(provider)
   const warnings = []
   if (!caps.verified) warnings.push(`${caps.label} 的能力尚未核验`)
-  if (!caps.layerSplit.verified) warnings.push('图层拆分未核验，暂不可用')
+  if (caps.layerSplit.supported && !caps.layerSplit.verified) warnings.push('图层拆分未核验，暂不可用')
+  if (caps.layerSplit.verified && !caps.layerSplit.workflow) warnings.push('图层接口已确认，工作流接线待完成')
   for (const operation of caps.operations) if (!['text_to_image', 'image_to_image', 'edit'].includes(operation)) warnings.push(`未知操作 ${operation}`)
   return warnings
 }

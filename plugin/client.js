@@ -4469,7 +4469,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         area.insertAdjacentHTML('beforeend', flowOptions('wfBackground', '背景', [['auto','自动'],['opaque','不透明'],['transparent','透明']], flow.background)
           + flowOptions('wfWatermark', '水印', [['true','开启'],['false','关闭']], String(flow.watermark)) + '<p class="wf-sub">提示词优化 · 标准模式</p>');
       }
-      area.insertAdjacentHTML('beforeend', '<p class="wf-sub">图层拆分 · ' + (caps?.layerSplit?.verified ? '可用' : '待供应商核验，暂不可用') + '</p>');
+      area.insertAdjacentHTML('beforeend', '<p class="wf-sub">图层拆分 · ' + (caps?.layerSplit?.verified ? (caps.layerSplit.workflow ? '可用' : '接口已确认 · 工作流待接线') : '待供应商核验，暂不可用') + '</p>');
     } else if (node === 3) {
       var style = flowStyle();
       area.innerHTML = '<div class="wf-prompt-grid"><div class="wf-row">'
