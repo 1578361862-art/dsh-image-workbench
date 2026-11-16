@@ -18,7 +18,9 @@
 - 已提交基线 `1c2dd26`：保留工作树中已有的 0.40.0 七节点雏形、workflow service、旧队列/历史/密钥；未覆盖。
 - 已实现并单测 Task 1/2：`capabilities.js`、`output-spec.js`、`draft.js`。
 - 已实现并单测 Task 3/4 的纯逻辑：`sqlite.js`、`storage-roots.js`、`artworks.js`、`job-queue.js`、`sqlite-job-store.js`、`execution.js`；并接入 `/v2/capabilities`、`/v2/storage`、`/v2/artworks` Host 路由。
-- `execution.js` 已把单 job → provider → artwork version 串起来；`providers.js` 已实现 MiniMax/Seedream 适配；`/v2/jobs` 已接真实执行服务。当前 `node --test plugin/tests/` 64 通过。UI 仍未使用 v2 路由，安装/浏览器验收未做。
+- `execution.js` 已把单 job → provider → artwork version 串起来；`providers.js` 已实现 MiniMax/Seedream 适配；`/v2/jobs` 已接真实执行服务。
+- Client 七节点已切到 `/v2/jobs`：首轮单任务、二次编辑独立任务、版本文件 URL；节点布局改为宽屏四列 + 侧检查器；输入支持拖拽/替换确认；风格卡两排横滚 + 3D 翻面编辑。
+- 真浏览器验证（mock `/v2/jobs`）：出片、替换确认、翻面卡无 pageerror；真实 Host 需重启后验收。`node --test plugin/tests/` 64 通过。
 - 尚未安装到 desktop profile；等 P0 UI + 存储/队列接线并通过浏览器验收后再升级版本。
 
 ## 0. 规格对照与关键决策

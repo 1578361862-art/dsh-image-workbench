@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { chmod, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { basename, dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { createWorkflowService } from './lib/workflow.js'
@@ -961,6 +961,22 @@ export default {
         const services = await v2Services()
         if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
         return json(res, 200, services.artworks.get(seg[2]))
+      }
+      if (method === 'GET' && seg.length === 6 && seg[0] === 'v2' && seg[1] === 'artworks' && seg[3] === 'versions' && seg[5] === 'file') {
+        const services = await v2Services()
+        if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        const artwork = services.artworks.get(seg[2])
+        const version = artwork.versions.find(item => item.id === seg[4])
+        if (!version) return json(res, 404, { error: '版本不存在' })
+        const absolute = resolve(services.root, artwork.folder, version.file)
+        if (!absolute.startsWith(resolve(services.root) + sep)) return json(res, 400, { error: '版本路径无效' })
+        try { await stat(absolute) } catch { return json(res, 404, { error: '版本文件不存在' }) }
+        const mime = version.format === 'png' ? 'image/png' : version.format === 'webp' ? 'image/webp' : 'image/jpeg'
+        res.statusCode = 200
+        res.setHeader('content-type', mime)
+        res.setHeader('cache-control', 'private, max-age=3600')
+        createReadStream(absolute).on('error', () => res.destroy()).pipe(res)
+        return
       }
       if (method === 'GET' && path === 'settings') {
         return json(res, 200, await publicSettings(ctx))
