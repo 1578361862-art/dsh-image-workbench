@@ -992,8 +992,9 @@ export default {
         const artwork = services.artworks.get(seg[2])
         const version = artwork.versions.find(item => item.id === seg[4])
         if (!version) return json(res, 404, { error: '版本不存在' })
-        const absolute = resolve(services.root, artwork.folder, version.file)
-        if (!absolute.startsWith(resolve(services.root) + sep)) return json(res, 400, { error: '版本路径无效' })
+        const artworkRoot = artwork.root || services.root
+        const absolute = resolve(artworkRoot, artwork.folder, version.file)
+        if (!absolute.startsWith(resolve(artworkRoot) + sep)) return json(res, 400, { error: '版本路径无效' })
         try { await stat(absolute) } catch { return json(res, 404, { error: '版本文件不存在' }) }
         const mime = version.format === 'png' ? 'image/png' : version.format === 'webp' ? 'image/webp' : 'image/jpeg'
         res.statusCode = 200

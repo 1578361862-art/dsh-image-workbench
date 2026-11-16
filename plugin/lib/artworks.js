@@ -67,7 +67,7 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
         createdAt: v.created_at, jobId: v.job_id || null, layerManifest: v.layer_manifest_json ? JSON.parse(v.layer_manifest_json) : null,
       })),
     }
-    await writeAtomic(join(root, row.folder, 'artwork.json'), JSON.stringify(meta, null, 2), 0o644)
+    await writeAtomic(join(row.root, row.folder, 'artwork.json'), JSON.stringify(meta, null, 2), 0o644)
     return meta
   }
 
@@ -85,7 +85,7 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     const id = versionId()
     const file = `versions/v${String(seq).padStart(3, '0')}.${FORMAT_EXT[format]}`
     const digest = sha256(buffer)
-    await writeAtomic(join(root, artwork.folder, file), buffer, 0o644)
+    await writeAtomic(join(artwork.root, artwork.folder, file), buffer, 0o644)
     const created = clock().toISOString()
     index.transaction(() => {
       index.run('INSERT INTO assets(id,sha256,path,mime,width,height,bytes,created_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(sha256) DO NOTHING',
@@ -122,8 +122,8 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     if (!Buffer.isBuffer(buffer) || !buffer.length) fail('源图内容为空', 400)
     const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'
     const file = `source/original.${ext}`
-    await writeAtomic(join(root, artwork.folder, file), buffer, 0o644)
-    const metaPath = join(root, artwork.folder, 'artwork.json')
+    await writeAtomic(join(artwork.root, artwork.folder, file), buffer, 0o644)
+    const metaPath = join(artwork.root, artwork.folder, 'artwork.json')
     let meta = {}
     try { meta = JSON.parse(await readFile(metaPath, 'utf8')) } catch {}
     meta.source = { file, mime, bytes: buffer.length }
@@ -146,9 +146,9 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     }
     const base = `layers/v${String(version.seq).padStart(3, '0')}`
     index.run('UPDATE versions SET layer_manifest_json=? WHERE id=?', JSON.stringify(manifest), versionId)
-    await writeAtomic(join(root, artwork.folder, base, 'manifest.json'), JSON.stringify(manifest, null, 2), 0o644)
+    await writeAtomic(join(artwork.root, artwork.folder, base, 'manifest.json'), JSON.stringify(manifest, null, 2), 0o644)
     for (const layer of manifest.layers) {
-      await writeAtomic(join(root, artwork.folder, base, layer.file), files[layer.file], 0o644)
+      await writeAtomic(join(artwork.root, artwork.folder, base, layer.file), files[layer.file], 0o644)
     }
     await syncManifest(artworkRow(artworkId), versionRows(artworkId))
     return { base, manifest }
@@ -161,7 +161,7 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     if (!version.layer_manifest_json) fail('该版本没有图层', 404)
     const manifest = JSON.parse(version.layer_manifest_json)
     const base = `layers/v${String(version.seq).padStart(3, '0')}`
-    return { base, manifest, folder: join(root, artwork.folder, base) }
+    return { base, manifest, folder: join(artwork.root, artwork.folder, base) }
   }
   return { create, addVersion, attachSource, attachLayers, layers, get, list, setFlag, root }
 }

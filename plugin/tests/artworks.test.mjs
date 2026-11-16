@@ -66,3 +66,17 @@ test('attaches and reads layer manifest and files', async t => {
   const meta = JSON.parse(await readFile(join(root, artwork.folder, 'artwork.json'), 'utf8'))
   assert.equal(meta.versions[0].layerManifest.layers[0].file, 'layer_01.png')
 })
+
+test('keeps old artworks addressable after switching storage root', async t => {
+  const { root, index } = await setup(t)
+  const secondRoot = await mkdtemp(join(tmpdir(), 'iw-artworks-second-'))
+  t.after(() => rm(secondRoot, { recursive: true, force: true }))
+  const first = createArtworkRepository({ root, index })
+  const second = createArtworkRepository({ root: secondRoot, index })
+  const artwork = await first.create({ title: 'old-root' })
+  const version = await second.addVersion({ artworkId: artwork.id, buffer: Buffer.from('old'), width: 64, height: 64 })
+  assert.equal(version.artworkId, artwork.id)
+  const loaded = second.get(artwork.id)
+  assert.equal(loaded.root, root)
+  await readFile(join(root, artwork.folder, version.file))
+})

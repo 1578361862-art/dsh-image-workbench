@@ -5293,6 +5293,11 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         var name = document.createElement('span'); name.textContent = root.path; name.title = root.path;
         row.append(name);
         if (root.status === 'offline') { var off = document.createElement('b'); off.textContent = '离线'; row.append(off); }
+        if (!root.active) {
+          var locate = document.createElement('button'); locate.type = 'button'; locate.textContent = '定位'; locate.className = 'set-action';
+          locate.addEventListener('click', function () { var input = $('#storageInput'); if (input) { input.value = root.path; input.focus(); } });
+          row.append(locate);
+        }
         roots.append(row);
       });
     } catch (error) {
