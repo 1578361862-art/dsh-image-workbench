@@ -46,7 +46,7 @@ const DEFAULTS = Object.freeze({
   privacyConfirm: true,
   defaultSize: '960',
   startupMode: 'flow',
-  concurrency: 2,
+  concurrency: 1,
   base: 'cn',
   model: 'standard',
   billing: 'payg',

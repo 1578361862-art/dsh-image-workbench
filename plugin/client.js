@@ -4259,7 +4259,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   if (!flowDrafts || Array.isArray(flowDrafts) || typeof flowDrafts !== 'object') flowDrafts = {};
   var flow = {
     node: 3, provider: 'minimax', styleId: 'h3-illus', source: null, ratio: '1:1', quality: '2K',
-    format: 'jpeg', compression: 90, enhance: false, background: 'auto', watermark: false,
+    format: 'png', compression: 90, enhance: false, background: 'auto', watermark: false,
     editModel: 'same', editSize: 'inherit', editPrompt: '', record: null, pending: false, busy: false,
     error: '', requestId: readJsonStore(flowHistoryKey, ''), timer: null, revealId: '', zoom: 1, x: 0, y: 0,
     result: null, firstResult: null, editResult: null, artworkId: null, parentVersionId: null, jobKind: 'first',
@@ -4288,7 +4288,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     var numeric = parts[0] / parts[1];
     var limit = flow.provider === 'seedream' ? 16 : 3;
     numeric = Math.max(1 / limit, Math.min(limit, numeric));
-    var area = { '1K': 1048576, '1.5K': 2359296, '2K': 4194304, '4K': 16777216 }[flow.quality];
+    var area = { '1K': 1048576, '2K': 4194304, '4K': 16777216 }[flow.quality];
     var width = Math.round(Math.sqrt(area * numeric));
     var height = Math.round(width / numeric);
     while (Math.max(width / height, height / width) > limit) {
@@ -4447,7 +4447,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       var ratios = ['1:1', '4:5', '3:4', '16:9', '9:16'];
       if (flow.source) ratios.unshift('原图');
       area.innerHTML = flowOptions('wfRatio', '画面比例', ratios, flow.ratio)
-        + flowOptions('wfQuality', '分辨率', flow.provider === 'seedream' ? ['1K', '1.5K', '2K'] : ['1K', '2K', '4K'], flow.quality)
+        + flowOptions('wfQuality', '分辨率', flow.provider === 'seedream' ? ['1K', '2K'] : ['1K', '2K', '4K'], flow.quality)
         + '<div class="wf-row"><label class="wf-field">自定义宽度<input id="wfWidth" type="number" min="128" max="8192" value="' + (flow.customWidth || '') + '"></label><label class="wf-field">自定义高度<input id="wfHeight" type="number" min="128" max="8192" value="' + (flow.customHeight || '') + '"></label></div>'
         + '<p class="wf-sub">目标尺寸 ' + flowSize().replace('x', ' × ') + '</p>';
     } else if (node === 5) {
@@ -6747,7 +6747,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   // 只在抽屉打开时轮询；关闭即停，工作台其他位置不做后台轮询。
   var QUEUE_POLL_MS = 2000;
   var QUEUE_LIMIT = 100;
-  var QUEUE_ACTIVE = { queued: true, preparing: true, running: true };
+  var QUEUE_ACTIVE = { queued: true, preparing: true, running: true, submitting: true, generating: true, fetching_asset: true, saving_original: true, splitting_layers: true, saving_layers: true };
   var QUEUE_LABELS = {
     queued: '排队中',
     preparing: '准备中',
@@ -6755,7 +6755,8 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     succeeded: '已完成',
     failed: '失败',
     canceled: '已取消',
-    unknown: '状态不明'
+    unknown: '状态不明',
+    submitting: '提交任务', generating: '生成中', fetching_asset: '取回图片', saving_original: '保存原图', splitting_layers: '拆分图层', saving_layers: '保存图层', partial_success: '部分完成', cancelled: '已取消'
   };
   var queueLayerEl = $('#queueLayer');
 
@@ -6778,7 +6779,9 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     return job && job.provider === 'seedream' ? 'Seedream' : 'H3';
   }
   function queueStyleLabel(job) {
-    if (!job || job.provider === 'seedream') return '';
+    if (!job) return '';
+    if (job.snapshot?.styleId) return styleById(job.snapshot.styleId)?.name || job.snapshot.styleId;
+    if (job.provider === 'seedream') return '';
     var style = styleById(job.styleId);
     if (style && style.name) return style.name;
     if (job.styleId === 'h3-text') return '文生图';
@@ -6815,10 +6818,10 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     if (!value) return '';
     return value.length > max ? value.slice(0, max) + '…' : value;
   }
-  function mergeQueueJobs(cloudJobs, seedreamJobs) {
+  function mergeQueueJobs(cloudJobs, seedreamJobs, v2Jobs) {
     var seen = {};
     var rows = [];
-    (cloudJobs || []).concat(seedreamJobs || []).forEach(function (job) {
+    (cloudJobs || []).concat(seedreamJobs || [], v2Jobs || []).forEach(function (job) {
       if (!job || typeof job.id !== 'string' || !job.id || seen[job.id]) return;
       seen[job.id] = true;
       rows.push(job);
@@ -6879,10 +6882,11 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     }
     var parts = await Promise.all([
       fetchSide('/cloud/jobs?limit=' + QUEUE_LIMIT),
-      fetchSide('/seedream/jobs?limit=' + QUEUE_LIMIT)
+      fetchSide('/seedream/jobs?limit=' + QUEUE_LIMIT),
+      fetchSide('/v2/jobs')
     ]);
     if (disposed) { queueUi.loading = false; return; }
-    queueUi.jobs = mergeQueueJobs(parts[0], parts[1]);
+    queueUi.jobs = mergeQueueJobs(parts[0], parts[1], parts[2]);
     queueUi.error = errors.length ? errors.join('；') : '';
     queueUi.loading = false;
     var changed = queueSignature(queueUi.jobs) !== beforeSignature || queueUi.error !== beforeError;
@@ -6903,12 +6907,12 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     var costLabel = queueCostLabel(job);
     if (styleLabel) meta.push('<span>' + escapeHTML(styleLabel) + '</span>');
     if (modelLabel) meta.push('<span>' + escapeHTML(modelLabel) + '</span>');
-    if (job.size) meta.push('<span>' + escapeHTML(String(job.size)) + '</span>');
+    if (job.size || job.snapshot?.size) meta.push('<span>' + escapeHTML(String(job.size || job.snapshot.size)) + '</span>');
     if (costLabel) meta.push('<span>费用 <b>' + escapeHTML(costLabel) + '</b></span>');
-    var prompt = queueExcerpt(job.prompt, 96);
+    var prompt = queueExcerpt(job.snapshot?.prompt || job.prompt, 96);
     var errorText = job.error && job.error.message ? queueExcerpt(job.error.message, 160) : '';
     var actions = [];
-    if (active) {
+    if (active && (!job.snapshot || job.status === 'queued')) {
       actions.push('<button type="button" class="queue-action danger" data-queue-cancel="' + escapeHTML(job.id) + '">取消</button>');
     }
     if (job.status === 'failed') {
@@ -7018,9 +7022,9 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   async function cancelQueueJob(id) {
     var job = queueJobById(id);
     if (!job) return;
-    var side = job.provider === 'seedream' ? 'seedream' : 'cloud';
+    var path = job.snapshot ? '/v2/jobs/' : (job.provider === 'seedream' ? '/seedream/jobs/' : '/cloud/jobs/');
     try {
-      var res = await apiFetch('/' + side + '/jobs/' + encodeURIComponent(id) + '/cancel', { method: 'POST' });
+      var res = await apiFetch(path + encodeURIComponent(id) + '/cancel', { method: 'POST' });
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(queueApiError(res.status, data));
       toast('已取消');
@@ -7033,12 +7037,13 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   async function retryQueueJob(id) {
     var job = queueJobById(id);
     if (!job) return;
-    if (job.provider !== 'minimax') {
+    if (!job.snapshot && job.provider !== 'minimax') {
       toast('Seedream 作业暂不支持重试：源图数据未持久化');
       return;
     }
     try {
-      var res = await apiFetch('/cloud/jobs/' + encodeURIComponent(id) + '/retry', { method: 'POST' });
+      var path = job.snapshot ? '/v2/jobs/' : '/cloud/jobs/';
+      var res = await apiFetch(path + encodeURIComponent(id) + '/retry', { method: 'POST' });
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(queueApiError(res.status, data));
       toast('已重新排队');
