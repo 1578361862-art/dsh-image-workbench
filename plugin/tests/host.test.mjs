@@ -1747,3 +1747,57 @@ test('Phase 2.1 Seedream：列表、取消竞态不覆盖 canceled、retry 409',
     globalThis.fetch = realFetch
   }
 })
+
+test('workflow persists both jobs and sends first output bytes to the second provider', async () => {
+  const config = JSON.parse(readFileSync(CONFIG, 'utf8'))
+  Object.assign(config, { cloudEnabled: true, base: 'cn', model: 'standard', billing: 'payg', budget: 500 })
+  writeFileSync(CONFIG, JSON.stringify(config), { mode: 0o600 })
+  credential = { kind: 'api-key', key: 'sk-workflow-test-1234' }
+  const settings = await postJson('/settings', { startupMode: 'studio' })
+  assert.equal(settings.body.startupMode, 'studio')
+  assert.equal((await postJson('/settings', { startupMode: 'flow' })).body.startupMode, 'flow')
+  const realFetch = globalThis.fetch
+  const providerCalls = []
+  globalThis.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input?.url
+    if (url === 'https://api.minimax.cn/v1/images/generations') {
+      providerCalls.push(JSON.parse(init.body))
+      return Promise.resolve(Response.json({ data: [{ b64_json: PNG.toString('base64'), size: '2048x2048' }], output_format: 'png' }))
+    }
+    if (url === 'https://ark.cn-beijing.volces.com/api/v3/images/generations') {
+      providerCalls.push(JSON.parse(init.body))
+      return Promise.resolve(Response.json({ data: [{ b64_json: JPEG.toString('base64'), size: '1536x1536' }], output_format: 'jpeg' }))
+    }
+    return realFetch(input, init)
+  }
+  try {
+    const request = {
+      id: 'host-workflow-test-0001',
+      first: { provider: 'minimax', prompt: '首轮提示词', size: '2048x2048', format: 'png', styleId: 'h3-illus' },
+      edit: { provider: 'seedream', prompt: '只修改背景', size: '1536x1536', format: 'jpeg' },
+    }
+    const submitted = await postJson('/workflows', request)
+    assert.equal(submitted.status, 202, JSON.stringify(submitted.body))
+    assert.equal((await postJson('/workflows', request)).status, 202)
+    let record
+    for (let i = 0; i < 60; i++) {
+      record = (await api('/workflows/' + request.id)).body
+      if (['done', 'first-failed', 'edit-failed', 'unknown'].includes(record.status)) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    assert.equal(record.status, 'done', JSON.stringify(record))
+    assert.equal(providerCalls.length, 2)
+    assert.equal(providerCalls[0].output_format, 'png')
+    assert.equal(providerCalls[1].image, PNG_URL)
+    assert.equal(providerCalls[1].prompt, '只修改背景')
+    assert.equal(providerCalls[1].size, '1536x1536')
+    const result = await realFetch('http://127.0.0.1:' + PORT + record.firstOutput.url)
+    assert.equal(result.headers.get('content-type'), 'image/png')
+    assert.notEqual(record.firstOutput.url, record.editOutput.url)
+    const history = (await api('/workflows')).body.workflows.find(entry => entry.id === request.id)
+    assert.deepEqual([history.firstOutput.url, history.editOutput.url], [record.firstOutput.url, record.editOutput.url])
+    assert.equal((await api('/seedream/jobs/' + record.editJobId)).body.parentId, record.firstJobId)
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})

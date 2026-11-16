@@ -1,3 +1,27 @@
+/*
+Uiverse reference component notices
+Copyright - 2026 njesenberger (Nicolas Jesenberger)
+Copyright - 2026 codebykay101 (CodeByKay)
+Copyright - 2026 eslam-hany (Eslam Hany)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 /**
  * 图像风格工作台 — 浏览器半侧（P1）。
  * 本机 Canvas 风格、上传/粘贴、多选生成、试印、A/B、历史与设置。
@@ -332,144 +356,156 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .text-result-actions{ position:absolute; right:10px; bottom:10px; display:flex; gap:6px; }
 @media (max-width:900px){.iw-root .text-layout{grid-template-columns:1fr;} .iw-root .text-form{min-height:0;} .iw-root .text-result{min-height:320px;}}
 .iw-root .work[hidden],.iw-root .recent-page[hidden]{ display:none; }
-.iw-root .flow-page[hidden]{ display:none; }
-.iw-root .flow-page{
-  --f-ink:#172033; --f-muted:#69738b; --f-line:#e6e9f2; --f-card:#ffffff; --f-soft:#f6f8fd;
-  --f-blue:#2563eb; --f-blue-2:#4f7cff; --f-green:#1ca36b; --f-pink:#e85bb5;
-  position:relative; margin-top:12px; padding:18px 0 26px; border-radius:28px; overflow:hidden;
-  color:var(--f-ink); background:linear-gradient(130deg,#eef5ff 0%,#f7f3ff 48%,#fff2f8 100%);
-  min-height:calc(100vh - 180px);
-}
-.iw-root .flow-bg{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-.iw-root .flow-bg i{ position:absolute; display:block; border-radius:50%; filter:blur(60px); opacity:.5; }
-.iw-root .flow-bg i:nth-child(1){ width:46%; height:44%; left:-8%; top:3%; background:#b9d6ff; animation:flowFloatA 18s ease-in-out infinite alternate; }
-.iw-root .flow-bg i:nth-child(2){ width:42%; height:40%; right:-7%; top:16%; background:#e9c7ff; animation:flowFloatB 22s ease-in-out infinite alternate; }
-.iw-root .flow-bg i:nth-child(3){ width:40%; height:34%; left:28%; bottom:-10%; background:#ffd4e9; animation:flowFloatC 20s ease-in-out infinite alternate; }
-.iw-root .flow-shell{ position:relative; z-index:2; max-width:1020px; margin:0 auto; padding:0 18px; }
-.iw-root .flow-hero{ position:sticky; top:8px; z-index:9; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 14px;
-  background:rgba(255,255,255,.78); border:1px solid rgba(255,255,255,.9); border-radius:999px; backdrop-filter:blur(24px);
-  box-shadow:0 16px 45px rgba(64,93,150,.13),inset 0 1px 0 rgba(255,255,255,.9);
-}
-.iw-root .flow-title{ display:flex; align-items:center; gap:10px; min-width:0; }
-.iw-root .flow-mark{ width:36px; height:36px; flex:none; display:flex; align-items:center; justify-content:center; border-radius:12px;
-  color:#fff; font-size:18px; background:linear-gradient(135deg,#2563eb,#7c5cff 60%,#ec4899); box-shadow:0 8px 20px rgba(79,124,255,.34);
-}
-.iw-root .flow-title h2{ margin:0; font-family:var(--p-sans); font-size:18px; line-height:1.2; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
-.iw-root .flow-title p{ margin:2px 0 0; font-family:var(--p-mono); font-size:8px; letter-spacing:.08em; color:var(--f-muted); white-space:nowrap; }
-.iw-root .flow-actions{ display:flex; align-items:center; gap:7px; flex:none; }
-.iw-root .flow-cost{ font-family:var(--p-mono); font-size:9px; color:var(--f-muted); margin-right:2px; }
-.iw-root .flow-reset,.iw-root .flow-run{ height:32px; border-radius:999px; padding:0 14px; border:1px solid var(--f-line); font-family:var(--p-sans); font-size:11px; cursor:pointer; transition:transform .2s,box-shadow .2s,background .2s; }
-.iw-root .flow-reset{ background:#fff; color:#4a5470; }
-.iw-root .flow-reset:hover{ background:#f6f8fd; }
-.iw-root .flow-run{ border:0; color:#fff; background:linear-gradient(135deg,#2563eb,#4f7cff); box-shadow:0 8px 20px rgba(37,99,235,.28); font-weight:600; position:relative; overflow:hidden; }
-.iw-root .flow-run:hover{ transform:translateY(-1px); box-shadow:0 12px 26px rgba(37,99,235,.34); }
-.iw-root .flow-run:active{ transform:translateY(0); }
-.iw-root .flow-run:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
-.iw-root .flow-run::after{ content:""; position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.42) 50%,transparent 70%); transform:translateX(-130%); animation:flowShine 3.4s ease-in-out infinite; }
-.iw-root .flow-stack{ display:flex; flex-direction:column; margin-top:18px; }
-.iw-root .flow-card{ position:relative; background:var(--f-card); border:1px solid rgba(255,255,255,.9); border-radius:22px; padding:18px 22px;
-  box-shadow:0 18px 55px rgba(64,93,150,.09),inset 0 1px 0 rgba(255,255,255,.9); transition:transform .3s var(--p-ease),box-shadow .3s var(--p-ease);
-  animation:flowCardIn .6s var(--p-ease) both;
-}
-.iw-root .flow-card:hover{ transform:translateY(-2px); box-shadow:0 24px 65px rgba(64,93,150,.14),inset 0 1px 0 rgba(255,255,255,.9); }
-.iw-root .flow-card[data-step="1"]{ animation-delay:.04s } .iw-root .flow-card[data-step="2"]{ animation-delay:.1s }
-.iw-root .flow-card[data-step="3"]{ animation-delay:.16s } .iw-root .flow-card[data-step="4"]{ animation-delay:.22s }
-.iw-root .flow-card[data-step="5"]{ animation-delay:.28s }
-.iw-root .flow-card-head{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-.iw-root .flow-step{ min-width:38px; height:26px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center; border-radius:999px;
-  background:#eef4ff; color:var(--f-blue); font-family:var(--p-mono); font-size:10px; font-weight:600; letter-spacing:.04em;
-}
-.iw-root .flow-card-head h3{ margin:0; font-family:var(--p-sans); font-size:17px; font-weight:650; letter-spacing:-.01em; }
-.iw-root .flow-tag{ margin-left:auto; padding:4px 9px; border-radius:999px; background:#f3f5fa; color:#8a93a8; font-family:var(--p-mono); font-size:8px; letter-spacing:.04em; }
-.iw-root .flow-card-body{ min-width:0; }
-.iw-root .flow-choices{ display:flex; gap:8px; flex-wrap:wrap; }
-.iw-root .flow-choice{ display:flex; align-items:center; gap:7px; min-height:38px; padding:0 12px; border-radius:999px; border:1px solid transparent; background:#f6f8fd; color:#3f4963; font-family:var(--p-sans); font-size:11px; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s; }
-.iw-root .flow-choice > span{ font-size:14px; }
-.iw-root .flow-choice b{ font-weight:600; white-space:nowrap; }
-.iw-root .flow-choice small{ display:none; }
-.iw-root .flow-choice:hover{ background:#eef3fc; }
-.iw-root .flow-choice.on{ background:#edf3ff; border-color:#7fa6ff; color:#1e4dc9; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
-.iw-root .flow-source{ display:flex; align-items:center; gap:9px; margin-top:10px; padding:7px; max-width:380px; background:#f7f9fd; border-radius:12px; border:1px solid #e6ebf5; }
-.iw-root .flow-source[hidden]{ display:none; }
-.iw-root .flow-source img{ width:52px; height:40px; object-fit:cover; border-radius:7px; }
-.iw-root .flow-source b{ display:block; font-size:10px; }
-.iw-root .flow-source span{ display:block; margin:1px 0 3px; font-family:var(--p-mono); font-size:8px; color:var(--f-muted); }
-.iw-root .flow-mini{ height:26px; padding:0 9px; border:1px solid var(--f-line); border-radius:999px; background:#fff; color:#56617a; font-family:var(--p-sans); font-size:10px; cursor:pointer; }
-.iw-root .flow-mini:hover{ background:#f5f8ff; border-color:#b8caf0; }
-.iw-root .flow-model-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-.iw-root .flow-model-option{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:12px 14px; border-radius:14px; border:1px solid #e8ecf5; background:#fafbfe; text-align:left; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s; }
-.iw-root .flow-model-option span{ font-family:var(--p-mono); font-size:8px; letter-spacing:.1em; color:#9aa3b5; }
-.iw-root .flow-model-option b{ font-family:var(--p-sans); font-size:13px; font-weight:650; color:#273149; }
-.iw-root .flow-model-option small{ font-size:9px; color:#8a93a8; }
-.iw-root .flow-model-option.on{ border-color:#8fb0ff; background:#f2f6ff; box-shadow:0 0 0 3px rgba(37,99,235,.07); }
-.iw-root .flow-model-option.on span{ color:var(--f-blue); }
-.iw-root .flow-prompt-toolbar{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-.iw-root .flow-prompt-toolbar select{ flex:1; min-width:0; height:32px; border:1px solid #e3e8f3; border-radius:999px; background:#f8faff; color:#33405c; font-family:var(--p-sans); font-size:11px; padding:0 12px; outline:none; }
-.iw-root #flowPrompt{ width:100%; min-height:180px; padding:14px 15px; border:1px solid #e3e8f3; border-radius:14px; background:#f8faff; color:#273149; font-family:var(--p-sans); font-size:12px; line-height:1.75; resize:vertical; }
-.iw-root #flowPrompt:focus,.iw-root #flowPrompt:focus-visible{ outline:none; border-color:#e3e8f3; box-shadow:none; }
-.iw-root #flowPrompt::placeholder{ color:#a0a8b8; }
-.iw-root .flow-hint{ margin:8px 0 0; font-family:var(--p-mono); font-size:8px; line-height:1.6; color:#8d96aa; }
-.iw-root .flow-label{ display:block; margin:2px 0 6px; font-family:var(--p-mono); font-size:8px; letter-spacing:.08em; color:#8d96aa; }
-.iw-root .flow-ratios{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
-.iw-root .flow-ratios button{ height:29px; padding:0 11px; border:1px solid #e3e8f3; border-radius:999px; background:#f8faff; color:#5e6980; font-family:var(--p-mono); font-size:9px; cursor:pointer; }
-.iw-root .flow-ratios button.on{ background:#edf3ff; border-color:#8fb0ff; color:#1e4dc9; }
-.iw-root .flow-quality{ display:inline-flex; gap:4px; padding:3px; border-radius:999px; background:#f3f6fc; }
-.iw-root .flow-quality button{ height:27px; padding:0 13px; border:0; border-radius:999px; background:transparent; color:#68738a; font-family:var(--p-sans); font-size:10px; cursor:pointer; }
-.iw-root .flow-quality button.on{ background:#fff; color:#1e4dc9; box-shadow:0 2px 7px rgba(42,67,120,.12); }
-.iw-root .flow-summary{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
-.iw-root .flow-sum-item{ padding:9px 10px; border-radius:10px; background:#f7f9fd; border:1px solid #edf0f7; }
-.iw-root .flow-sum-item span{ display:block; font-family:var(--p-mono); font-size:8px; color:#939cb0; }
-.iw-root .flow-sum-item b{ display:block; margin-top:2px; font-size:10px; font-weight:600; color:#2e3952; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.iw-root .flow-output-row{ display:flex; justify-content:flex-end; margin-top:12px; }
-.iw-root .flow-run-large{ height:38px; padding:0 20px; font-size:12px; }
-.iw-root .flow-result{ display:flex; align-items:flex-start; gap:12px; margin-top:12px; padding-top:12px; border-top:1px solid #edf0f7; }
-.iw-root .flow-result[hidden]{ display:none; }
-.iw-root .flow-result img{ width:min(300px,48%); max-height:220px; object-fit:contain; border-radius:12px; background:#f3f6fc; border:1px solid #e6ebf5; }
-.iw-root .flow-result-actions{ display:flex; flex-direction:column; gap:5px; }
-.iw-root .flow-connector{ display:flex; flex-direction:column; align-items:center; gap:3px; min-height:48px; padding:4px 0; color:#a0aabd; font-family:var(--p-mono); font-size:8px; letter-spacing:.04em; }
-.iw-root .flow-connector i{ display:block; width:0; height:26px; border-left:1px dashed #b9c6e0; }
-.iw-root .flow-console{ margin-top:18px; padding:14px 18px; border-radius:18px; background:#111a2d; color:#dce6ff; box-shadow:0 18px 45px rgba(20,35,70,.2); }
-.iw-root .flow-console-title{ display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
-.iw-root .flow-console-title span{ font-family:var(--p-mono); font-size:8px; letter-spacing:.18em; color:#7f92bf; }
-.iw-root .flow-console-title small{ font-family:var(--p-mono); font-size:8px; color:#5d6c90; }
-.iw-root .flow-console p{ margin:0; min-height:18px; font-family:var(--p-mono); font-size:9px; line-height:1.6; color:#b9c8ee; }
-@keyframes flowFloatA{ from{transform:translate3d(-3%,-2%,0) scale(.94)} to{transform:translate3d(7%,6%,0) scale(1.07)} }
-@keyframes flowFloatB{ from{transform:translate3d(4%,-3%,0) scale(1.03)} to{transform:translate3d(-6%,7%,0) scale(.93)} }
-@keyframes flowFloatC{ from{transform:translate3d(-2%,5%,0) scale(1)} to{transform:translate3d(5%,-5%,0) scale(1.08)} }
-@keyframes flowCardIn{ from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@keyframes flowShine{ 0%,50%{transform:translateX(-130%)} 80%,100%{transform:translateX(130%)} }
-@media (prefers-reduced-motion: reduce){ .iw-root .flow-bg i,.iw-root .flow-card,.iw-root .flow-run::after{ animation:none!important; } }
-body[data-ds-dark-theme] .iw-root .flow-page, html[data-ds-dark-theme] .iw-root .flow-page, .iw-root[data-theme="dark"] .flow-page{
-  --f-ink:#eef2ff; --f-muted:#9aa6c2; --f-line:rgba(255,255,255,.1); --f-card:#141b2c; --f-soft:#0f1626;
-  background:linear-gradient(130deg,#0b1220 0%,#12152b 50%,#1a1021 100%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
-}
-body[data-ds-dark-theme] .iw-root .flow-hero, html[data-ds-dark-theme] .iw-root .flow-hero, .iw-root[data-theme="dark"] .flow-hero{ background:rgba(20,27,44,.78); border-color:rgba(255,255,255,.1); }
-body[data-ds-dark-theme] .iw-root .flow-card, html[data-ds-dark-theme] .iw-root .flow-card, .iw-root[data-theme="dark"] .flow-card{ border-color:rgba(255,255,255,.08); box-shadow:0 18px 55px rgba(0,0,0,.3); }
-body[data-ds-dark-theme] .iw-root .flow-choice, html[data-ds-dark-theme] .iw-root .flow-choice, .iw-root[data-theme="dark"] .flow-choice{ background:#1b2438; color:#dbe3f8; }
-body[data-ds-dark-theme] .iw-root .flow-choice.on, html[data-ds-dark-theme] .iw-root .flow-choice.on, .iw-root[data-theme="dark"] .flow-choice.on{ background:#1d3157; border-color:#4f7cff; color:#cfe0ff; }
-body[data-ds-dark-theme] .iw-root .flow-model-option, html[data-ds-dark-theme] .iw-root .flow-model-option, .iw-root[data-theme="dark"] .flow-model-option{ background:#101827; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-model-option.on, html[data-ds-dark-theme] .iw-root .flow-model-option.on, .iw-root[data-theme="dark"] .flow-model-option.on{ background:#172a4c; border-color:#4f7cff; }
-body[data-ds-dark-theme] .iw-root #flowPrompt, html[data-ds-dark-theme] .iw-root #flowPrompt, .iw-root[data-theme="dark"] #flowPrompt{ background:#0e1524; color:#e9eeff; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-prompt-toolbar select, html[data-ds-dark-theme] .iw-root .flow-prompt-toolbar select, .iw-root[data-theme="dark"] .flow-prompt-toolbar select{ background:#101827; color:#e9eeff; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-ratios button, html[data-ds-dark-theme] .iw-root .flow-ratios button, .iw-root[data-theme="dark"] .flow-ratios button{ background:#101827; border-color:#26324a; color:#b8c5e4; }
-body[data-ds-dark-theme] .iw-root .flow-ratios button.on, html[data-ds-dark-theme] .iw-root .flow-ratios button.on, .iw-root[data-theme="dark"] .flow-ratios button.on{ background:#172a4c; color:#cfe0ff; border-color:#4f7cff; }
-body[data-ds-dark-theme] .iw-root .flow-quality, html[data-ds-dark-theme] .iw-root .flow-quality, .iw-root[data-theme="dark"] .flow-quality{ background:#0e1524; }
-body[data-ds-dark-theme] .iw-root .flow-quality button, html[data-ds-dark-theme] .iw-root .flow-quality button, .iw-root[data-theme="dark"] .flow-quality button{ color:#9fadca; }
-body[data-ds-dark-theme] .iw-root .flow-quality button.on, html[data-ds-dark-theme] .iw-root .flow-quality button.on, .iw-root[data-theme="dark"] .flow-quality button.on{ background:#1d3157; color:#cfe0ff; }
-body[data-ds-dark-theme] .iw-root .flow-sum-item, html[data-ds-dark-theme] .iw-root .flow-sum-item, .iw-root[data-theme="dark"] .flow-sum-item{ background:#101827; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-source, html[data-ds-dark-theme] .iw-root .flow-source, .iw-root[data-theme="dark"] .flow-source{ background:#101827; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-mini, html[data-ds-dark-theme] .iw-root .flow-mini, .iw-root[data-theme="dark"] .flow-mini{ background:#101827; color:#c7d3ee; border-color:#26324a; }
-body[data-ds-dark-theme] .iw-root .flow-tag, html[data-ds-dark-theme] .iw-root .flow-tag, .iw-root[data-theme="dark"] .flow-tag{ background:#101827; color:#9aa6c2; }
-body[data-ds-dark-theme] .iw-root .flow-step, html[data-ds-dark-theme] .iw-root .flow-step, .iw-root[data-theme="dark"] .flow-step{ background:#172a4c; color:#9fc0ff; }
-body[data-ds-dark-theme] .iw-root .flow-choice b, html[data-ds-dark-theme] .iw-root .flow-choice b, .iw-root[data-theme="dark"] .flow-choice b,
-body[data-ds-dark-theme] .iw-root .flow-model-option b, html[data-ds-dark-theme] .iw-root .flow-model-option b, .iw-root[data-theme="dark"] .flow-model-option b,
-body[data-ds-dark-theme] .iw-root .flow-sum-item b, html[data-ds-dark-theme] .iw-root .flow-sum-item b, .iw-root[data-theme="dark"] .flow-sum-item b,
-body[data-ds-dark-theme] .iw-root .flow-source b, html[data-ds-dark-theme] .iw-root .flow-source b, .iw-root[data-theme="dark"] .flow-source b{ color:#e9eeff; }
-body[data-ds-dark-theme] .iw-root .flow-model-option.on b, html[data-ds-dark-theme] .iw-root .flow-model-option.on b, .iw-root[data-theme="dark"] .flow-model-option.on b{ color:#d8e5ff; }
-body[data-ds-dark-theme] .iw-root .flow-model-option small, html[data-ds-dark-theme] .iw-root .flow-model-option small, .iw-root[data-theme="dark"] .flow-model-option small{ color:#9aa6c2; }
-body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .flow-run, .iw-root[data-theme="dark"] .flow-run{ color:#fff; }
-@media (max-width:760px){ .iw-root .flow-page{ border-radius:18px; padding-top:10px; } .iw-root .flow-shell{ padding:0 10px; } .iw-root .flow-hero{ border-radius:20px; padding:9px 10px; } .iw-root .flow-title h2{ font-size:15px; } .iw-root .flow-title p{ display:none; } .iw-root .flow-cost{ display:none; } .iw-root .flow-card{ padding:14px 15px; border-radius:18px; } .iw-root .flow-model-grid{ grid-template-columns:1fr; } .iw-root .flow-summary{ grid-template-columns:1fr 1fr; } .iw-root .flow-result{ flex-direction:column; } .iw-root .flow-result img{ width:100%; } }
+.iw-root .page[data-wf-view="flow"]>.masthead{width:100%;max-width:none;min-height:56px;margin:0;padding:10px 20px;display:flex;flex-direction:row;align-items:center;gap:12px;border-bottom:1px solid var(--p-hair)}
+.iw-root .page[data-wf-view="flow"]>.masthead::after,.iw-root .page[data-wf-view="flow"] .stamp{display:none}
+.iw-root .page[data-wf-view="flow"] .title{font:600 17px/1.25 var(--p-sans);letter-spacing:-.02em;margin-right:auto}
+.iw-root .mast-tools #workflowRun{width:auto;height:34px;margin:0;padding:0 12px;white-space:nowrap}
+.iw-root .page>.masthead button[hidden],.iw-root #viewTabs[hidden],.iw-root .wf[hidden]{display:none}
+.iw-root .wf{--wf-accent:#3655a2;--wf-on:#fff;--wf-dots:rgba(44,52,65,.25);--wf-surface:var(--p-paper);--wf-rule:var(--p-hair);--wf-muted:var(--p-ink-3);width:100%;flex:1;color:var(--p-ink);background:var(--p-paper);container-type:inline-size;font:14px/1.5 var(--p-sans)}
+html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-root[data-theme="dark"] .wf{--wf-accent:#a2b9f5;--wf-on:#131b31;--wf-dots:rgba(182,199,231,.20)}
+.iw-root .wf-workspace{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+.iw-root .wf-graph{position:relative;overflow:hidden;min-height:342px;padding:25px 20px 56px;display:grid;align-items:center;background-image:radial-gradient(circle,var(--wf-dots) .8px,transparent 1px);background-position:center;background-size:18px 18px;cursor:grab;touch-action:pan-y}
+.iw-root .wf-graph:active{cursor:grabbing}
+.iw-root .wf-nodes{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:27px 24px;width:100%;max-width:620px;margin:auto;transform-origin:center;min-width:0}
+.iw-root .wf-node{position:relative;z-index:1;min-width:0;min-height:70px;text-align:left;cursor:pointer;border:1px solid var(--wf-rule);border-radius:7px;background:var(--wf-surface);color:inherit;padding:9px 10px;font:inherit;transition:background .18s,border-color .18s}
+.iw-root .wf-node:hover,.iw-root .wf-node[aria-pressed="true"]{border-color:var(--wf-accent)}
+.iw-root .wf-node[aria-pressed="true"]{background:color-mix(in srgb,var(--wf-accent) 13%,var(--wf-surface))}
+.iw-root .wf-node b,.iw-root .wf-node small{display:block}
+.iw-root .wf-node b{font-size:13px;font-weight:650}
+.iw-root .wf-node small{font-size:11.5px;color:var(--wf-muted);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin-top:4px}
+.iw-root .wf-node .number{display:inline-block;color:var(--wf-muted);font:11px var(--p-mono);margin-right:6px}
+.iw-root .wf-node:nth-of-type(4){grid-area:2 / 3}.iw-root .wf-node:nth-of-type(5){grid-area:2 / 2}.iw-root .wf-node:nth-of-type(6){grid-area:2 / 1}.iw-root .wf-node:nth-of-type(7){grid-area:3 / 1}
+.iw-root .wf-edges{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.iw-root .wf-edges path{fill:none;stroke:var(--wf-muted);stroke-width:1.2}.iw-root .wf-edges path.hot{stroke:var(--wf-accent);stroke-width:1.9}
+.iw-root .wf-edges path.handoff{animation:iw-wf-handoff .62s ease-out both}
+@keyframes iw-wf-handoff{from{stroke-width:3.6;opacity:.65}to{stroke-width:1.9;opacity:1}}
+.iw-root .wf-zoom{position:absolute;left:14px;bottom:12px;display:flex;background:var(--wf-surface);border:1px solid var(--wf-rule);border-radius:6px}
+.iw-root .wf-zoom button,.iw-root .wf-quiet{border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:5px 9px}
+.iw-root .wf-quiet{font-size:12px;color:var(--wf-muted)}.iw-root .wf-quiet:hover{color:var(--wf-accent)}
+.iw-root .wf-inspect{min-width:0;border-top:1px solid var(--wf-rule);padding:15px 18px 22px}
+.iw-root .wf-inspect h2{font:650 15px var(--p-sans);margin:0 0 11px}
+.iw-root .wf-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.iw-root .wf-field{display:grid;gap:5px;font-size:12px;color:var(--wf-muted);margin:0 0 10px}
+.iw-root .wf-field :is(select,textarea,input){width:100%;color:var(--p-ink);background:var(--wf-surface);border:1px solid var(--wf-rule);border-radius:6px;padding:7px 8px;font:14px/1.55 var(--p-sans)}
+.iw-root .wf-field textarea{resize:vertical}.iw-root .wf-check{display:block;margin:6px 0}
+.iw-root .wf-sub{font-size:12px;color:var(--wf-muted);margin:8px 0 0;overflow-wrap:anywhere}
+.iw-root .wf-sub:empty{display:none}
+.iw-root .wf-prompt-grid{display:grid;grid-template-columns:minmax(140px,.65fr) minmax(0,1fr);gap:16px}
+.iw-root .wf-pack{background:none;border:0;cursor:pointer;color:inherit;font:13px var(--p-sans);padding:8px;text-align:center;align-self:start}
+.iw-root .wf-stack{position:relative;display:block;width:90px;height:97px;margin:0 auto 6px}
+.iw-root .wf-stack img{position:absolute;left:0;top:0;width:72px;height:86px;object-fit:cover;border:4px solid #eee9df;border-bottom-width:11px;border-radius:4px;box-shadow:0 4px 9px #0007;transform:translateX(19px) rotate(13deg);transition:transform .2s}
+.iw-root .wf-stack img:nth-last-child(2){transform:translateX(10px) rotate(6deg)}.iw-root .wf-stack img:last-child{transform:none}
+.iw-root .wf-pack:hover .wf-stack img:first-child{transform:translateX(24px) rotate(17deg)}
+.iw-root .wf-deck{position:fixed;inset:auto;width:100%;height:100%;max-width:none;max-height:none;margin:0;background:radial-gradient(ellipse at 50% 45%,#353f55,#1c212a 68%,#17191e);color:#eef0f5;border:0;padding:24px;overflow:auto;font:14px var(--p-sans)}
+.iw-root .wf-deck[open]{display:flex;flex-direction:column;gap:24px;animation:iw-wf-reveal .3s ease both}
+.iw-root .wf-deck::backdrop{background:#14161c}
+.iw-root .wf-deck h2{font-size:21px;margin:0}
+.iw-root .wf-deck .wf-quiet,.iw-root .wf-deck p{color:#c2c9d9}
+.iw-root .wf-deck-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:17px;width:min(100%,1050px);margin:0 auto;perspective:850px}
+.iw-root .wf-card{display:grid;min-width:0;gap:6px;padding:5px 5px 7px;cursor:pointer;background:#eee9df;color:#272321;border:0;border-radius:5px;font:13px var(--p-sans);box-shadow:0 10px 23px #0007;transition:transform .24s;animation:iw-wf-fan .66s cubic-bezier(.18,.85,.25,1) both;animation-delay:calc(var(--i) * 44ms)}
+.iw-root .wf-card[aria-pressed="true"]{outline:2px solid #9cb7ff;outline-offset:2px}
+.iw-root .wf-card img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;pointer-events:none}
+.iw-root .wf-card.hot{transform:translateY(-9px) scale(1.045) rotateX(var(--rx)) rotateY(var(--ry));z-index:2}
+.iw-root .wf-card.chosen{z-index:3;animation:iw-wf-pick .24s ease both}
+@keyframes iw-wf-fan{from{opacity:0;translate:0 30px;scale:.83}to{opacity:1;translate:0;scale:1}}
+@keyframes iw-wf-pick{to{opacity:0;translate:0 -48px;scale:1.12}}
+.iw-root .wf-print{padding:14px 0;display:grid;justify-items:center}
+.iw-root .wf-slot{width:min(100%,230px);height:15px;background:#14161a;border:1px solid #696e78;border-radius:4px;z-index:2}
+.iw-root .wf-exit{width:100%;overflow:hidden;display:grid;justify-items:center;padding-bottom:12px}
+.iw-root .wf-photo{position:relative;color:#292622;background:#f3ede0;box-shadow:0 6px 15px #0005;padding:8px;width:min(190px,90%);margin:0;transform-origin:50% 0;transform:rotate(-2deg)}
+.iw-root .wf-photo img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#241f20}
+.iw-root .wf-photo figcaption,.iw-root .wf-compare figcaption{margin-top:6px;font-size:11.5px}
+.iw-root .wf-photo::after{content:"";position:absolute;inset:8px 8px 25px;background:#fbf1d8;pointer-events:none;opacity:0}
+.iw-root .wf-ribbon{position:absolute;inset:0;z-index:1;pointer-events:none}
+.iw-root .wf-ribbon::before,.iw-root .wf-ribbon::after{content:"";position:absolute;opacity:0;background:linear-gradient(90deg,#82648f,#bd9ac4,#8f6ca0)}
+.iw-root .wf-ribbon::before{inset:0 46%}.iw-root .wf-ribbon::after{inset:46% 0}
+.iw-root .wf-photo.play{animation:iw-wf-print 1s cubic-bezier(.22,.7,.17,1) both}
+.iw-root .wf-photo.play::after{animation:iw-wf-develop 1.7s ease both}
+.iw-root .wf-photo.play .wf-ribbon::before{animation:iw-wf-ribbon-v 1.3s ease both}.iw-root .wf-photo.play .wf-ribbon::after{animation:iw-wf-ribbon-h 1.2s ease both}
+@keyframes iw-wf-print{from{transform:translateY(-105%);clip-path:inset(100% 0 0)}70%{transform:translateY(-3%);clip-path:inset(3% 0 0)}to{transform:rotate(-2deg);clip-path:inset(0 0 -10px -10px)}}
+@keyframes iw-wf-develop{0%,39%{opacity:1}100%{opacity:0}}
+@keyframes iw-wf-ribbon-v{0%,52%{opacity:.92;transform:none}100%{opacity:0;transform:translate(25px,-40px) rotate(23deg)}}
+@keyframes iw-wf-ribbon-h{0%,55%{opacity:.92;transform:none}100%{opacity:0;transform:translate(-59px,11px) rotate(-14deg)}}
+@keyframes iw-wf-reveal{from{opacity:0}to{opacity:1}}
+.iw-root .wf-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.iw-root .wf-compare figure,.iw-root #wfSource figure{margin:0}
+.iw-root #wfSource img{display:block;width:min(190px,100%);max-height:200px;object-fit:contain}
+.iw-root .wf-compare img,.iw-root .wf-placeholder{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:var(--wf-surface);border:1px solid var(--wf-rule);border-radius:4px}
+.iw-root .wf-placeholder{display:grid;place-items:center;text-align:center;color:var(--wf-muted);font-size:11px;padding:5px}
+.iw-root #wfHistory:not(:empty){padding:8px 0 12px;border-bottom:1px solid var(--p-hair)}
+.iw-root #wfHistory h3{font-size:13px;margin:0 0 5px}
+.iw-root #wfHistory button{margin:4px 8px 4px 0}
+.iw-root .wf-final{animation:iw-wf-reveal .43s ease both}
+.iw-root .wf :is(button,select,input,textarea,a):focus-visible,.iw-root #workflowRun:focus-visible{outline:2px solid var(--wf-accent,#5576c1);outline-offset:2px}
+@container (min-width:900px){.iw-root .wf-workspace{grid-template-columns:minmax(0,1fr) minmax(294px,29%);min-height:570px}.iw-root .wf-inspect{border-top:0;border-left:1px solid var(--wf-rule)}.iw-root .wf-prompt-grid{grid-template-columns:1fr}}
+@container (max-width:550px){.iw-root .wf-nodes{grid-template-columns:repeat(2,minmax(0,1fr));gap:23px 15px}.iw-root .wf-node:nth-of-type(3){grid-area:2 / 2}.iw-root .wf-node:nth-of-type(4){grid-area:2 / 1}.iw-root .wf-node:nth-of-type(5){grid-area:3 / 1}.iw-root .wf-node:nth-of-type(6){grid-area:3 / 2}.iw-root .wf-node:nth-of-type(7){grid-area:4 / 2}.iw-root .wf-prompt-grid{grid-template-columns:1fr}.iw-root .wf-node{min-height:61px}}
+@media (max-width:680px){.iw-root .page[data-wf-view="flow"]>.masthead{flex-wrap:wrap;padding-inline:12px}.iw-root .wf-deck{padding:16px}.iw-root .wf-deck-cards{grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:12px}}
+@media (prefers-reduced-motion: reduce){.iw-root .wf *,.iw-root .wf *::before,.iw-root .wf *::after{animation:none!important;transition:none!important}}
+
+.iw-root .wf{position:relative;--wf-surface:#0e0f12;--wf-rule:#393a40;--wf-muted:#afb0ba;--wf-accent:#ff7777;--wf-on:#252629;background:#040506;color:#f6f6f7;--p-ink:#f6f6f7}
+.iw-root .page[data-wf-view="flow"]>.masthead{background:#101114;color:#eee;border:1px solid #32333a;border-radius:12px;width:calc(100% - 24px);margin:8px 12px 0;min-height:48px}
+.iw-root .page[data-wf-view="flow"] .mast-tools .icon-btn{color:#eee;background:#1b1c20;border-color:#393a40;border-radius:999px}
+.iw-root .wf-workspace{display:block;min-height:0;position:relative}
+.iw-root .wf-graph{isolation:isolate;min-height:335px;padding-bottom:74px;background-image:radial-gradient(circle,#ffffff20 .7px,transparent .9px)}
+.iw-root .wf-node{height:66px;min-height:66px;text-align:center;border-radius:16px;padding:7px;background:#101114ed;box-shadow:inset 0 1px #fff1,inset 0 -1px #0008}
+.iw-root .wf-node small:empty{display:none}
+.iw-root .wf-runbar{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);text-align:center;z-index:2}
+.iw-root .wf-runbar .go{height:34px;width:auto;margin:0;padding:0 15px;background:#e6e6e6;color:#303137;border:0;border-radius:8px;white-space:nowrap}
+.iw-root .wf-runbar .wf-sub{margin:5px 0 0;width:max-content;max-width:56vw}
+.iw-root .wf-inspect{border:0;border-top:1px solid var(--wf-rule);background:#0b0c0e;padding:14px 20px}
+.iw-root .wf-inspect[data-kind=option]{position:absolute;left:var(--wf-popup-x,12px);top:var(--wf-popup-y,64px);z-index:5;width:min(226px,calc(100% - 16px));padding:10px;border:1px solid #44454b;background:#16171aeb;border-radius:15px;backdrop-filter:blur(17px)}
+.iw-root .wf-field :is(select,textarea,input){color:#f6f6f7}
+.iw-root .wf-field select,.iw-root .wf-field input[type=number]{height:34px}
+.iw-root .wf-field select:focus{outline:2px solid #a5a5ab;outline-offset:2px;border-color:#a5a5ab}
+.iw-root .wf-prompt-grid{display:block}
+.iw-root .wf-prompt-grid .wf-row{margin-bottom:9px;flex-wrap:wrap}
+.iw-root .wf-style-chip{display:inline-flex;align-items:center;gap:7px}
+.iw-root .wf-style-chip img{width:24px;height:24px;object-fit:cover;border-radius:5px}
+.iw-root .wf-prompt-field{position:relative}
+.iw-root .wf-prompt-field::before,.iw-root .wf-prompt-field::after{content:"";position:absolute;right:8px;width:0;height:2px;background:#ff6363;transition:width .4s ease;pointer-events:none}
+.iw-root .wf-prompt-field::before{top:0}.iw-root .wf-prompt-field::after{bottom:0}
+.iw-root .wf-prompt-field:focus-within::before{width:35%}.iw-root .wf-prompt-field:focus-within::after{width:calc(100% - 16px)}
+.iw-root .wf-prompt-field textarea{display:block;background:#111214;min-height:155px}
+.iw-root .wf-inspect[data-kind=output]{position:absolute;z-index:4;inset:0 0 auto;min-height:335px;display:grid;place-items:center;align-content:center;background:#08090dd9;isolation:isolate;overflow:hidden}
+.iw-root .wf-inspect[data-kind=output] h2{margin:0 0 6px}
+.iw-root .wf-inspect[data-kind=output] #wfBody{width:min(390px,90%);text-align:center}
+.iw-root .wf-return{position:absolute;right:12px;top:12px}
+.iw-root .wf-hole{position:absolute;z-index:-1;left:50%;top:53%;width:min(64%,310px);aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(circle,#07080a 26%,#452324 35%,#db5360 41%,#ffd2d2 45%,transparent 55%);opacity:0}
+.iw-root .wf-hole.play{animation:wf-wormhole 1.3s ease-out both}
+.iw-root .wf-photo.play{animation:wf-wormphoto 1.1s cubic-bezier(.16,.7,.22,1) both}
+.iw-root .wf-print{padding:0}
+@keyframes wf-wormhole{0%{scale:.12;opacity:0}35%{opacity:1}100%{scale:1.4;opacity:0}}
+@keyframes wf-wormphoto{0%,23%{transform:scale(.25) rotate(-14deg);opacity:0;clip-path:circle(0%)}100%{transform:rotate(-2deg);opacity:1;clip-path:circle(86%)}}
+.iw-root .wf-deck{background:#15161ae8;backdrop-filter:blur(17px);border:1px solid #44454b;border-radius:16px;z-index:20}
+.iw-root .wf-card{background:linear-gradient(150deg,#ffffff19,#ffffff06),#202126;color:#f2f2f4;border:1px solid #ffffff24;border-radius:12px;box-shadow:inset 0 1px #fff2}
+.iw-root .wf-card img{border-radius:7px}.iw-root .wf-card span{padding:4px;border-top:1px solid #ffffff20}
+.iw-root .wf-card:not(.hot){transform:translateX(calc(var(--spread,0)*-8px)) rotate(calc(var(--spread,0)*2deg));transition:transform .45s cubic-bezier(.16,1,.3,1)}
+.iw-root .wf-deck-cards:is(:hover,:focus-within) .wf-card:not(.hot){transform:none}
+.iw-root .wf-deck .wf-card[aria-pressed=true]{outline:1px solid #ff8b8b}
+.iw-root .wf-scene[data-paused]::before,.iw-root .wf-scene[data-paused]::after{animation-play-state:paused}
+.iw-root .wf[data-motion=off] *,.iw-root .wf[data-motion=off] *::before,.iw-root .wf[data-motion=off] *::after{animation:none!important;transition:none!important}
+
+ .iw-root .wf .wf-scene{position:absolute;z-index:-1;inset:0;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 77% -12%,#551c2c 0%,transparent 59%),radial-gradient(ellipse at 6% 111%,#171e3d 0%,transparent 60%)}
+ .iw-root .wf .wf-scene::before, .iw-root .wf .wf-scene::after{content:"";position:absolute;inset:-55% -25%;transform:rotate(-27deg) translate3d(0,-4%,0);filter:blur(17px);opacity:.86;animation:iwr-rays 12s ease-in-out infinite alternate}
+ .iw-root .wf .wf-scene::before{background:linear-gradient(90deg,transparent 25%,#3e153c 31%,transparent 35%,#a32b48 43%,#de5668 45%,#6a192c 49%,transparent 54%,#732435 62%,transparent 69%);mask-image:radial-gradient(ellipse at 57% 44%,#000 4%,#000c 29%,transparent 69%)}
+ .iw-root .wf .wf-scene::after{background:linear-gradient(90deg,transparent 12%,#241f55 29%,transparent 36%,#302653 41%,transparent 49%,#af3947 59%,transparent 66%);opacity:.65;animation-duration:17s;animation-delay:-5s}
+ .iw-root .wf .wf-scene[data-paused]::before, .iw-root .wf .wf-scene[data-paused]::after{animation-play-state:paused}
+@keyframes iwr-rays{to{transform:rotate(-23deg) translate3d(5%,9%,0)}}
+ .iw-root .wf .wf-scene{background:radial-gradient(ellipse at 77% 2%,#492034,transparent 62%),radial-gradient(ellipse at 27% 94%,#143ca380,transparent 65%)}
+ .iw-root .wf .wf-scene::before{background:linear-gradient(90deg,transparent 23%,#452324 30%,transparent 34%,#a52d48 40%,#ff6363 44%,#8e2b42 49%,transparent 54%,#9b3145 62%,transparent 68%);filter:blur(25px)}
+ .iw-root .wf .wf-scene::after{background:linear-gradient(90deg,transparent 15%,#02193b 27%,#143ca3 33%,#63a1ff 36%,transparent 42%,#143ca3 51%,#6652a5 56%,transparent 64%);filter:blur(31px);opacity:.6}
+ .iw-root .wf-remove-source{position:absolute;left:12px;top:6px;z-index:3}
+.iw-root .wf #workflowRun{position:relative;overflow:hidden;isolation:isolate}
+.iw-root .wf #workflowRun::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 28%,#fff8 48%,transparent 68%);transform:translateX(-110%);pointer-events:none}
+.iw-root .wf #workflowRun:is(:hover,:focus-visible):not(:disabled)::before{animation:wf-sweep .48s ease-out both}
+@keyframes wf-sweep{to{transform:translateX(110%)}}
+.iw-root .wf-switch{position:relative;display:inline-block;width:48px;height:27px;padding:2px;border-radius:7px;background:linear-gradient(#55575a,#28292d)}
+.iw-root .wf-switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;z-index:1;cursor:pointer}
+.iw-root .wf-switch>span{display:block;position:relative;height:100%;border-radius:5px;background:#36373a;box-shadow:inset 0 2px 4px #0008}
+.iw-root .wf-switch i{display:block;position:absolute;top:1px;left:1px;width:21px;height:21px;border-radius:4px;background:radial-gradient(circle,#929497 .8px,transparent 1px) center/3.3px 3.3px,linear-gradient(#f4f4f4,#c5c6c7);transition:transform .28s}
+.iw-root .wf-switch input:checked+span{background:#a83944}.iw-root .wf-switch input:checked+span i{transform:translateX(21px)}
+.iw-root .wf-switch input:focus-visible+span{outline:2px solid #a5a5ab;outline-offset:3px}
+.iw-root .page[data-wf-view="flow"]~#settingsLayer .drawer{background:#17181a;color:#eee}
 .iw-root .recent-page{ margin-top:16px; padding-bottom:36px; }
 .iw-root .recent-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-bottom:9px; border-bottom:1px solid var(--p-hair); }
 .iw-root .recent-head h2{ margin:0; font-family:var(--p-serif); font-size:26px; font-weight:500; letter-spacing:var(--pk-ls-title); }
@@ -1215,6 +1251,7 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
       <div class="stamp"><b id="stampMain">今日 0 张 · ¥0.00</b><span id="stampSub">本机 6 · 云端 2 · 队列空闲</span></div>
       <div class="mast-tools">
         <button class="icon-btn wide" id="queueBtn" aria-label="打开队列" aria-haspopup="dialog" aria-expanded="false" title="作业队列"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.2h11M2.5 8h11M2.5 11.8h7"/><circle cx="12.4" cy="11.8" r="1.1" fill="none"/></svg><span>队列</span><b class="queue-badge" id="queueBadge" hidden>0</b></button>
+        <button class="icon-btn wide" id="workflowHistory">历史</button>
         <button class="icon-btn wide" id="settingsBtn" aria-label="打开设置"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5.6" cy="4.2" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="10.4" cy="8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/><circle cx="6.4" cy="11.8" r="1.5" fill="var(--p-paper)" stroke="currentColor" stroke-width="1.5"/></svg><span>设置</span></button>
       </div>
     </div>
@@ -1222,7 +1259,6 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
 
   <nav class="wrap view-tabs" id="viewTabs" aria-label="页面切换">
     <button data-view="studio" class="on">工作台</button>
-    <button data-view="flow">工作流</button>
     <button data-view="recent">最近生成 <span id="recentTabCount">0</span></button>
   </nav>
 
@@ -1381,87 +1417,34 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
     </aside>
   </main>
 
-  <section class="wrap flow-page" id="flowPage" aria-label="文生图流程处理" hidden>
-    <div class="flow-bg" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="flow-shell">
-      <header class="flow-hero">
-        <div class="flow-title">
-          <span class="flow-mark" aria-hidden="true">✦</span>
-          <div><h2>文生图流程处理</h2><p>固定流程 · 参数化选择 · 图像打印</p></div>
+  <section class="wf" id="flowPage" aria-label="图像工作流" hidden>
+    <div class="wf-workspace">
+      <div id="wfGraph" class="wf-graph" aria-label="工作流画布">
+        <div class="wf-scene" aria-hidden="true"></div>
+        <div id="wfNodes" class="wf-nodes">
+          <svg id="wfEdges" class="wf-edges" aria-hidden="true"><defs><marker id="iwWfArrow" markerWidth="6" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M1 1 L5 4 L1 7"/></marker></defs><g><path marker-end="url(#iwWfArrow)"/><path marker-end="url(#iwWfArrow)"/><path marker-end="url(#iwWfArrow)"/><path marker-end="url(#iwWfArrow)"/><path marker-end="url(#iwWfArrow)"/><path marker-end="url(#iwWfArrow)"/></g></svg>
+        <button class="wf-node" data-wf-node="0"><b><span class="number">01</span>图片输入</b><small></small></button>
+        <button class="wf-node" data-wf-node="1"><b><span class="number">02</span>模型选择</b><small></small></button>
+        <button class="wf-node" data-wf-node="2"><b><span class="number">03</span>模型调参</b><small></small></button>
+        <button class="wf-node" data-wf-node="3"><b><span class="number">04</span>提示词构建</b><small></small></button>
+        <button class="wf-node" data-wf-node="4"><b><span class="number">05</span>分辨率</b><small></small></button>
+        <button class="wf-node" data-wf-node="5"><b><span class="number">06</span>生成</b><small></small></button>
+        <button class="wf-node" data-wf-node="6"><b><span class="number">07</span>二次编辑</b><small></small></button>
         </div>
-        <div class="flow-actions">
-          <span class="flow-cost" id="flowCost">约 ¥0.00</span>
-          <button type="button" class="flow-reset" id="flowReset">↺ 重置</button>
-          <button type="button" class="flow-run" id="flowRunTop">▶ 运行流程</button>
-        </div>
-      </header>
-
-      <div class="flow-stack">
-        <article class="flow-card" data-step="1">
-          <div class="flow-card-head"><span class="flow-step">01</span><h3>是否上传图片</h3><span class="flow-tag">输入分支</span></div>
-          <div class="flow-card-body">
-            <div class="flow-choices" id="flowUploadChoice">
-              <button type="button" class="flow-choice" data-flow-upload="no"><span>✍️</span><b>不上传图片 · 进入文生图</b><small>没有参考图，从提示词开始</small></button>
-              <button type="button" class="flow-choice" data-flow-upload="yes"><span>🖼️</span><b>上传图片 · 进入图片编辑</b><small>以一张图作为源图</small></button>
-            </div>
-            <input type="file" id="flowFile" accept="image/*" hidden>
-            <div class="flow-source" id="flowSource" hidden><img id="flowSourceImg" alt="工作流源图"><div><b id="flowSourceName"></b><span id="flowSourceMeta"></span><button type="button" class="flow-mini" id="flowRemoveSource">移除图片</button></div></div>
-          </div>
-        </article>
-
-        <div class="flow-connector"><i></i><span>分支汇合 · 进入模型</span></div>
-
-        <article class="flow-card" data-step="2">
-          <div class="flow-card-head"><span class="flow-step">02</span><h3>文生图模型选择</h3><span class="flow-tag">按模型入参</span></div>
-          <div class="flow-card-body">
-            <div class="flow-model-grid">
-              <button type="button" class="flow-model-option" data-flow-model="minimax"><span>MINIMAX</span><b>H3 · 保真编辑</b><small>详细保真 / 风格化 / 参考图</small></button>
-              <button type="button" class="flow-model-option" data-flow-model="seedream"><span>SEEDREAM</span><b>5.5 · 多轮 / 图层</b><small>自然语言 / 多轮编辑 / 图层拆分</small></button>
-            </div>
-          </div>
-        </article>
-
-        <div class="flow-connector"><i></i><span>模型已选 · 构建提示词</span></div>
-
-        <article class="flow-card" data-step="3">
-          <div class="flow-card-head"><span class="flow-step">03</span><h3>提示词构建</h3><span class="flow-tag">PROMPT</span></div>
-          <div class="flow-card-body">
-            <div class="flow-prompt-toolbar"><select id="flowStyle" aria-label="选择风格"></select><button type="button" class="flow-mini" id="flowPromptReset">恢复默认</button></div>
-            <textarea id="flowPrompt" rows="10" spellcheck="false" placeholder="按模板填写内容…" aria-label="工作流提示词"></textarea>
-            <p class="flow-hint" id="flowPromptNote"></p>
-          </div>
-        </article>
-
-        <div class="flow-connector"><i></i><span>提示词已定 · 选择输出规格</span></div>
-
-        <article class="flow-card" data-step="4">
-          <div class="flow-card-head"><span class="flow-step">04</span><h3>分辨率选择</h3><span class="flow-tag">输出规格</span></div>
-          <div class="flow-card-body">
-            <span class="flow-label">画面比例</span>
-            <div class="flow-ratios" id="flowRatio"></div>
-            <span class="flow-label">清晰度</span>
-            <div class="flow-quality" id="flowQuality"><button type="button" data-flow-quality="1K">1K</button><button type="button" data-flow-quality="2K" class="on">2K</button><button type="button" data-flow-quality="4K">4K</button></div>
-            <p class="flow-hint" id="flowSizeNote"></p>
-          </div>
-        </article>
-
-        <div class="flow-connector"><i></i><span>准备就绪 · 打印出图</span></div>
-
-        <article class="flow-card flow-card-output" data-step="5">
-          <div class="flow-card-head"><span class="flow-step">05</span><h3>生图 · 打印机出图</h3><span class="flow-tag">IMAGE PRINTER</span></div>
-          <div class="flow-card-body">
-            <div class="flow-summary" id="flowSummary"></div>
-            <div class="flow-output-row"><button type="button" class="flow-run flow-run-large" id="flowGenerate">🖨 生成图像</button></div>
-            <div class="flow-result" id="flowResult" hidden><img id="flowResultImg" alt="工作流结果"><div class="flow-result-actions"><button type="button" class="flow-mini" id="flowViewResult">查看大图</button><button type="button" class="flow-mini" id="flowDownloadResult">下载</button><button type="button" class="flow-mini" id="flowEditResult">多轮编辑</button></div></div>
-          </div>
-        </article>
+        <button class="wf-quiet wf-remove-source" data-wf-action="remove" hidden>移除源图</button><div class="wf-runbar"><button class="go" id="workflowRun">执行工作流</button><p class="wf-sub" id="wfStatus" role="status"></p></div>
+        <div class="wf-zoom"><button data-wf-action="out" aria-label="缩小">−</button><button id="wfFit" data-wf-action="fit" aria-label="适应画布">100%</button><button data-wf-action="in" aria-label="放大">+</button></div>
       </div>
+      <section class="wf-inspect">
+        <h2 id="wfTitle" tabindex="-1"></h2><div id="wfBody" role="region"></div>
 
-      <footer class="flow-console">
-        <div class="flow-console-title"><span>CONSOLE</span><small>固定流程 · 节点连线 · 参数化选择</small></div>
-        <p id="flowStatus" role="status" aria-live="polite">[ready] 选择内容 → 运行流程</p>
-      </footer>
+      </section>
     </div>
+    <input type="file" id="wfFile" accept="image/jpeg,image/png,image/webp" hidden>
+    <dialog class="wf-deck" id="wfDeck" aria-labelledby="wfDeckTitle">
+      <div class="wf-row"><h2 id="wfDeckTitle">风格卡包</h2><button class="wf-quiet" id="wfDeckClose">关闭</button></div>
+      <div class="wf-deck-cards"></div>
+      <p>滑过预览，点击或拖过松手选定。</p>
+    </dialog>
   </section>
 
   <section class="wrap recent-page" id="recentPage" hidden>
@@ -1469,7 +1452,7 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
       <div><h2>最近生成</h2><span id="recentMeta"></span></div>
       <div class="recent-head-actions"><button class="ghost-btn recent-archive-btn" id="recentArchiveToggle" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.5h11v3h-11z"/><path d="M3.5 6.5v6h9v-6M6.5 9.5h3"/></svg><span id="archiveLabel">归档</span><b id="archiveCount">0</b></button><button class="ghost-btn" id="recentRefresh">刷新</button></div>
     </div>
-    <div class="recent-grid" id="recentGrid"></div>
+    <div id="wfHistory"></div><div class="recent-grid" id="recentGrid"></div>
   </section>
 
   <section class="wrap text-page" id="textPage" hidden>
@@ -1543,6 +1526,11 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
     </header>
 
     <div class="drawer-body">
+      <section class="set-sec">
+        <div class="set-title"><span>启动模式</span></div>
+        <div class="set-row wf-motion-row"><label for="wfMotion">减少工作流动态效果</label><span class="wf-switch"><input id="wfMotion" type="checkbox" role="switch"><span aria-hidden="true"><i></i></span></span></div>
+        <label class="set-field" for="startupMode">打开图像工作台时<select id="startupMode"><option value="flow">工作流</option><option value="studio">经典工作台</option></select></label>
+      </section>
       <section class="set-sec">
         <div class="set-title"><span>模型与密钥</span></div>
         <div class="set-row"><span>MiniMax Key</span><b id="keyState" class="key-state warn">未配置 · 云端不可用</b></div>
@@ -4228,212 +4216,520 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
     });
   }
 
-  /* ————— 固定工作流：节点编排 ————— */
-  var flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
-  var FLOW_RATIOS = ['原图', '1:1', '4:5', '3:4', '16:9', '9:16'];
+  /* 固定工作流 */
+  var flowNames = ['图片输入', '模型选择', '模型调参', '提示词构建', '分辨率', '生成', '二次编辑'];
+  var flowModels = { minimax: 'MiniMax H3 Image', seedream: 'Seedream 5.5' };
+  var flowHistoryKey = 'dsh-image-workbench/workflow-last/v1';
+  var flowDraftKey = 'dsh-image-workbench/workflow-prompts/v1';
+  var flowDrafts = readJsonStore(flowDraftKey, {});
+  if (!flowDrafts || Array.isArray(flowDrafts) || typeof flowDrafts !== 'object') flowDrafts = {};
+  var flow = {
+    node: 3, provider: 'minimax', styleId: 'h3-illus', source: null, ratio: '1:1', quality: '2K',
+    format: 'jpeg', compression: 90, enhance: false, background: 'auto', watermark: false,
+    editModel: 'same', editSize: 'inherit', editPrompt: '', record: null, pending: false, busy: false,
+    error: '', requestId: readJsonStore(flowHistoryKey, ''), timer: null, revealId: '', zoom: 1, x: 0, y: 0,
+  };
+  var currentView = 'flow';
+  var startupView = 'flow';
 
   function flowStyles() {
-    return STYLES.filter(function (st) { return st.renderer === 'model' && !st.hidden; });
+    return STYLES.filter(function (style) { return style.renderer === 'model' && !style.hidden; });
   }
   function flowStyle() { return styleById(flow.styleId) || flowStyles()[0]; }
-  function flowAspect() {
-    if (flow.ratio !== '原图') return flow.ratio;
-    if (flow.source && flow.source.w && flow.source.h) {
-      var g = gcd(flow.source.w, flow.source.h);
-      return Math.round(flow.source.w / g) + ':' + Math.round(flow.source.h / g);
+  function flowPreview(style) { return API + '/style-preview/' + encodeURIComponent(style.id) + '.jpg'; }
+  function flowDraftName() { return [flow.provider, flow.source ? 'edit' : 'text', flow.styleId].join(':'); }
+  function flowPrompt() {
+    var saved = flowDrafts[flowDraftName()];
+    if (typeof saved === 'string') return saved;
+    if (flow.provider === 'seedream') return flow.source ? seedreamImagePrompt(flow.styleId) : seedreamTextPrompt(flow.styleId);
+    return flow.source ? h3ImagePrompt(flow.styleId) : h3TextPrompt(flow.styleId);
+  }
+  function flowEditModel() { return flow.editModel === 'same' ? flow.provider : flow.editModel; }
+  function flowSize() {
+    if (flow.customWidth && flow.customHeight) return flow.customWidth + 'x' + flow.customHeight;
+    var ratio = flow.ratio === '原图' && flow.source ? flow.source.w + ':' + flow.source.h : flow.ratio;
+    if (ratio === '原图') ratio = '1:1';
+    var parts = ratio.split(':').map(Number);
+    var numeric = parts[0] / parts[1];
+    var limit = flow.provider === 'seedream' ? 16 : 3;
+    numeric = Math.max(1 / limit, Math.min(limit, numeric));
+    var area = { '1K': 1048576, '1.5K': 2359296, '2K': 4194304, '4K': 16777216 }[flow.quality];
+    var width = Math.round(Math.sqrt(area * numeric));
+    var height = Math.round(width / numeric);
+    while (Math.max(width / height, height / width) > limit) {
+      if (width > height) width--; else height--;
     }
-    return '1:1';
+    return width + 'x' + height;
   }
-  function flowSize() { return textTargetSize(flowAspect(), flow.quality); }
-  function flowCost() { return flow.model === 'seedream' ? 0.28 : (Number(cloudUnitPrice()) || 0); }
-  function flowDefaultPrompt() {
-    var id = flow.styleId;
-    if (flow.model === 'seedream') return flow.source ? seedreamImagePrompt(id) : seedreamTextPrompt(id);
-    return flow.source ? h3ImagePrompt(id) : h3TextPrompt(id);
+  function flowNumberOptions() {
+    return flowEditModel() === 'seedream' ? ['1024x1024', '1536x1536', '2048x2048'] : ['1024x1024', '2048x2048', '4096x4096'];
   }
-  function flowLoadPrompt(force) {
-    if (!force && flow.promptDirty) return;
-    flow.prompt = flowDefaultPrompt();
-    flow.promptDirty = false;
-    var area = $('#flowPrompt');
-    if (area) area.value = flow.prompt;
+  function flowOptions(id, title, items, current) {
+    var options = items.map(function (entry) {
+      var value = Array.isArray(entry) ? entry[0] : entry;
+      var label = Array.isArray(entry) ? entry[1] : entry;
+      return '<option value="' + escapeHTML(value) + '"' + (value === current ? ' selected' : '') + '>' + escapeHTML(label) + '</option>';
+    }).join('');
+    return '<label class="wf-field" for="' + id + '">' + title + '<select id="' + id + '">' + options + '</select></label>';
   }
-  function flowReady() {
-    return !!flow.styleId && !!flow.prompt.trim() && (!flow.useImage || !!flow.source);
+  function flowImage(output, label) {
+    var figure = document.createElement('figure');
+    var caption = document.createElement('figcaption');
+    caption.textContent = label;
+    var media = document.createElement(output ? 'img' : 'div');
+    if (output) { media.src = output.url; media.alt = label; }
+    else { media.className = 'wf-placeholder'; media.textContent = label; }
+    figure.append(media, caption);
+    if (output) {
+      var link = document.createElement('a');
+      link.href = output.url;
+      link.download = output.url.split('/').pop();
+      link.textContent = '保存';
+      caption.append(' · ', link);
+    }
+    return figure;
   }
-  function flowRender() {
-    $$('[data-flow-upload]').forEach(function (b) {
-      var on = b.dataset.flowUpload === (flow.useImage ? 'yes' : 'no');
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  function flowStatus() {
+    var status = flow.record && flow.record.status;
+    return flow.error || ({
+      'first-running': '首轮生成中…', 'edit-running': '二次编辑中…', 'done': '两轮完成',
+      'edit-failed': '二次编辑失败，首轮已保留', 'first-failed': '首轮生成失败', 'unknown': '请求状态待确认，请查看队列',
+    }[status] || '');
+  }
+  function flowSync() {
+    var record = flow.record;
+    var status = record && record.status;
+    var values = [
+      flow.source ? flow.source.name : '', flow.modelChosen ? flowModels[flow.provider] : '', flow.paramsChosen ? flow.format.toUpperCase() : '',
+      flow.styleChosen ? flowStyle().name : '', flow.sizeChosen ? flowSize().replace('x', ' × ') : '',
+      record && record.firstOutput ? '已出片' : status === 'first-running' ? '生成中…' : '待生成',
+      status === 'done' ? '两轮完成' : status === 'edit-running' ? '编辑中…' : flowModels[flowEditModel()],
+    ];
+    $$('[data-wf-node]').forEach(function (button, i) {
+      button.setAttribute('aria-pressed', String(flow.node === i));
+      button.querySelector('small').textContent = values[i];
     });
-    $$('[data-flow-model]').forEach(function (b) {
-      var on = b.dataset.flowModel === flow.model;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    $('[data-wf-action=remove]').hidden = !flow.source;
+    var run = $('#workflowRun');
+    run.disabled = flow.busy || flow.pending;
+    run.textContent = flow.busy ? '执行中…' : flow.pending ? '提交中…' : '执行工作流';
+    var statusLabel = $('#wfStatus');
+    statusLabel.textContent = flowStatus();
+    requestAnimationFrame(flowEdges);
+  }
+  function flowEdges() {
+    if (disposed || currentView !== 'flow') return;
+    var graph = $('#wfNodes');
+    var origin = graph.getBoundingClientRect();
+    var boxes = $$('[data-wf-node]').map(function (b) {
+      var r = b.getBoundingClientRect();
+      function x(value) { return (value - origin.left) / flow.zoom; }
+      function y(value) { return (value - origin.top) / flow.zoom; }
+      return { left: x(r.left), right: x(r.right), top: y(r.top), bottom: y(r.bottom),
+        x: x(r.left + r.width / 2), y: y(r.top + r.height / 2) };
     });
-    var src = $('#flowSource');
-    if (src) {
-      src.hidden = !flow.source;
-      if (flow.source) {
-        $('#flowSourceImg').src = flow.source.url;
-        $('#flowSourceImg').width = flow.source.w || 0;
-        $('#flowSourceImg').height = flow.source.h || 0;
-        $('#flowSourceName').textContent = flow.source.name || '已上传图片';
-        $('#flowSourceMeta').textContent = flow.source.w + ' × ' + flow.source.h;
-      }
-    }
-    var style = $('#flowStyle');
-    if (style) {
-      var styles = flowStyles();
-      style.innerHTML = styles.map(function (st) { return '<option value="' + st.id + '">' + escapeHTML(st.name) + '</option>'; }).join('');
-      if (!styleById(flow.styleId) && styles[0]) flow.styleId = styles[0].id;
-      style.value = flow.styleId;
-    }
-    if (!flow.source && flow.ratio === '原图') flow.ratio = '1:1';
-    var area = $('#flowPrompt');
-    if (area && document.activeElement !== area && !flow.promptDirty) area.value = flow.prompt || flowDefaultPrompt();
-    if (!flow.prompt) flow.prompt = flowDefaultPrompt();
-    var note = $('#flowPromptNote');
-    if (note) note.textContent = (flow.model === 'seedream' ? 'Seedream 5.5 · 自然语言详细指令' : 'MiniMax H3 · 详细保真模板') + (flow.source ? ' · 图片编辑' : ' · 纯文生图');
-    var ratio = $('#flowRatio');
-    if (ratio) {
-      var choices = flow.source ? FLOW_RATIOS : FLOW_RATIOS.filter(function (r) { return r !== '原图'; });
-      ratio.innerHTML = choices.map(function (r) { return '<button type="button" data-flow-ratio="' + r + '" class="' + (r === flow.ratio ? 'on' : '') + '">' + r + '</button>'; }).join('');
-    }
-    $$('#flowQuality button').forEach(function (b) { b.classList.toggle('on', b.dataset.flowQuality === flow.quality); });
-    var sizeNote = $('#flowSizeNote');
-    if (sizeNote) sizeNote.textContent = '目标：' + flowSize();
-    var summary = $('#flowSummary');
-    if (summary) {
-      var st = flowStyle();
-      summary.innerHTML =
-        '<div class="flow-sum-item"><span>模式</span><b>' + (flow.source ? '图片编辑' : '纯文生图') + '</b></div>' +
-        '<div class="flow-sum-item"><span>模型</span><b>' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + '</b></div>' +
-        '<div class="flow-sum-item"><span>风格</span><b>' + escapeHTML(st ? st.name : '—') + '</b></div>' +
-        '<div class="flow-sum-item"><span>尺寸</span><b>' + flowSize() + '</b></div>';
-    }
-    var cost = $('#flowCost'); if (cost) cost.textContent = '约 ¥' + flowCost().toFixed(2);
-    var status = $('#flowStatus');
-    if (status && !flow.message) status.textContent = flowReady() ? '[ready] 流程已就绪 · 点击运行' : '[waiting] 先补全输入与提示词';
-    var generate = $('#flowGenerate');
-    if (generate) {
-      generate.disabled = flow.busy || !flowReady();
-      generate.textContent = flow.busy ? '生成中…' : '🖨 生成图像';
-    }
-    var runTop = $('#flowRunTop');
-    if (runTop) { runTop.disabled = flow.busy || !flowReady(); runTop.textContent = flow.busy ? '生成中…' : '▶ 运行流程'; }
-    var result = $('#flowResult');
-    if (result) {
-      result.hidden = !flow.result;
-      if (flow.result) { $('#flowResultImg').src = flow.result.url; $('#flowResultImg').width = flow.result.w || 0; $('#flowResultImg').height = flow.result.h || 0; }
-    }
-  }
-  function renderFlow() { flowRender(); }
-  function flowReset() {
-    if (flow.busy) return;
-    flow = { useImage: false, source: null, model: 'minimax', styleId: 'h3-illus', prompt: '', promptDirty: false, ratio: '原图', quality: '2K', busy: false, result: null, message: '' };
-    var f = $('#flowFile'); if (f) f.value = '';
-    flowLoadPrompt(true);
-    flowRender();
-  }
-  function flowReadFile(file) {
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      var img = new Image();
-      img.onload = function () {
-        flow.source = { url: reader.result, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
-        flow.useImage = true;
-        flow.ratio = '原图';
-        flow.promptDirty = false;
-        flowLoadPrompt(true);
-        flowRender();
-        toast('已载入 ' + file.name);
-      };
-      img.onerror = function () { toast('这张图解不开'); };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  }
-  async function flowUploadAsset() {
-    var src = flow.source;
-    var dataUrl = src.url;
-    if (dataUrl.indexOf('data:') !== 0) {
-      var got = await fetch(dataUrl);
-      if (!got.ok) throw cloudError('源图读取失败', 'asset_read_failed');
-      dataUrl = await blobToDataUrl(await got.blob());
-    }
-    var res = await apiFetch('/assets', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dataUrl: dataUrl, name: src.name || 'flow-source.jpg', w: src.w || 0, h: src.h || 0 }),
-    });
-    var saved = await res.json().catch(function () { return {}; });
-    if (!res.ok || !saved.id) throw cloudError(saved.error || '源图上传失败', 'asset_upload_failed');
-    return saved.id;
-  }
-  async function flowStartCloud(assetId, prompt, size) {
-    var res = await apiFetch('/cloud/jobs', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ assetId: assetId, styleId: flow.styleId, prompt: prompt, size: size, params: {} }),
-    });
-    var data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw cloudError(data.error || '云端任务创建失败', data.code);
-    var job = await waitCloudJob(data.id);
-    if (job.status !== 'succeeded' || !job.output) throw cloudError((job.error && job.error.message) || '生成失败', job.status);
-    return { url: job.output.url, w: job.output.w, h: job.output.h, cost: cloudUnitPrice() };
-  }
-  async function flowGenerate() {
-    if (flow.busy) return;
-    if (!flowReady()) { toast('先补全输入与提示词'); return; }
-    var st = flowStyle();
-    flow.busy = true;
-    flow.result = null;
-    flow.message = flow.model === 'seedream' ? 'Seedream 生成中…' : (flow.source ? '上传源图并提交 H3…' : '提交 H3 文生图…');
-    flowRender();
-    try {
-      var prompt = flow.prompt;
-      var size = flowSize();
-      var result;
-      if (flow.model === 'seedream') {
-        var data = flow.source ? await refineDataUrl(flow.source.url) : null;
-        result = await runSeedreamWorkbench(prompt, size, data);
-      } else if (flow.source) {
-        var asset = await flowUploadAsset();
-        result = await flowStartCloud(asset, prompt, size);
+    var existing = $$('#wfEdges g path');
+    boxes.slice(0, -1).forEach(function (a, i) {
+      var b = boxes[i + 1];
+      var path = existing[i];
+      var d;
+      if (Math.abs(b.y - a.y) < 4) {
+        var right = b.x > a.x;
+        d = 'M' + (right ? a.right : a.left) + ',' + a.y + ' H' + (right ? b.left - 3 : b.right + 3);
       } else {
-        result = await runH3TextWorkbench(prompt, size);
+        var mid = (a.bottom + b.top) / 2;
+        d = 'M' + a.x + ',' + a.bottom + ' V' + mid + ' H' + b.x + ' V' + (b.top - 3);
       }
-      flow.result = { url: result.url, w: result.w, h: result.h, cost: result.cost || flowCost(), styleId: st.id, model: flow.model, prompt: prompt };
-      flow.message = '完成 · ' + (flow.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + result.w + ' × ' + result.h;
-      loadAllHistory(true);
-      toast('工作流完成');
-    } catch (err) {
-      flow.message = err.message || '生成失败';
-      toast(err.message || '生成失败');
-    } finally {
-      flow.busy = false;
-      flowRender();
-      var status = $('#flowStatus'); if (status) status.textContent = flow.message;
+      path.setAttribute('d', d);
+      path.classList.toggle('hot', i + 1 === flow.node);
+      path.classList.toggle('handoff', i === 5 && flow.record?.status === 'edit-running');
+    });
+  }
+  function flowOpen(node, focus) {
+    flow.node = node;
+    var inspect = $('.wf-inspect');
+    inspect.dataset.kind = node === 5 ? 'output' : [1,2,4].includes(node) ? 'option' : 'editor';
+    if (inspect.dataset.kind === 'option') {
+      var anchor = $('[data-wf-node="' + node + '"]').getBoundingClientRect();
+      var bounds = $('#flowPage').getBoundingClientRect();
+      inspect.style.setProperty('--wf-popup-x', Math.max(8, Math.min(anchor.left-bounds.left, bounds.width-234))+'px');
+      inspect.style.setProperty('--wf-popup-y', (anchor.bottom-bounds.top+6)+'px');
+    }
+    $('#wfTitle').textContent = node === 3 ? '首轮提示词' : node === 6 ? '编辑指令' : flowNames[node];
+    var area = $('#wfBody');
+    var panels = $$('[data-wf-node]');
+    area.setAttribute('aria-labelledby', 'wfTitle');
+    if (node === 0) {
+      area.innerHTML = '';
+    } else if (node === 1) {
+      area.innerHTML = flowOptions('wfModel', '首轮模型', Object.entries(flowModels), flow.provider);
+    } else if (node === 2) {
+      area.innerHTML = flowOptions('wfFormat', '图像格式', flow.provider === 'minimax' ? ['jpeg', 'png', 'webp'] : ['jpeg', 'png'], flow.format);
+      if (flow.provider === 'minimax') {
+        if (flow.format !== 'png') area.insertAdjacentHTML('beforeend', '<label class="wf-field">压缩质量<input id="wfCompression" type="number" min="0" max="100" value="' + flow.compression + '"></label>');
+        if (!flow.source) area.insertAdjacentHTML('beforeend', flowOptions('wfEnhance', '提示词优化', [['true','开启'],['false','关闭']], String(flow.enhance)));
+        else area.insertAdjacentHTML('beforeend', '<p class="wf-sub">提示词优化 · 服务端自动优化</p>');
+      } else {
+        area.insertAdjacentHTML('beforeend', flowOptions('wfBackground', '背景', [['auto','自动'],['opaque','不透明'],['transparent','透明']], flow.background)
+          + flowOptions('wfWatermark', '水印', [['true','开启'],['false','关闭']], String(flow.watermark)) + '<p class="wf-sub">提示词优化 · 标准模式</p>');
+      }
+    } else if (node === 3) {
+      var style = flowStyle();
+      area.innerHTML = '<div class="wf-prompt-grid"><div class="wf-row">'
+        + (flow.styleChosen ? '<span class="wf-style-chip"><img src="' + flowPreview(style) + '" alt="">' + escapeHTML(style.name) + '</span>' : '<span></span>')
+        + '<div><button class="wf-quiet" data-wf-action="pack" aria-haspopup="dialog">选择风格包</button><button class="wf-quiet" data-wf-action="reset">恢复默认</button></div></div>'
+        + '<label class="wf-field wf-prompt-field"><textarea id="wfPrompt" aria-label="首轮提示词" rows="6" maxlength="32000"></textarea></label></div>';
+      $('#wfPrompt').value = flowPrompt();
+    } else if (node === 4) {
+      var ratios = ['1:1', '4:5', '3:4', '16:9', '9:16'];
+      if (flow.source) ratios.unshift('原图');
+      area.innerHTML = flowOptions('wfRatio', '画面比例', ratios, flow.ratio)
+        + flowOptions('wfQuality', '分辨率', flow.provider === 'seedream' ? ['1K', '1.5K', '2K'] : ['1K', '2K', '4K'], flow.quality)
+        + '<div class="wf-row"><label class="wf-field">自定义宽度<input id="wfWidth" type="number" min="128" max="8192" value="' + (flow.customWidth || '') + '"></label><label class="wf-field">自定义高度<input id="wfHeight" type="number" min="128" max="8192" value="' + (flow.customHeight || '') + '"></label></div>'
+        + '<p class="wf-sub">目标尺寸 ' + flowSize().replace('x', ' × ') + '</p>';
+    } else if (node === 5) {
+      area.innerHTML = '<p class="wf-sub">' + escapeHTML(flowModels[flow.provider] + ' · ' + flowStyle().name + ' · ' + flowSize()) + '</p>'
+        + '<button class="wf-quiet wf-return" data-wf-action="back">返回画布</button><div class="wf-hole" aria-hidden="true"></div><div class="wf-print"><div class="wf-exit"></div></div>';
+      if (flow.record?.firstOutput) {
+        var photo = flowImage(flow.record.firstOutput, '首轮结果');
+        photo.className = 'wf-photo';
+        var ribbon = document.createElement('span');
+        ribbon.className = 'wf-ribbon'; ribbon.setAttribute('aria-hidden', 'true');
+        photo.append(ribbon);
+        $('.wf-exit').append(photo);
+        if (flow.revealId === flow.record.id) {
+          flow.revealId = '';
+          photo.classList.add('play'); $('.wf-hole').classList.add('play');
+        }
+      }
+    } else {
+      area.innerHTML = flowOptions('wfEditModel', '编辑模型', [['same','沿用首轮模型']].concat(Object.entries(flowModels)), flow.editModel)
+        + flowOptions('wfEditSize', '编辑输出尺寸', [['inherit','沿用首轮尺寸']].concat(flowNumberOptions()), flow.editSize)
+        + '<label class="wf-field">编辑指令<textarea id="wfEditPrompt" rows="3" maxlength="32000" placeholder="例如：保留主体和构图，把背景改成暖灰色"></textarea></label>'
+        + '<div class="wf-compare"></div>';
+      $('#wfEditPrompt').value = flow.editPrompt;
+      $('.wf-compare').append(flowImage(flow.record?.firstOutput, '首轮结果 · 自动作为源图'), flowImage(flow.record?.editOutput, '二次编辑结果'));
+      if (flow.record?.editOutput) $('.wf-compare figure:last-child img').classList.add('wf-final');
+      if (flow.record?.retryable) area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="retry">重试二次编辑</button>');
+    }
+    panels.forEach(function (button) { button.setAttribute('aria-controls', 'wfBody'); });
+    flowSync();
+    if ([1,2,4].includes(node)) area.querySelector('select')?.focus();
+    else if (focus) $('#wfTitle').focus({ preventScroll: true });
+  }
+  function renderFlow() { flowOpen(flow.node); }
+  function flowPose() {
+    $('#wfNodes').style.transform = 'translate(' + flow.x + 'px,' + flow.y + 'px) scale(' + flow.zoom + ')';
+    $('#wfFit').textContent = Math.round(flow.zoom * 100) + '%';
+  }
+  async function flowApi(path, body) {
+    var init = body === undefined ? { cache: 'no-store' } : {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    };
+    var res = await apiFetch(path, init);
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw Object.assign(new Error(data.error || '工作流请求失败'), { status: res.status });
+    return data;
+  }
+  function flowResume() {
+    clearTimeout(flow.timer);
+    if (disposed || !flow.requestId) return;
+    flowPoll(flow.requestId);
+  }
+  async function flowPoll(id) {
+    try {
+      var record = await flowApi('/workflows/' + encodeURIComponent(id));
+      if (disposed || flow.requestId !== id) return;
+      await flowApply(record);
+    } catch (error) {
+      if (disposed || flow.requestId !== id) return;
+      if (error.status === 404) {
+        flow.requestId = '';
+        flow.busy = false;
+        flow.error = '未找到已接受的任务，可重新执行';
+        writeJsonStore(flowHistoryKey, '');
+      } else {
+        flow.error = '暂时无法读取状态，正在重连…';
+        flow.timer = setTimeout(function () { flowPoll(id); }, 2500);
+      }
+      flowSync();
     }
   }
-  function flowOpenResult() {
-    if (!flow.result) return;
-    var st = styleById(flow.result.styleId) || { name: '生成图片' };
-    openBig({
-      key: 'flow:' + flow.result.url, url: flow.result.url, title: st.name,
-      meta: (flow.result.model === 'seedream' ? 'Seedream 5.5' : 'MiniMax H3') + ' · ' + flow.result.w + ' × ' + flow.result.h,
-      info: '固定工作流 · ' + flow.result.w + ' × ' + flow.result.h,
-      w: flow.result.w, h: flow.result.h, border: 'none', resultId: null,
-      styleId: flow.result.styleId, cloud: true,
-    });
+  async function flowApply(record) {
+    var prior = flow.record;
+    var stageChanged = !prior || prior.status !== record.status;
+    flow.record = record;
+    flow.busy = ['first-running','edit-running'].includes(record.status);
+    flow.error = record.error || '';
+    if (record.firstOutput && !prior?.firstOutput && currentView === 'flow' && flow.node === 5) {
+      var first = new Image();
+      first.src = record.firstOutput.url;
+      try { await first.decode(); } catch {}
+      if (disposed || flow.record.id !== record.id) return;
+      if (flow.node === 5 && currentView === 'flow') { flow.revealId = record.id; flowOpen(5); }
+      if (flow.node === 5 && !matchMedia('(prefers-reduced-motion: reduce)').matches) await new Promise(function (resolve) { setTimeout(resolve, 1700); });
+      if (disposed || flow.record.id !== record.id) return;
+    }
+    if (stageChanged && currentView === 'flow') {
+      if (record.firstOutput && flow.node === 5) flowOpen(6);
+      else if (flow.node === 6 || flow.node === 5 && !record.firstOutput) flowOpen(flow.node);
+    }
+    flowSync();
+    if (flow.busy) flow.timer = setTimeout(function () { flowPoll(record.id); }, 500);
+    else if (stageChanged) { loadAllHistory(true); loadQueue({ silent: true }); }
+  }
+  async function flowSubmit() {
+    if (flow.pending || flow.busy) return;
+    if (!flowPrompt().trim()) { flowOpen(3); $('#wfPrompt').focus(); return; }
+    if (!flow.editPrompt.trim()) {
+      flow.error = '请填写二次编辑指令';
+      flowOpen(6); $('#wfEditPrompt').focus(); return;
+    }
+    if (state.settings?.privacyConfirm !== false && !window.confirm('执行工作流会调用两次云端模型。提供的原图和首轮结果将交给对应供应商，成功的调用可能计费。继续？')) return;
+    flow.pending = true;
+    flow.error = '';
+    flowSync();
+    var id = crypto.randomUUID ? crypto.randomUUID() : 'wf-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    var source = flow.source;
+    var request = { id: id,
+      first: { provider: flow.provider, size: flowSize(), styleId: flow.styleId, prompt: flowPrompt(),
+        format: flow.format, compression: flow.compression, enhance: flow.enhance,
+        background: flow.background, watermark: flow.watermark },
+      edit: { provider: flowEditModel(), size: flow.editSize, prompt: flow.editPrompt, format: 'jpeg' },
+    };
+    try {
+      if (source) request.first.sourceId = (await flowApi('/assets', { dataUrl: source.url, name: source.name, w: source.w, h: source.h })).id;
+      flow.requestId = id;
+      writeJsonStore(flowHistoryKey, id);
+      var record = await flowApi('/workflows', request);
+      if (disposed) return;
+      flowOpen(5);
+      flow.record = null;
+      await flowApply(record);
+    } catch (error) {
+      if (disposed) return;
+      flow.error = error.message;
+      if (!error.status && flow.requestId === id) { flow.busy = true; flowResume(); }
+      else if (flow.requestId === id) { flow.requestId = ''; writeJsonStore(flowHistoryKey, ''); }
+    } finally {
+      if (!disposed) { flow.pending = false; flowSync(); }
+    }
+  }
+  async function flowRetry() {
+    if (flow.busy || flow.pending || !flow.record?.retryable) return;
+    if (!window.confirm('只重试二次编辑。再次调用模型可能计费，继续？')) return;
+    flow.pending = true; flowSync();
+    try {
+      var id = flow.record.id;
+      var record = await flowApi('/workflows/' + encodeURIComponent(id) + '/retry-edit', flow.editSize === 'inherit' ? {} : { size: flow.editSize });
+      if (!disposed) await flowApply(record);
+    } catch (error) { if (!disposed) flow.error = error.message; }
+    finally { if (!disposed) { flow.pending = false; flowSync(); } }
   }
 
+  function bindWorkflow() {
+    var deck = $('#wfDeck'), graph = $('#wfGraph');
+    var cards = $('.wf-deck-cards', deck);
+    var dragging = false, drawing = false, pan, fileVersion = 0;
+    function showDeck() {
+      cards.replaceChildren();
+      flowStyles().forEach(function (style, i) {
+        var button = document.createElement('button');
+        button.className = 'wf-card'; button.dataset.wfStyle = style.id;
+        button.setAttribute('aria-pressed', String(style.id === flow.styleId));
+        button.style.setProperty('--i', i % 6);
+        button.style.setProperty('--spread', i % 4 - 1.5);
+        var art = document.createElement('img'); art.src = flowPreview(style); art.alt = ''; art.draggable = false; art.loading = 'lazy';
+        var name = document.createElement('span'); name.textContent = style.name;
+        button.append(art, name); cards.append(button);
+      });
+      fitDeck();
+      $('.wf-workspace').inert = true;
+      deck.show();
+      $('#wfDeckClose').focus();
+    }
+    function fitDeck() {
+      var box = root.getBoundingClientRect();
+      deck.style.left = Math.max(0, box.left) + 'px';
+      deck.style.top = Math.max(0, box.top) + 'px';
+      deck.style.width = Math.min(box.width, innerWidth - Math.max(0, box.left)) + 'px';
+      deck.style.height = Math.min(box.height, innerHeight - Math.max(0, box.top)) + 'px';
+    }
+    async function pick(card) {
+      if (drawing || !deck.open) return;
+      drawing = true; card.classList.add('chosen');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        await new Promise(function (resolve) { setTimeout(resolve, 230); });
+      }
+      if (!disposed && deck.open) {
+        flow.styleId = card.dataset.wfStyle;
+        flow.styleChosen = true;
+        $('.wf-workspace').inert = false;
+        deck.close();
+        flowOpen(3);
+        $('#wfPrompt').focus();
+      }
+      drawing = false;
+    }
+    deck.addEventListener('pointermove', function (e) {
+      var card = e.target.closest('[data-wf-style]');
+      var active = cards.querySelector('.hot');
+      if (active && active !== card) active.classList.remove('hot');
+      if (!card || e.pointerType === 'touch') return;
+      var r = card.getBoundingClientRect();
+      card.classList.add('hot');
+      card.style.setProperty('--rx', ((.5 - (e.clientY - r.top) / r.height) * 12) + 'deg');
+      card.style.setProperty('--ry', (((e.clientX - r.left) / r.width - .5) * 12) + 'deg');
+    });
+    cards.addEventListener('pointerdown', function (e) { dragging = e.button === 0 && e.pointerType === 'mouse'; });
+    deck.addEventListener('pointerup', function (e) {
+      var card = e.target.closest('[data-wf-style]');
+      if (dragging && card) pick(card);
+      dragging = false;
+    });
+    deck.addEventListener('pointercancel', function () { dragging = false; });
+    deck.addEventListener('close', function () { dragging = false; $('.wf-workspace').inert = false; });
+    deck.addEventListener('keydown', function (e) { if (e.key === 'Escape') { deck.close(); $('.wf-workspace').inert = false; $('[data-wf-node="3"]').focus(); } });
+    deck.addEventListener('click', function (e) {
+      var card = e.target.closest('[data-wf-style]');
+      if (card) pick(card);
+      if (e.target.closest('#wfDeckClose')) { deck.close(); $('.wf-workspace').inert = false; $('[data-wf-node="3"]').focus(); }
+    });
+    $('#workflowRun').addEventListener('click', flowSubmit);
+    $('#flowPage').addEventListener('click', function (e) {
+      var node = e.target.closest('[data-wf-node]');
+      if (node) {
+        var index = Number(node.dataset.wfNode);
+        if (index === 0) { $('#wfFile').click(); return; }
+        flowOpen(index, e.detail === 0);
+        if (index === 3) showDeck();
+        return;
+      }
+      var button = e.target.closest('[data-wf-action]');
+      if (!button) return;
+      switch (button.dataset.wfAction) {
+        case 'pack': showDeck(); break;
+        case 'back': flowOpen(3); break;
+        case 'reset': delete flowDrafts[flowDraftName()]; writeJsonStore(flowDraftKey, flowDrafts); $('#wfPrompt').value = flowPrompt(); break;
+        case 'remove': fileVersion++; flow.source = null; flow.ratio = '1:1'; flowSync(); break;
+        case 'retry': flowRetry(); break;
+        case 'in': flow.zoom = Math.min(2, flow.zoom + .15); flowPose(); break;
+        case 'out': flow.zoom = Math.max(.55, flow.zoom - .15); flowPose(); break;
+        case 'fit': flow.zoom = 1; flow.x = flow.y = 0; flowPose(); break;
+      }
+    });
+    $('#flowPage').addEventListener('input', function (e) {
+      if (e.target.id === 'wfPrompt') { flowDrafts[flowDraftName()] = e.target.value; writeJsonStore(flowDraftKey, flowDrafts); }
+      if (e.target.id === 'wfEditPrompt') flow.editPrompt = e.target.value;
+    });
+    $('#flowPage').addEventListener('change', async function (e) {
+      var value = e.target.value;
+      switch (e.target.id) {
+        case 'wfFile': {
+          var file = e.target.files[0];
+          var version = ++fileVersion;
+          if (!file) return;
+          if (file.size > 20 * 1024 * 1024) { toast('图片不能超过 20 MB'); return; }
+          try {
+            var url = await blobToDataURL(file);
+            var image = new Image(); image.src = url; await image.decode();
+            if (!disposed && version === fileVersion) { flow.source = { url: url, name: file.name, w: image.naturalWidth, h: image.naturalHeight }; flow.ratio = '原图'; flowSync(); }
+          } catch { if (!disposed) toast('图片无法读取'); }
+          return;
+        }
+        case 'wfModel':
+          flow.provider = value; flow.modelChosen = true; flow.paramsChosen = false;
+          if (value === 'seedream') { if (flow.format === 'webp') flow.format = 'jpeg'; if (flow.quality === '4K') flow.quality = '2K'; }
+          if (value === 'minimax' && flow.quality === '1.5K') flow.quality = '2K';
+          if (flow.editModel === 'same') flow.editSize = 'inherit';
+          break;
+        case 'wfFormat': flow.paramsChosen = true; flow.format = value; if (value !== 'png' && flow.background === 'transparent') flow.background = 'auto'; flowOpen(2); return;
+        case 'wfBackground': flow.background = value; if (value === 'transparent') flow.format = 'png'; flowOpen(2); return;
+        case 'wfCompression': flow.compression = Math.max(0, Math.min(100, Math.round(Number(value)))); e.target.value = flow.compression; break;
+        case 'wfEnhance': flow.enhance = value === 'true'; break;
+        case 'wfWatermark': flow.watermark = value === 'true'; break;
+        case 'wfWidth': flow.customWidth = Number(value) || null; flowOpen(4); $('#wfWidth').focus(); return;
+        case 'wfHeight': flow.customHeight = Number(value) || null; flowOpen(4); $('#wfHeight').focus(); return;
+        case 'wfRatio': flow.sizeChosen = true; flow.customWidth = flow.customHeight = null; flow.ratio = value; flowOpen(4); $('#wfRatio').focus(); return;
+        case 'wfQuality': flow.sizeChosen = true; flow.customWidth = flow.customHeight = null; flow.quality = value; flowOpen(4); $('#wfQuality').focus(); return;
+        case 'wfEditModel': flow.editModel = value; flow.editSize = 'inherit'; flowOpen(6); $('#wfEditModel').focus(); return;
+        case 'wfEditSize': flow.editSize = value; break;
+      }
+      flowSync();
+    });
+    graph.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('button') || e.button !== 0) return;
+      pan = { x: e.clientX - flow.x, y: e.clientY - flow.y };
+      graph.setPointerCapture(e.pointerId);
+    });
+    graph.addEventListener('pointermove', function (e) {
+      if (!pan) return;
+      flow.x = e.clientX - pan.x; flow.y = e.clientY - pan.y; flowPose();
+    });
+    graph.addEventListener('lostpointercapture', function () { pan = null; });
+    var motion = $('#wfMotion');
+    motion.checked = readJsonStore('dsh-image-workbench/reduce-motion/v1', false);
+    function applyMotion() { $('#flowPage').dataset.motion = motion.checked ? 'off' : 'on'; }
+    motion.addEventListener('change', function () { writeJsonStore('dsh-image-workbench/reduce-motion/v1', motion.checked); applyMotion(); });
+    applyMotion();
+    var light = $('.wf-scene');
+    var ambient = new IntersectionObserver(function (entries) { light.toggleAttribute('data-paused', !entries[0].isIntersecting || document.hidden); });
+    ambient.observe(graph);
+    listen(document, 'visibilitychange', function () { light.toggleAttribute('data-paused', document.hidden || currentView !== 'flow'); });
+    cleanups.push(function () { ambient.disconnect(); });
+    var observer = new ResizeObserver(function () { flowEdges(); if (deck.open) fitDeck(); });
+    observer.observe($('#wfNodes'));
+    observer.observe(root);
+    listen(window, 'resize', function () { if (deck.open) fitDeck(); });
+    cleanups.push(function () { observer.disconnect(); clearTimeout(flow.timer); if (deck.open) deck.close(); });
+  }
+
+  async function flowLoadHistory() {
+    try {
+      var data = await flowApi('/workflows');
+      if (disposed || currentView !== 'recent') return;
+      var history = $('#wfHistory');
+      history.replaceChildren();
+      if (!data.workflows?.length) return;
+      var title = document.createElement('h3');
+      title.textContent = '工作流记录';
+      history.append(title);
+      data.workflows.forEach(function (row) {
+        var button = document.createElement('button');
+        button.className = 'ghost-btn';
+        button.textContent = (styleById(row.styleId)?.name || row.styleId) + ' · ' + new Date(row.updatedAt).toLocaleString()
+          + (row.editOutput ? ' · 两轮完成' : ' · 首轮结果');
+        button.addEventListener('click', async function () {
+          if (flow.busy || flow.pending) { toast('当前工作流仍在执行，请稍后查看历史'); return; }
+          try {
+            var record = await flowApi('/workflows/' + encodeURIComponent(row.id));
+            if (disposed || flow.busy || flow.pending) return;
+            flow.requestId = record.id;
+            flow.record = record;
+            flow.error = record.error || '';
+            flow.busy = ['first-running','edit-running'].includes(record.status);
+            flow.editModel = record.edit.provider;
+            flow.editSize = record.edit.size;
+            flow.editPrompt = record.edit.prompt;
+            writeJsonStore(flowHistoryKey, record.id);
+            flow.node = 6;
+            switchView('flow');
+            if (flow.busy) flowResume();
+          } catch (error) { if (!disposed) toast(error.message); }
+        });
+        history.append(button);
+      });
+    } catch { if (!disposed) $('#wfHistory').replaceChildren(); }
+  }
   function switchView(view) {
     var recent = view === 'recent';
     var text = view === 'text';
     var seedream = view === 'seedream';
     var workflow = view === 'flow';
+    currentView = view;
+    $('.page').dataset.wfView = view;
+    $('#viewTabs').hidden = startupView === 'flow';
+    $('#workflowHistory').textContent = recent ? '返回工作台' : '历史';
     $('.work').hidden = view !== 'studio';
     $('#recentPage').hidden = !recent;
     $('#textPage').hidden = !text;
@@ -4441,11 +4737,13 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
     $('#flowPage').hidden = !workflow;
     $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
     if (recent) {
+      flowLoadHistory();
       renderRecentPage();
       if (!recentLoaded) loadAllHistory();
     }
     if (text) { renderTextTemplates(); renderTextPage(); }
     if (seedream) renderSeedreamPage();
+    if (!workflow && $('#wfDeck').open) { $('#wfDeck').close(); $('.wf-workspace').inert = false; }
     if (workflow) renderFlow();
   }
 
@@ -4802,6 +5100,9 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
     }).then(function (s) {
       if (disposed) return;
       state.settings = s;
+      startupView = s.startupMode === 'studio' ? 'studio' : 'flow';
+      $('#startupMode').value = startupView;
+      if (currentView !== 'recent') switchView(startupView);
       if (s.defaultSize && ['640', '960', '1200'].indexOf(s.defaultSize) >= 0) {
         state.params.size = s.defaultSize;
         setMiniSeg('size', state.params.size);
@@ -4837,6 +5138,7 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
   function saveSettings() {
     var body = {
       defaultSize: currentSeg('size'),
+      startupMode: $('#startupMode').value,
       enableCloud: !!(state.settings && state.settings.hasKey)
     };
     var key = $('#keyInput').value.trim();
@@ -4854,7 +5156,9 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
       setSeedreamKeyState(s);
       $('#keyInput').value = '';
       $('#keyEdit').hidden = true;
+      startupView = s.startupMode === 'studio' ? 'studio' : 'flow';
       closeSettings();
+      switchView(startupView);
       updateUI();
       toast('设置已保存');
     }).catch(function (err) { toast(err.message || '设置保存失败'); });
@@ -6733,78 +7037,9 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
       if (open) openFavorite(Number(open.dataset.favoriteOpen));
     });
 
-    $('#flowUploadChoice').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-flow-upload]');
-      if (!b) return;
-      if (b.dataset.flowUpload === 'yes') {
-        $('#flowFile').click();
-      } else {
-        flow.useImage = false;
-        flow.source = null;
-        if (flow.ratio === '原图') flow.ratio = '1:1';
-        flow.promptDirty = false;
-        flowLoadPrompt(true);
-        renderFlow();
-      }
-    });
-    $('#flowFile').addEventListener('change', function (e) {
-      flowReadFile(e.target.files && e.target.files[0]);
-      e.target.value = '';
-    });
-    $('#flowRemoveSource').addEventListener('click', function () {
-      flow.useImage = false;
-      flow.source = null;
-      flow.ratio = '1:1';
-      flow.promptDirty = false;
-      flowLoadPrompt(true);
-      renderFlow();
-    });
-    $$('[data-flow-model]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        flow.model = b.dataset.flowModel;
-        flow.promptDirty = false;
-        flowLoadPrompt(true);
-        renderFlow();
-      });
-    });
-    $('#flowStyle').addEventListener('change', function (e) {
-      flow.styleId = e.target.value;
-      flow.promptDirty = false;
-      flowLoadPrompt(true);
-      renderFlow();
-    });
-    $('#flowPromptReset').addEventListener('click', function () {
-      flow.promptDirty = false;
-      flowLoadPrompt(true);
-      var area = $('#flowPrompt'); if (area) area.focus();
-    });
-    $('#flowPrompt').addEventListener('input', function () {
-      flow.prompt = this.value;
-      flow.promptDirty = true;
-    });
-    $('#flowRatio').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-flow-ratio]');
-      if (!b) return;
-      flow.ratio = b.dataset.flowRatio;
-      renderFlow();
-    });
-    $('#flowQuality').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-flow-quality]');
-      if (!b) return;
-      flow.quality = b.dataset.flowQuality;
-      renderFlow();
-    });
-    $('#flowReset').addEventListener('click', flowReset);
-    $('#flowGenerate').addEventListener('click', flowGenerate);
-    $('#flowRunTop').addEventListener('click', flowGenerate);
-    $('#flowViewResult').addEventListener('click', flowOpenResult);
-    $('#flowDownloadResult').addEventListener('click', function () {
-      if (flow.result) triggerDownload(flow.result.url, 'flow-' + Date.now() + '.jpg');
-    });
-    $('#flowEditResult').addEventListener('click', function () {
-      if (!flow.result) return;
-      flowOpenResult();
-      openRefine();
+    bindWorkflow();
+    $('#workflowHistory').addEventListener('click', function () {
+      switchView(currentView === 'recent' ? startupView : 'recent');
     });
     $('#viewTabs').addEventListener('click', function (e) {
       var b = e.target.closest('[data-view]');
@@ -7281,6 +7516,8 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
 
   function boot() {
     bind();
+    switchView(startupView);
+    flowResume();
     showEmpty();
     renderHistory();
     loadSettings();
@@ -7298,7 +7535,6 @@ body[data-ds-dark-theme] .iw-root .flow-run, html[data-ds-dark-theme] .iw-root .
   }
 
   boot();
-  return dispose;  boot();
   return dispose;
 
     }

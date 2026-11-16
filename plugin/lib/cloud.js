@@ -6,7 +6,7 @@ import { checkBudget, estimate as estimateCost } from './budget.js'
 import { fail } from './errors.js'
 import { createJobs, hashParams, JOB_STATUSES, MAX_SEED, normalizeSeed, retryBlockedReason } from './jobs.js'
 import { createLedger } from './ledger.js'
-import { baseUrlFor, generateEdit, generateText, isValidSize } from './minimax.js'
+import { baseUrlFor, generateEdit, generateText, isValidSize, sniffMime } from './minimax.js'
 import { writeAtomic } from './storage.js'
 
 const STYLE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
@@ -53,7 +53,9 @@ export function createCloud({
   async function persistResult(job, result, config, estimated) {
     const dir = join(root, 'outputs', job.id)
     await mkdir(dir, { recursive: true })
-    const file = join(dir, `${job.styleId}.jpg`)
+    const mime = job.params?.workflowOutput ? sniffMime(result.buffer) : 'image/jpeg'
+    const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'
+    const file = join(dir, `${job.styleId}.${ext}`)
     await writeAtomic(file, result.buffer, 0o644)
 
     const actual = /^(\d{2,5})x(\d{2,5})$/i.exec(String(result.rawMeta?.size ?? ''))
@@ -65,7 +67,7 @@ export function createCloud({
       h: height,
       bytes: result.buffer.length,
       costYuan: estimated.costYuan,
-      url: `/image-workbench/result/${job.id}/${job.styleId}.jpg`,
+      url: `/image-workbench/result/${job.id}/${job.styleId}.${ext}`,
     }
 
     const model = typeof result.rawMeta?.model === 'string' ? result.rawMeta.model : null
@@ -145,6 +147,7 @@ export function createCloud({
 
     return jobs.start(job.id, async (current) => {
       const result = await generate({
+        ...current.params?.workflowOutput,
         imageBuffer,
         mime: asset.meta.mime,
         referenceBuffer: reference?.buffer,
@@ -222,13 +225,14 @@ export function createCloud({
     }
 
     const cleanPrompt = prompt.trim()
+    const { workflowOutput: _ignored, ...jobParams } = params ?? {}
     const job = jobs.create({
       assetId: primaryId,
       styleId,
       prompt: cleanPrompt,
       size,
       seed: normalizeSeed(seed),
-      params: params ?? {},
+      params: extras.output ? { ...jobParams, workflowOutput: extras.output } : jobParams,
       model: config.model,
       parentId,
       recipeId,
@@ -249,6 +253,7 @@ export function createCloud({
     jobs.update(job.id, { status: 'preparing' })
     return jobs.start(job.id, async (current) => {
       const result = await textGenerate({
+        ...current.params?.workflowOutput,
         prompt: current.prompt,
         size: current.size,
         key,
@@ -265,7 +270,7 @@ export function createCloud({
     })
   }
 
-  async function createTextJob(body = {}, config) {
+  async function createTextJob(body = {}, config, extras = {}) {
     assertEnabled(config)
     if (!body || typeof body !== 'object' || Array.isArray(body)) fail('请求内容无效')
     const { prompt, size } = body
@@ -304,7 +309,7 @@ export function createCloud({
       styleId: 'h3-text',
       prompt: prompt.trim(),
       size,
-      params: {},
+      params: extras.output ? { workflowOutput: extras.output } : {},
       model: config.model,
       paramsHash: hashParams({ prompt: prompt.trim(), size, params: {} }),
     })

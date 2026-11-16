@@ -8,7 +8,7 @@ function apiError(message, status = 400, code = 'seedream_error') {
   return Object.assign(new Error(message), { status, code, beforeRequest: status < 500 })
 }
 
-export function validateSeedreamSize(size) {
+export function validateSeedreamSize(size, model) {
   const match = SIZE_RE.exec(String(size ?? '').trim())
   if (!match) return null
   const width = Number(match[1])
@@ -16,7 +16,7 @@ export function validateSeedreamSize(size) {
   const area = width * height
   const ratio = Math.max(width, height) / Math.min(width, height)
   if (width < 128 || height < 128) return null
-  if (area < 921600 || area > 16777216) return null
+  if (area < 921600 || area > (model === 'doubao-seedream-5-5-261028' ? 4624220 : 16777216)) return null
   if (ratio > 16) return null
   return { width, height, value: `${width}x${height}` }
 }
@@ -35,6 +35,9 @@ export async function generateSeedream({
   prompt,
   size,
   images = [],
+  outputFormat = 'jpeg',
+  background,
+  watermark = false,
   key,
   baseUrl = DEFAULT_BASE,
   model = DEFAULT_MODEL,
@@ -44,15 +47,16 @@ export async function generateSeedream({
 } = {}) {
   if (typeof key !== 'string' || !key.trim()) throw apiError('还没有保存 Seedream API Key', 400, 'missing_key')
   if (typeof prompt !== 'string' || !prompt.trim()) throw apiError('提示词不能为空', 400, 'invalid_prompt')
-  const checked = validateSeedreamSize(size)
+  const checked = validateSeedreamSize(size, model)
   if (!checked) throw apiError('Seedream size 需要 WxH，面积 921600–16777216，比例不超过 16:1', 400, 'invalid_size')
   const body = {
     model,
     prompt: prompt.trim(),
     size: checked.value,
     response_format: 'url',
-    output_format: 'jpeg',
-    watermark: false,
+    output_format: outputFormat,
+    watermark,
+    ...(background ? { background } : {}),
   }
   if (Array.isArray(images) && images.length) body.image = images.length === 1 ? images[0] : images
 

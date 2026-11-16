@@ -129,6 +129,8 @@ export async function generateEdit({
   key,
   baseUrl,
   speed = 'standard',
+  outputFormat: requestedFormat = 'jpeg',
+  compression,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   downloadTimeoutMs = 120_000,
   fetchImpl = globalThis.fetch,
@@ -163,7 +165,8 @@ export async function generateEdit({
     form.append('size', checkedSize.mode === 'auto' ? 'auto' : checkedSize.value)
   }
   form.append('response_format', 'url')
-  form.append('output_format', 'jpeg')
+  form.append('output_format', requestedFormat)
+  if (compression !== undefined && requestedFormat !== 'png') form.append('output_compression', String(compression))
   form.append('n', '1')
   form.append('image', new Blob([imageBuffer], { type: mime }), `source.${extForMime(mime)}`)
   for (let i = 0; i < extraBuffers.length; i++) {
@@ -346,6 +349,9 @@ export async function generateText({
   key,
   baseUrl,
   speed = 'standard',
+  outputFormat: requestedFormat = 'jpeg',
+  compression,
+  enhance = false,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   downloadTimeoutMs = 120_000,
   fetchImpl = globalThis.fetch,
@@ -378,9 +384,10 @@ export async function generateText({
         model,
         prompt: prompt.trim(),
         size: checkedSize.value,
-        disable_prompt_enhanced: true,
+        disable_prompt_enhanced: !enhance,
         response_format: 'url',
-        output_format: 'jpeg',
+        output_format: requestedFormat,
+        ...(compression !== undefined && requestedFormat !== 'png' ? { output_compression: compression } : {}),
         n: 1,
       }),
       signal: AbortSignal.timeout(timeoutMs),

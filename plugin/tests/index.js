@@ -3,3 +3,7 @@
 import './host.test.mjs'
 import './mask.test.mjs'
 import './composite.test.mjs'
+import './workflow.test.mjs'
+import './capabilities.test.mjs'
+import './output-spec.test.mjs'
+import './draft.test.mjs'

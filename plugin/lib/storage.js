@@ -597,7 +597,7 @@ export function createStorage(root) {
   function resultPath(batchId, styleId, ext = 'jpg') {
     if (typeof batchId !== 'string' || !BATCH_ID_RE.test(batchId)) return null
     if (typeof styleId !== 'string' || !STYLE_ID_RE.test(styleId)) return null
-    const suffix = String(ext).toLowerCase() === 'png' ? 'png' : 'jpg'
+    const suffix = ['png', 'webp'].includes(ext) ? ext : 'jpg'
     const base = resolve(outputsRoot)
     const path = resolve(base, batchId, `${styleId}.${suffix}`)
     if (path !== join(base, batchId, `${styleId}.${suffix}`) || !path.startsWith(base + sep)) return null

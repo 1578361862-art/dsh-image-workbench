@@ -7,10 +7,11 @@ import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
+import { createWorkflowService } from './lib/workflow.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL, validateSeedreamSize } from './lib/seedream.js'
-import { hashParams, MAX_SEED, normalizeSeed } from './lib/jobs.js'
+import { hashParams, MAX_SEED, normalizeSeed, TERMINAL_STATUSES } from './lib/jobs.js'
 
 const SEEDREAM_MODELS = ['doubao-seedream-5-5-261028', 'doubao-seedream-4-5-251128', 'doubao-seedream-4-0-250828']
 const SEEDREAM_COST_YUAN = 0.28
@@ -37,6 +38,7 @@ const DEFAULTS = Object.freeze({
   budget: 10,
   privacyConfirm: true,
   defaultSize: '960',
+  startupMode: 'flow',
   concurrency: 2,
   base: 'cn',
   model: 'standard',
@@ -93,6 +95,10 @@ function sanitizeConfig(body, current) {
   if (body.privacyConfirm !== undefined) {
     if (typeof body.privacyConfirm !== 'boolean') fail('隐私设置无效')
     next.privacyConfirm = body.privacyConfirm
+  }
+  if (body.startupMode !== undefined) {
+    if (!['flow', 'studio'].includes(body.startupMode)) fail('启动模式无效')
+    next.startupMode = body.startupMode
   }
   if (body.defaultSize !== undefined) {
     if (!SIZES.includes(body.defaultSize)) fail('默认尺寸无效')
@@ -560,9 +566,10 @@ export default {
           : `seed_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
       const dir = join(ROOT, 'outputs', id)
       await mkdir(dir, { recursive: true })
-      const file = join(dir, 'seedream.jpg')
+      const ext = meta.workflow && sniffMime(result.buffer) === 'image/png' ? 'png' : 'jpg'
+      const file = join(dir, `seedream.${ext}`)
       await writeFile(file, result.buffer, { mode: 0o644 })
-      const url = `/image-workbench/result/${id}/seedream.jpg`
+      const url = `/image-workbench/result/${id}/seedream.${ext}`
       const size = /^(\d{3,5})x(\d{3,5})$/i.exec(String(result.rawMeta?.size ?? meta.size ?? ''))
       const sizeValue = size ? `${Number(size[1])}x${Number(size[2])}` : null
       const w = size ? Number(size[1]) : 0
@@ -642,6 +649,7 @@ export default {
       cloud.jobs.update(job.id, { status: 'preparing' })
       return cloud.jobs.start(job.id, async (current) => {
         const result = await generateSeedream({
+          ...current.params?.workflowOutput,
           prompt: current.prompt,
           size: current.size,
           images,
@@ -657,6 +665,7 @@ export default {
           size: current.size,
           parentId: current.parentId,
           recipeId: current.recipeId,
+          workflow: !!current.params?.workflowOutput,
         })
         return {
           output: { url: saved.url, w: saved.w, h: saved.h, costYuan: saved.costYuan, model: saved.model, seed: saved.seed },
@@ -760,6 +769,87 @@ export default {
       return { id, url, w, h }
     }
 
+    async function checkWorkflow(request) {
+      await cloud.ready
+      if (request.first.sourceId && !await storage.getAsset(request.first.sourceId)) fail('首轮源图不存在', 404)
+      const providers = new Set([request.first.provider, request.edit.provider])
+      const config = await readConfig()
+      if (providers.has('minimax') && (config.cloudEnabled !== true || !await readKeyValue(ctx))) {
+        fail('请先在设置中启用 MiniMax 并保存密钥')
+      }
+      if (providers.has('seedream') && !await readSeedreamKeyValue(ctx)) fail('请先在设置中保存 Seedream Key')
+      const spent = await cloud.ledger.spentToday()
+      const total = [request.first, request.edit].reduce((cost, step) => {
+        if (step.provider === 'seedream') return cost + SEEDREAM_COST_YUAN
+        const size = step.size === 'inherit' ? request.first.size : step.size
+        return cost + (config.billing === 'mplan' ? 0 : estimate({ size, speed: config.model, billing: config.billing, count: 1 }).costYuan)
+      }, 0)
+      if (total > 0 && spent + total > config.budget) fail('两轮预计用量超过每日预算，请先检查设置', 402)
+    }
+
+    async function workflowSource(source) {
+      if (!source) return null
+      if (typeof source === 'string') {
+        const asset = await storage.getAsset(source)
+        if (!asset) fail('源图不存在', 404)
+        return asset
+      }
+      const match = /^\/image-workbench\/result\/([\w-]+)\/([\w.-]+)\.(jpg|png|webp)$/.exec(source.url || '')
+      const path = match && storage.resultPath(match[1], match[2], match[3])
+      if (!path) fail('首轮结果无效', 422)
+      const buffer = await readFile(path)
+      const mime = sniffMime(buffer)
+      return { buffer, meta: { mime, w: source.w, h: source.h } }
+    }
+
+    const workflows = createWorkflowService({
+      root: join(ROOT, 'workflows'),
+      check: checkWorkflow,
+      async start(step, source, parentId) {
+        await cloud.ready
+        const config = await readConfig()
+        const asset = await workflowSource(source)
+        const output = { outputFormat: step.format, compression: step.compression, enhance: step.enhance,
+          background: step.background, watermark: step.watermark }
+        const request = { prompt: step.prompt, size: step.size, parentId }
+        if (step.provider === 'minimax') {
+          if (!asset) return cloud.createTextJob(request, config, { output })
+          let assetId = asset.meta.id
+          if (!assetId) {
+            const saved = await storage.putAsset({
+              dataUrl: `data:${asset.meta.mime};base64,${asset.buffer.toString('base64')}`,
+              name: 'workflow-source', w: asset.meta.w, h: asset.meta.h,
+            })
+            assetId = saved.meta.id
+          }
+          const styleId = step.styleId || 'workflow-edit'
+          const reference = step.styleId ? await styleReferenceFor(styleId) : null
+          return cloud.createJob({ ...request, assetId, styleId }, config, { output, reference })
+        }
+        const key = await readSeedreamKeyValue(ctx)
+        if (!key) fail('还没有保存 Seedream API Key')
+        if (await cloud.ledger.spentToday() + SEEDREAM_COST_YUAN > config.budget) fail('二次调用超过每日预算', 402)
+        const buffer = asset ? asset.buffer || await readFile(asset.path) : null
+        if (buffer && buffer.length > 30 * 1024 * 1024) fail('Seedream 输入图超过 30 MB')
+        const images = buffer ? [`data:${asset.meta.mime};base64,${buffer.toString('base64')}`] : []
+        const model = SEEDREAM_MODELS[0]
+        const job = cloud.jobs.create({ provider: 'seedream', styleId: 'seedream', ...request, model,
+          params: { workflowOutput: output }, paramsHash: hashParams({ ...request, model }) })
+        setImmediate(() => {
+          runSeedreamJob(job, { key, images }).catch(error => cloud.jobs.failBeforeRequest(job.id, error))
+        })
+        return { id: job.id }
+      },
+      async wait(id) {
+        await cloud.ready
+        for (;;) {
+          const job = cloud.getJob(id)
+          if (TERMINAL_STATUSES.includes(job.status)) return job
+          await new Promise(resolve => setTimeout(resolve, 400))
+        }
+      },
+    })
+
     const route = async (req, res) => {
       const rejection = ctx.get('connection')?.requestRejection?.({ headers: req.headers })
       if (rejection) return json(res, rejection, { error: '未授权' })
@@ -769,6 +859,17 @@ export default {
       const method = req.method ?? 'GET'
       const seg = path.split('/').filter(Boolean)
 
+      if (method === 'GET' && path === 'workflows') return json(res, 200, { workflows: await workflows.list() })
+      if (method === 'POST' && path === 'workflows') {
+        return json(res, 202, await workflows.create(await readBody(req, MAX_CLOUD_BODY)))
+      }
+      if (method === 'GET' && seg.length === 2 && seg[0] === 'workflows') {
+        return json(res, 200, await workflows.get(seg[1]))
+      }
+      if (method === 'POST' && seg.length === 3 && seg[0] === 'workflows' && seg[2] === 'retry-edit') {
+        const body = await readBody(req)
+        return json(res, 202, await workflows.retry(seg[1], body.size))
+      }
       if (method === 'GET' && path === 'settings') {
         return json(res, 200, await publicSettings(ctx))
       }
@@ -850,11 +951,11 @@ export default {
         if (!/^layer_[a-z0-9]+$/i.test(seg[1]) || !/^layer-\d+\.png$/.test(seg[2])) return json(res, 404, { error: '图层不存在' })
         return serveStored(res, join(ROOT, 'outputs', seg[1], seg[2]), 'image/png')
       }
-      if (method === 'GET' && seg.length === 3 && seg[0] === 'result' && /\.(jpg|png)$/i.test(seg[2])) {
-        const ext = /\.png$/i.test(seg[2]) ? 'png' : 'jpg'
-        const file = storage.resultPath(seg[1], seg[2].replace(/\.(jpg|png)$/i, ''), ext)
+      if (method === 'GET' && seg.length === 3 && seg[0] === 'result' && /\.(jpg|png|webp)$/i.test(seg[2])) {
+        const ext = seg[2].split('.').at(-1).toLowerCase()
+        const file = storage.resultPath(seg[1], seg[2].replace(/\.(jpg|png|webp)$/i, ''), ext)
         if (!file) return json(res, 404, { error: '结果不存在' })
-        return serveStored(res, file, ext === 'png' ? 'image/png' : 'image/jpeg')
+        return serveStored(res, file, ext === 'jpg' ? 'image/jpeg' : `image/${ext}`)
       }
       if (method === 'GET' && path === 'storage') {
         return json(res, 200, await storage.stats())
