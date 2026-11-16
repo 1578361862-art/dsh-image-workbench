@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import test from 'node:test'
+import { createArtworkRepository } from '../lib/artworks.js'
+import { openIndex } from '../lib/sqlite.js'
+
+async function setup(t) {
+  const root = await mkdtemp(join(tmpdir(), 'iw-artworks-'))
+  const index = await openIndex(':memory:')
+  if (!index) {
+    t.skip('node:sqlite unavailable')
+    return {}
+  }
+  t.after(async () => { index.close(); await rm(root, { recursive: true, force: true }) })
+  return { root, index }
+}
+
+test('creates artwork and version DAG with stable parent links', async t => {
+  const { root, index } = await setup(t)
+  const repo = createArtworkRepository({ root, index })
+  const artwork = await repo.create({ title: '测试作品' })
+  const first = await repo.addVersion({ artworkId: artwork.id, buffer: Buffer.from('first'), width: 1024, height: 1024, prompt: 'first', snapshot: { model: 'minimax' } })
+  const second = await repo.addVersion({ artworkId: artwork.id, parentVersionId: first.id, buffer: Buffer.from('second'), width: 2048, height: 2048, prompt: 'second' })
+  assert.equal(first.seq, 1)
+  assert.equal(second.seq, 2)
+  assert.equal(second.parentVersionId, first.id)
+  const loaded = repo.get(artwork.id)
+  assert.deepEqual(loaded.versions.map(v => v.id), [first.id, second.id])
+  const meta = JSON.parse(await readFile(join(root, artwork.folder, 'artwork.json'), 'utf8'))
+  assert.equal(meta.versions[1].parentVersionId, first.id)
+  assert.equal(meta.versions[1].format, 'png')
+})
+
+test('rejects invalid parents and keeps flags independent', async t => {
+  const { root, index } = await setup(t)
+  const repo = createArtworkRepository({ root, index })
+  const artwork = await repo.create({ title: 'flags' })
+  await assert.rejects(() => repo.addVersion({ artworkId: artwork.id, parentVersionId: 'ver_missing', buffer: Buffer.from('x'), width: 10, height: 10 }), /父版本/)
+  const liked = repo.setFlag(artwork.id, 'liked', true)
+  assert.equal(liked.liked, 1)
+  assert.equal(liked.favorite, 0)
+})
