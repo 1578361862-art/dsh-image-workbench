@@ -12,6 +12,9 @@ import { CAPABILITIES } from './lib/capabilities.js'
 import { openIndex } from './lib/sqlite.js'
 import { createStorageRoots } from './lib/storage-roots.js'
 import { createArtworkRepository } from './lib/artworks.js'
+import { createExecutionService } from './lib/execution.js'
+import { createSqliteJobStore } from './lib/sqlite-job-store.js'
+import { createProviderRunner } from './lib/providers.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL, validateSeedreamSize } from './lib/seedream.js'
@@ -555,17 +558,34 @@ export default {
   apply(ctx) {
     const storage = createStorage(ROOT)
     let v2ServicesPromise = null
+    async function openV2() {
+      await mkdir(ROOT, { recursive: true })
+      const index = await openIndex(join(ROOT, 'v2.sqlite'))
+      const roots = createStorageRoots({ file: join(ROOT, 'storage-roots.json') })
+      const state = await roots.list()
+      const root = state.active
+      const artworks = index ? createArtworkRepository({ root, index }) : null
+      const store = index ? createSqliteJobStore(index) : null
+      const provider = createProviderRunner({
+        cloud, storage, readConfig,
+        readKey: () => readKeyValue(ctx),
+        readSeedreamKey: () => readSeedreamKeyValue(ctx),
+        generateSeedream, pollMs: 400,
+      })
+      const execution = index && artworks ? createExecutionService({ store, artworks, provider: snapshot => provider.run(snapshot) }) : null
+      if (execution) execution.queue.restore(store.list())
+      return { index, roots, state, root, artworks, store, execution }
+    }
     async function v2Services() {
-      if (!v2ServicesPromise) {
-        v2ServicesPromise = (async () => {
-          await mkdir(ROOT, { recursive: true })
-          const index = await openIndex(join(ROOT, 'v2.sqlite'))
-          const roots = createStorageRoots({ file: join(ROOT, 'storage-roots.json') })
-          const state = await roots.list()
-          return { index, roots, state, root: state.active }
-        })()
-      }
+      if (!v2ServicesPromise) v2ServicesPromise = openV2()
       return v2ServicesPromise
+    }
+    async function resetV2() {
+      if (v2ServicesPromise) {
+        const old = await v2ServicesPromise.catch(() => null)
+        old?.index?.close?.()
+      }
+      v2ServicesPromise = null
     }
     storage.backfillCloudIndex().catch(() => {})
     storage.cleanupOld({ days: 90 }).catch(() => {})
@@ -887,6 +907,35 @@ export default {
         const body = await readBody(req)
         return json(res, 202, await workflows.retry(seg[1], body.size))
       }
+      if (seg[0] === 'v2' && seg[1] === 'jobs') {
+        const services = await v2Services()
+        if (!services.execution) return json(res, 503, { error: 'SQLite 不可用，任务队列降级中' })
+        if (method === 'POST' && seg.length === 2) {
+          const body = await readBody(req, MAX_CLOUD_BODY)
+          if (!body?.snapshot || typeof body.snapshot !== 'object') fail('任务快照无效')
+          const job = services.execution.submit({ artworkId: body.artworkId || null, parentVersionId: body.parentVersionId || null, snapshot: body.snapshot, idempotencyKey: body.idempotencyKey })
+          services.execution.run().catch(() => {})
+          return json(res, 202, job)
+        }
+        if (method === 'GET' && seg.length === 2) return json(res, 200, { jobs: services.execution.list() })
+        if (method === 'GET' && seg.length === 3) {
+          const job = services.execution.get(seg[2])
+          if (!job) return json(res, 404, { error: '任务不存在' })
+          return json(res, 200, job)
+        }
+        if (method === 'POST' && seg.length === 4 && seg[3] === 'cancel') {
+          const job = services.execution.queue.cancel(seg[2])
+          if (!job) return json(res, 404, { error: '任务不存在' })
+          return json(res, 200, job)
+        }
+        if (method === 'POST' && seg.length === 4 && seg[3] === 'retry') {
+          const job = services.execution.queue.retry(seg[2])
+          if (!job) return json(res, 404, { error: '任务不存在' })
+          services.execution.run().catch(() => {})
+          return json(res, 202, job)
+        }
+        return json(res, 404, { error: '任务接口不存在' })
+      }
       if (method === 'GET' && path === 'v2/capabilities') {
         return json(res, 200, { capabilities: CAPABILITIES })
       }
@@ -900,19 +949,18 @@ export default {
         const body = await readBody(req, MAX_BODY)
         const changed = await services.roots.setActive(body?.root)
         services.root = changed.root
-        return json(res, 200, await services.roots.list())
+        await resetV2()
+        return json(res, 200, await (await v2Services()).roots.list())
       }
       if (method === 'GET' && path === 'v2/artworks') {
         const services = await v2Services()
-        if (!services.index) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
-        const repo = createArtworkRepository({ root: services.root, index: services.index })
-        return json(res, 200, { artworks: await repo.list({ limit: url.searchParams.get('limit') }) })
+        if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        return json(res, 200, { artworks: await services.artworks.list({ limit: url.searchParams.get('limit') }) })
       }
       if (method === 'GET' && seg.length === 3 && seg[0] === 'v2' && seg[1] === 'artworks') {
         const services = await v2Services()
-        if (!services.index) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
-        const repo = createArtworkRepository({ root: services.root, index: services.index })
-        return json(res, 200, repo.get(seg[2]))
+        if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        return json(res, 200, services.artworks.get(seg[2]))
       }
       if (method === 'GET' && path === 'settings') {
         return json(res, 200, await publicSettings(ctx))
