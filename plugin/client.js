@@ -4386,6 +4386,28 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       path.classList.toggle('handoff', i === 5 && flow.record?.status === 'edit-running');
     });
   }
+  async function exportPolaroid(result) {
+    if (!result?.url) return;
+    var response = await fetch(result.url);
+    if (!response.ok) throw new Error('无法读取结果图');
+    var bitmap = await createImageBitmap(await response.blob());
+    var pad = Math.round(Math.max(bitmap.width, bitmap.height) * 0.065);
+    var caption = Math.round(pad * 0.72);
+    var canvas = document.createElement('canvas');
+    canvas.width = bitmap.width + pad * 2;
+    canvas.height = bitmap.height + pad + caption + pad;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f6efe1'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, pad, pad);
+    ctx.fillStyle = '#8c8170'; ctx.font = Math.max(12, Math.round(pad * 0.32)) + 'px ui-monospace,monospace';
+    ctx.fillText('IMAGE WORKBENCH · ' + new Date().toISOString().slice(0, 10), pad, canvas.height - pad * 0.5);
+    var blob = await new Promise(function (resolve) { canvas.toBlob(resolve, 'image/jpeg', 0.94); });
+    bitmap.close?.();
+    if (!blob) throw new Error('相纸导出失败');
+    var url = URL.createObjectURL(blob);
+    triggerDownload(url, 'polaroid-' + Date.now() + '.jpg');
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
   function flowOpen(node, focus) {
     flow.node = node;
     var inspect = $('.wf-inspect');
@@ -4438,6 +4460,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         ribbon.className = 'wf-ribbon'; ribbon.setAttribute('aria-hidden', 'true');
         photo.append(ribbon);
         $('.wf-exit').append(photo);
+        area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="polaroid">下载相纸版</button>');
         if (flow.revealId === flow.result.versionId) {
           flow.revealId = '';
           photo.classList.add('play'); $('.wf-hole').classList.add('play');
@@ -4756,6 +4779,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         case 'remove': fileVersion++; flow.source = null; flow.ratio = '1:1'; flowSync(); break;
         case 'retry': flowRetry(); break;
         case 'edit': flowEditSubmit(); break;
+        case 'polaroid': exportPolaroid(flow.result).catch(function (error) { toast(error.message); }); break;
         case 'in': flow.zoom = Math.min(2, flow.zoom + .15); flowPose(); break;
         case 'out': flow.zoom = Math.max(.55, flow.zoom - .15); flowPose(); break;
         case 'fit': flow.zoom = 1; flow.x = flow.y = 0; flowPose(); break;
@@ -4879,6 +4903,36 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       });
     } catch { if (!disposed) $('#wfHistory').replaceChildren(); }
   }
+  async function flowLoadV2History() {
+    try {
+      var data = await flowApi('/v2/artworks?limit=12');
+      if (disposed || currentView !== 'recent') return;
+      var history = $('#wfHistory');
+      var existing = history.querySelector('[data-v2-history]');
+      if (existing) existing.remove();
+      var section = document.createElement('div');
+      section.dataset.v2History = '1';
+      var title = document.createElement('h3');
+      title.textContent = '作品库 · 相纸堆';
+      section.append(title);
+      (data.artworks || []).forEach(function (art) {
+        var latest = art.versions?.[art.versions.length - 1];
+        if (!latest) return;
+        var button = document.createElement('button');
+        button.className = 'ghost-btn';
+        button.textContent = (art.title || '未命名') + ' · ' + (art.versions.length) + ' 版 · ' + new Date(latest.created_at).toLocaleDateString();
+        button.addEventListener('click', function () {
+          var result = { artworkId: art.id, versionId: latest.id, url: API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(latest.id) + '/file', w: latest.width, h: latest.height };
+          flow.artworkId = art.id; flow.parentVersionId = latest.id; flow.result = result; flow.firstResult = result;
+          flow.editResult = null; flow.error = ''; flow.busy = false; flow.pending = false; flow.node = 5;
+          switchView('flow'); flowOpen(5);
+        });
+        section.append(button);
+      });
+      history.append(section);
+    } catch { /* v2 history unavailable on older host */ }
+  }
+
   function switchView(view) {
     var recent = view === 'recent';
     var text = view === 'text';
@@ -4896,6 +4950,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     $$('#viewTabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
     if (recent) {
       flowLoadHistory();
+      flowLoadV2History();
       renderRecentPage();
       if (!recentLoaded) loadAllHistory();
     }
