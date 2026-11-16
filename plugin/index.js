@@ -961,6 +961,16 @@ export default {
         await resetV2()
         return json(res, 200, await (await v2Services()).roots.list())
       }
+      if (method === 'POST' && path === 'v2/storage/relink') {
+        const services = await v2Services()
+        if (!services.index) return json(res, 503, { error: 'SQLite 不可用，无法重定位作品' })
+        const body = await readBody(req, MAX_BODY)
+        const changed = await services.roots.relink(body?.from, body?.to)
+        services.index.run('UPDATE artworks SET root=? WHERE root=?', changed.to, changed.from)
+        services.index.run('UPDATE storage_roots SET path=? WHERE path=?', changed.to, changed.from)
+        await resetV2()
+        return json(res, 200, { ...(await (await v2Services()).roots.list()), relinked: changed })
+      }
       if (method === 'GET' && path === 'v2/artworks') {
         const services = await v2Services()
         if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })

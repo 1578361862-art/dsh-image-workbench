@@ -67,5 +67,18 @@ export function createStorageRoots({ file, clock = () => new Date() }) {
     await save(state)
     return list()
   }
-  return { load, list, setActive, markOffline, check: checkRoot, defaultRoot: DEFAULT_ROOT }
+  async function relink(from, to) {
+    const normalize = value => normalizeRoot(value)
+    const source = normalize(from); const target = normalize(to)
+    if (source === target) fail('新旧目录相同', 400)
+    const checked = await checkRoot(target)
+    if (!checked.writable) fail(`目标目录不可写：${checked.error || '权限不足'}`, 422)
+    const state = await load()
+    state.roots = state.roots.map(root => root.path === source ? { ...root, path: target, status: 'active', checkedAt: checked.checkedAt } : root)
+    if (!state.roots.some(root => root.path === target)) state.roots.unshift({ path: target, status: 'active', checkedAt: checked.checkedAt })
+    if (state.active === source || !state.roots.some(root => root.path === state.active)) state.active = target
+    await save(state)
+    return { from: source, to: target, writable: true }
+  }
+  return { load, list, setActive, relink, markOffline, check: checkRoot, defaultRoot: DEFAULT_ROOT }
 }

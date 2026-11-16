@@ -5275,6 +5275,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       month.textContent = (m.count || 0) + ' 张 · ¥' + Number(m.costYuan || 0).toFixed(2);
     }).catch(function () { today.textContent = '—'; month.textContent = '—'; });
   }
+  var storageRelinkFrom = null;
   async function loadStorage() {
     var path = $('#storagePath'), input = $('#storageInput'), roots = $('#storageRoots');
     if (!path || !roots) return;
@@ -5293,11 +5294,20 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         var name = document.createElement('span'); name.textContent = root.path; name.title = root.path;
         row.append(name);
         if (root.status === 'offline') { var off = document.createElement('b'); off.textContent = '离线'; row.append(off); }
-        if (!root.active) {
-          var locate = document.createElement('button'); locate.type = 'button'; locate.textContent = '定位'; locate.className = 'set-action';
-          locate.addEventListener('click', function () { var input = $('#storageInput'); if (input) { input.value = root.path; input.focus(); } });
-          row.append(locate);
-        }
+        var locate = document.createElement('button'); locate.type = 'button'; locate.textContent = root.active ? '重定位' : '用此目录'; locate.className = 'set-action';
+        locate.addEventListener('click', function () {
+          var input = $('#storageInput'); if (!input) return;
+          input.value = root.path;
+          if (root.active) {
+            storageRelinkFrom = root.path;
+            $('#storageNote').textContent = '输入该目录的新位置后点「应用」；旧作品索引保留，文件不会被删除。';
+          } else {
+            storageRelinkFrom = null;
+            $('#storageNote').textContent = '切换后将新建作品写入此目录；旧目录作品仍按原位置索引。';
+          }
+          input.focus(); input.select();
+        });
+        row.append(locate);
         roots.append(row);
       });
     } catch (error) {
@@ -5309,12 +5319,16 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     var input = $('#storageInput');
     if (!input || !input.value.trim()) return;
     try {
-      var res = await apiFetch('/v2/storage', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: input.value.trim() }),
+      var relinking = !!storageRelinkFrom;
+      var path = relinking ? '/v2/storage/relink' : '/v2/storage';
+      var body = relinking ? { from: storageRelinkFrom, to: input.value.trim() } : { root: input.value.trim() };
+      var res = await apiFetch(path, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
       var data = await res.json().catch(function () { return {}; });
-      if (!res.ok) throw new Error(data.error || '目录不可写');
-      toast('存储目录已更新');
+      if (!res.ok) throw new Error(data.error || (relinking ? '重定位失败' : '目录不可写'));
+      storageRelinkFrom = null;
+      toast(relinking ? '目录重定位完成' : '存储目录已更新');
       await loadStorage();
     } catch (error) { toast(error.message); }
   }

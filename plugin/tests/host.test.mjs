@@ -9,6 +9,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  renameSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
@@ -1869,4 +1870,24 @@ test('V2 layer ZIP route serves manifest and transparent PNG entries', async () 
   assert.equal(zip.status, 200)
   assert.match(zip.headers.get('content-type'), /zip/)
   assert.equal(zip.body.subarray(0, 4).toString('hex'), '504b0304')
+})
+
+test('V2 storage relink keeps old artwork bytes reachable', async () => {
+  const from = mkdtempSync(join(HOME, 'root-move-from-'))
+  const to = mkdtempSync(join(HOME, 'root-move-to-'))
+  await postJson('/v2/storage', { root: from })
+  const { openIndex } = await import('../lib/sqlite.js')
+  const { createArtworkRepository } = await import('../lib/artworks.js')
+  const index = await openIndex(join(DATA, 'v2.sqlite'))
+  const repo = createArtworkRepository({ root: from, index })
+  const artwork = await repo.create({ title: 'move-me' })
+  const version = await repo.addVersion({ artworkId: artwork.id, buffer: PNG, width: 64, height: 64 })
+  index.close()
+  renameSync(join(from, artwork.folder), join(to, artwork.folder))
+  const relinked = await postJson('/v2/storage/relink', { from, to })
+  assert.equal(relinked.status, 200)
+  assert.equal(relinked.body.relinked.to, to)
+  const file = await api('/v2/artworks/' + artwork.id + '/versions/' + version.id + '/file')
+  assert.equal(file.status, 200)
+  assert.equal(file.body.length, PNG.length)
 })
