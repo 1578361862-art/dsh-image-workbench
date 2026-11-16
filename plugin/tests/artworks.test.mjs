@@ -52,3 +52,17 @@ test('attaches source bytes under the artwork folder', async t => {
   const meta = JSON.parse(await readFile(join(root, artwork.folder, 'artwork.json'), 'utf8'))
   assert.equal(meta.source.file, 'source/original.png')
 })
+
+test('attaches and reads layer manifest and files', async t => {
+  const { root, index } = await setup(t)
+  const repo = createArtworkRepository({ root, index })
+  const artwork = await repo.create({ title: 'layers' })
+  const version = await repo.addVersion({ artworkId: artwork.id, buffer: Buffer.from('base'), width: 512, height: 512 })
+  const manifest = { canvasWidth: 512, canvasHeight: 512, layers: [{ id: 'l1', file: 'layer_01.png', zIndex: 1, x: 0, y: 0, opacity: 1, blendMode: 'normal' }] }
+  await repo.attachLayers(artwork.id, version.id, manifest, { 'layer_01.png': Buffer.from('layer') })
+  const read = await repo.layers(artwork.id, version.id)
+  assert.equal(read.manifest.canvasWidth, 512)
+  assert.equal(read.base, 'layers/v001')
+  const meta = JSON.parse(await readFile(join(root, artwork.folder, 'artwork.json'), 'utf8'))
+  assert.equal(meta.versions[0].layerManifest.layers[0].file, 'layer_01.png')
+})

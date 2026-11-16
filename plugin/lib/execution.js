@@ -53,7 +53,7 @@ export function createExecutionService({ queue: suppliedQueue, store, artworks, 
     })
     return {
       status: output.partial ? 'partial_success' : 'succeeded',
-      result: { artworkId, versionId: version.id, file: version.file, width: version.width, height: version.height, sha256: version.sha256 },
+      result: { artworkId, versionId: version.id, file: version.file, width: version.width, height: version.height, sha256: version.sha256, layerManifest: version.layerManifest || null },
       artworkId,
     }
   }

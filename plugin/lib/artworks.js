@@ -130,5 +130,38 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     await writeAtomic(metaPath, JSON.stringify(meta, null, 2), 0o644)
     return meta.source
   }
-  return { create, addVersion, attachSource, get, list, setFlag, root }
+  async function attachLayers(artworkId, versionId, manifest, files = {}) {
+    const artwork = artworkRow(artworkId)
+    const version = index.get('SELECT * FROM versions WHERE id=? AND artwork_id=?', versionId, artworkId)
+    if (!version) fail('版本不存在', 404)
+    if (!manifest || !Number.isInteger(manifest.canvasWidth) || manifest.canvasWidth <= 0 || !Number.isInteger(manifest.canvasHeight) || manifest.canvasHeight <= 0) fail('图层 manifest 无效', 400)
+    if (!Array.isArray(manifest.layers) || !manifest.layers.length) fail('图层 manifest 为空', 400)
+    const seen = new Set()
+    for (const layer of manifest.layers) {
+      if (!layer || typeof layer.id !== 'string' || !layer.id || typeof layer.file !== 'string' || !layer.file) fail('图层项无效', 400)
+      if (seen.has(layer.file)) fail('图层文件重复', 400)
+      seen.add(layer.file)
+      if (!files[layer.file] || !Buffer.isBuffer(files[layer.file])) fail('缺少图层文件 ' + layer.file, 400)
+      if (!/^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,120}\.png$/i.test(layer.file) || layer.file.includes('..')) fail('图层文件路径无效', 400)
+    }
+    const base = `layers/v${String(version.seq).padStart(3, '0')}`
+    index.run('UPDATE versions SET layer_manifest_json=? WHERE id=?', JSON.stringify(manifest), versionId)
+    await writeAtomic(join(root, artwork.folder, base, 'manifest.json'), JSON.stringify(manifest, null, 2), 0o644)
+    for (const layer of manifest.layers) {
+      await writeAtomic(join(root, artwork.folder, base, layer.file), files[layer.file], 0o644)
+    }
+    await syncManifest(artworkRow(artworkId), versionRows(artworkId))
+    return { base, manifest }
+  }
+
+  async function layers(artworkId, versionId) {
+    const artwork = artworkRow(artworkId)
+    const version = index.get('SELECT * FROM versions WHERE id=? AND artwork_id=?', versionId, artworkId)
+    if (!version) fail('版本不存在', 404)
+    if (!version.layer_manifest_json) fail('该版本没有图层', 404)
+    const manifest = JSON.parse(version.layer_manifest_json)
+    const base = `layers/v${String(version.seq).padStart(3, '0')}`
+    return { base, manifest, folder: join(root, artwork.folder, base) }
+  }
+  return { create, addVersion, attachSource, attachLayers, layers, get, list, setFlag, root }
 }

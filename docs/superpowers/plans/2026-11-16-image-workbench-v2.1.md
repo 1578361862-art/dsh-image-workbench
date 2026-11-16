@@ -21,7 +21,7 @@
 - `execution.js` 已把单 job → provider → artwork version 串起来；`providers.js` 已实现 MiniMax/Seedream 适配；`/v2/jobs` 已接真实执行服务。
 - Client 七节点已切到 `/v2/jobs`：首轮单任务、二次编辑独立任务、版本文件 URL；节点布局改为宽屏四列 + 侧检查器；输入支持拖拽/替换确认；风格卡两排横滚 + 3D 翻面编辑。
 - 已安装 0.41.0 并验证真实 Host `/v2/capabilities`、`/v2/jobs` 可访问；浏览器截图为 `shots/v2-flow-real.png`、`shots/v2-style-deck.png`、`shots/v2-replace.png`。
-- 真浏览器验证（mock `/v2/jobs`）：出片、替换确认、翻面卡无 pageerror；新增相纸版导出、v2 队列合并、v2 作品历史入口与版本 chips；PNG 默认、单并发默认；Settings 存储根读取/应用；作品 source/ 原图落盘；Client 格式/档位/比例读取 `/v2/capabilities`。`node --test plugin/tests/` 65 通过。
+- 真浏览器验证（mock `/v2/jobs`）：出片、替换确认、翻面卡、历史 chips、v2 队列无 pageerror；新增相纸版导出、v2 队列合并、v2 作品历史入口与版本 chips；PNG 默认、单并发默认；Settings 存储根读取/应用；作品 source/ 原图落盘；Client 格式/档位/比例读取 `/v2/capabilities`；layer manifest + ZIP 路由/仓库方法已实现但能力表仍标记未核验。`node --test plugin/tests/` 66 通过。
 - 尚未安装到 desktop profile；等 P0 UI + 存储/队列接线并通过浏览器验收后再升级版本。
 
 ## 0. 规格对照与关键决策

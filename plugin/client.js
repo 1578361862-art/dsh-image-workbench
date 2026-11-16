@@ -4495,6 +4495,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         photo.append(ribbon);
         $('.wf-exit').append(photo);
         area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="polaroid">下载相纸版</button>');
+        if (flow.result.layerManifest) area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="layers">下载分层 ZIP</button>');
         if (flow.revealId === flow.result.versionId) {
           flow.revealId = '';
           photo.classList.add('play'); $('.wf-hole').classList.add('play');
@@ -4559,6 +4560,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     var result = {
       url: flowResultUrl(job.result), w: job.result.width || 0, h: job.result.height || 0,
       artworkId: job.result.artworkId, versionId: job.result.versionId, file: job.result.file, sha256: job.result.sha256,
+      layerManifest: job.result.layerManifest || null,
     };
     if (flow.jobKind === 'edit' && flow.firstResult) flow.editResult = result;
     else { flow.firstResult = result; flow.artworkId = result.artworkId; }
@@ -4814,6 +4816,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         case 'retry': flowRetry(); break;
         case 'edit': flowEditSubmit(); break;
         case 'polaroid': exportPolaroid(flow.result).catch(function (error) { toast(error.message); }); break;
+        case 'layers': if (flow.result) window.open(API + '/v2/artworks/' + encodeURIComponent(flow.result.artworkId) + '/versions/' + encodeURIComponent(flow.result.versionId) + '/layers.zip', '_blank', 'noopener'); break;
         case 'in': flow.zoom = Math.min(2, flow.zoom + .15); flowPose(); break;
         case 'out': flow.zoom = Math.max(.55, flow.zoom - .15); flowPose(); break;
         case 'fit': flow.zoom = 1; flow.x = flow.y = 0; flowPose(); break;

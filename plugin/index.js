@@ -15,6 +15,7 @@ import { createArtworkRepository } from './lib/artworks.js'
 import { createExecutionService } from './lib/execution.js'
 import { createSqliteJobStore } from './lib/sqlite-job-store.js'
 import { createProviderRunner } from './lib/providers.js'
+import { createZip } from './lib/zip.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL, validateSeedreamSize } from './lib/seedream.js'
@@ -967,6 +968,21 @@ export default {
         const services = await v2Services()
         if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
         return json(res, 200, services.artworks.get(seg[2]))
+      }
+      if (method === 'GET' && seg.length === 6 && seg[0] === 'v2' && seg[1] === 'artworks' && seg[3] === 'versions' && seg[5] === 'layers.zip') {
+        const services = await v2Services()
+        if (!services.artworks) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        const info = await services.artworks.layers(seg[2], seg[4])
+        const entries = [{ name: 'manifest.json', data: JSON.stringify(info.manifest, null, 2) }]
+        for (const layer of info.manifest.layers) {
+          entries.push({ name: layer.file, data: await readFile(join(info.folder, layer.file)) })
+        }
+        const archive = createZip(entries)
+        res.statusCode = 200
+        res.setHeader('content-type', 'application/zip')
+        res.setHeader('content-disposition', 'attachment; filename="layers-' + seg[4] + '.zip"')
+        res.end(archive)
+        return
       }
       if (method === 'GET' && seg.length === 6 && seg[0] === 'v2' && seg[1] === 'artworks' && seg[3] === 'versions' && seg[5] === 'file') {
         const services = await v2Services()
