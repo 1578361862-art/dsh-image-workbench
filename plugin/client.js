@@ -5047,7 +5047,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         (art.versions || []).forEach(function (version, index) {
           var chip = document.createElement('button'); chip.className = 'wf-history-chip'; chip.textContent = 'v' + String(index + 1).padStart(3, '0');
           chip.addEventListener('click', function () {
-            var result = { artworkId: art.id, versionId: version.id, url: API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(version.id) + '/file', w: version.width, h: version.height };
+            var result = { artworkId: art.id, versionId: version.id, url: API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(version.id) + '/file', w: version.width, h: version.height, layerManifest: version.layer_manifest_json ? JSON.parse(version.layer_manifest_json) : null };
             flow.artworkId = art.id; flow.parentVersionId = version.id; flow.result = result; flow.firstResult = result;
             flow.editResult = null; flow.error = ''; flow.busy = false; flow.pending = false; flow.node = 5;
             switchView('flow'); flowOpen(5);

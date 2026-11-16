@@ -42,3 +42,16 @@
 - 该调用走经典 `/seedream/decompose` 路由，尚未接入 v2 七节点工作流。
 - 本次没有做图层合成/重排 UI 的浏览器验收。
 - 图层 `bounding_box` 未在旧 wrapper 中保留，后续 v2 接入必须补。
+
+
+## 图层版本 DAG 回写（2026-11-17）
+
+- 使用已产生的图层组 `layer_mwjgh7bt539734`，未再发起付费调用
+- `POST /v2/artworks/art_mwjfu60s9395bca4/versions/ver_mwjg7wet0ccb3fb4/layers`
+- 结果：
+  - 新版本：`ver_mwjgmikwcbe6ef43`（v003）
+  - 父版本：`ver_mwjg7wet0ccb3fb4`（v002）
+  - layer manifest：2 层，画布 1024×1024
+  - layers.zip：HTTP 200，2,270,332 bytes，ZIP 头 `504b0304`
+- 真实浏览器历史：`acceptance-seedream · 3 版`，v001/v002/v003；打开 v003 可见相纸和「下载分层 ZIP」按钮，无 pageerror。
+- 截图：`shots/v2-real-layer-dag.png`
