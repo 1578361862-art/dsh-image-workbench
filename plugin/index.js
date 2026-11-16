@@ -949,7 +949,9 @@ export default {
       if (method === 'GET' && path === 'v2/storage') {
         const services = await v2Services()
         const state = await services.roots.list()
-        return json(res, 200, { ...state, degraded: !services.index })
+        let writable = true
+        try { await stat(state.active) } catch { writable = false }
+        return json(res, 200, { ...state, writable, degraded: !services.index })
       }
       if (method === 'POST' && path === 'v2/storage') {
         const services = await v2Services()

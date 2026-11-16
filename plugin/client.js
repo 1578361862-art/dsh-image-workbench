@@ -463,6 +463,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
 .iw-root #wfHistory h3{font-size:13px;margin:0 0 5px}
 .iw-root #wfHistory button{margin:4px 8px 4px 0}
 .iw-root .wf-history-item{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--p-hair-2);padding:2px 0}
+.iw-root .wf-history-thumb{width:30px;height:30px;object-fit:cover;border:1px solid var(--p-hair);border-radius:3px;background:var(--p-paper-2);flex:none}
 .iw-root .wf-history-item>.ghost-btn{max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .iw-root .wf-history-versions{display:flex;gap:3px;flex-wrap:wrap;margin-left:auto}
 .iw-root .wf-history-chip{height:20px;padding:0 5px;border:1px solid var(--p-hair);background:var(--p-paper);color:var(--p-ink-4);font:8px var(--p-mono);cursor:pointer}
@@ -4956,6 +4957,8 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         var latest = art.versions?.[art.versions.length - 1];
         if (!latest) return;
         var item = document.createElement('article'); item.className = 'wf-history-item';
+        var thumbUrl = API + '/v2/artworks/' + encodeURIComponent(art.id) + '/versions/' + encodeURIComponent(latest.id) + '/file';
+        var thumb = document.createElement('img'); thumb.className = 'wf-history-thumb'; thumb.src = thumbUrl; thumb.alt = ''; thumb.loading = 'lazy';
         var button = document.createElement('button'); button.className = 'ghost-btn';
         button.textContent = (art.title || '未命名') + ' · ' + (art.versions.length) + ' 版 · ' + new Date(latest.created_at).toLocaleDateString();
         var chips = document.createElement('div'); chips.className = 'wf-history-versions';
@@ -4969,7 +4972,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
           });
           chips.append(chip);
         });
-        item.append(button, chips); section.append(item);
+        item.append(thumb, button, chips); section.append(item);
       });
       history.append(section);
     } catch { /* v2 history unavailable on older host */ }
@@ -5279,6 +5282,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok) throw new Error(data.error || '读取存储目录失败');
       path.textContent = data.active || '—';
+      if (data.writable === false) $('#storageNote').textContent = '当前目录不可写或已离线；作品索引仍保留，请重新定位。';
       path.title = data.active || '';
       if (input) input.value = data.active || '';
       roots.replaceChildren();
