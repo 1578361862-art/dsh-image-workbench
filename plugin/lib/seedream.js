@@ -169,6 +169,8 @@ export async function decomposeSeedream({
       url: x.url,
       name: x.name || ('图层 ' + (i + 1)),
       index: x.z_index ?? i,
+      zIndex: x.z_index ?? i,
+      boundingBox: x.bounding_box || null,
       description: x.description || '',
       textRecognition: x.text_recognition || null,
       w: x.size ? Number(String(x.size).split('x')[0]) : 0,
