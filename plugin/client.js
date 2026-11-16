@@ -373,6 +373,10 @@ body[data-ds-dark-theme] .iw-root, html[data-ds-dark-theme] .iw-root, .iw-root[d
 .iw-root .wf-replace figcaption{margin-top:5px;font:10px var(--p-mono);color:#aeb8d2}
 .iw-root .wf-replace p{margin:14px 0;font-size:12px;color:#aeb8d2;line-height:1.6}
 .iw-root .wf-replace-actions{display:flex;justify-content:flex-end;gap:8px}
+.iw-root .wf-layer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:8px;max-height:330px;overflow:auto}
+.iw-root .wf-layer-grid figure{margin:0;padding:4px;background:#1b1f2a;border:1px solid #343b4b;border-radius:6px}
+.iw-root .wf-layer-grid img{display:block;width:100%;max-height:150px;object-fit:contain;background:#0a0d12;border-radius:3px}
+.iw-root .wf-layer-grid figcaption{font:8px var(--p-mono);color:#b9c2d8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .iw-root .wf-replace-ok{height:32px;padding:0 16px;border:0;border-radius:8px;background:#e8edf9;color:#151a24;font:600 12px var(--p-sans);cursor:pointer}
 .iw-root .wf{--wf-accent:#3655a2;--wf-on:#fff;--wf-dots:rgba(44,52,65,.25);--wf-surface:var(--p-paper);--wf-rule:var(--p-hair);--wf-muted:var(--p-ink-3);width:100%;flex:1;color:var(--p-ink);background:var(--p-paper);container-type:inline-size;font:14px/1.5 var(--p-sans)}
 html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-root[data-theme="dark"] .wf{--wf-accent:#a2b9f5;--wf-on:#131b31;--wf-dots:rgba(182,199,231,.20)}
@@ -4283,7 +4287,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     format: 'png', compression: 90, enhance: false, background: 'auto', watermark: false,
     editModel: 'same', editSize: 'inherit', editPrompt: '', record: null, pending: false, busy: false,
     error: '', requestId: readJsonStore(flowHistoryKey, ''), timer: null, revealId: '', zoom: 1, x: 0, y: 0,
-    result: null, firstResult: null, editResult: null, artworkId: null, parentVersionId: null, jobKind: 'first',
+    result: null, firstResult: null, editResult: null, artworkId: null, parentVersionId: null, jobKind: 'first', layerGroup: null,
   };
   var currentView = 'flow';
   var startupView = 'flow';
@@ -4417,6 +4421,55 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       path.classList.toggle('handoff', i === 5 && flow.record?.status === 'edit-running');
     });
   }
+  function renderFlowLayers() {
+    var grid = $('#wfLayerGrid'); if (!grid) return;
+    grid.replaceChildren();
+    var zip = $('#wfLayerZip'); if (zip) zip.hidden = !(flow.layerGroup && flow.layerGroup.length);
+    (flow.layerGroup || []).forEach(function (image, index) {
+      var figure = document.createElement('figure');
+      var img = document.createElement('img'); img.src = image.url; img.alt = image.name || ('图层 ' + (index + 1)); img.loading = 'lazy';
+      var caption = document.createElement('figcaption'); caption.textContent = image.name || ('图层 ' + (index + 1));
+      figure.append(img, caption); grid.append(figure);
+    });
+  }
+  async function flowSplitLayers() {
+    if (!flow.result || flow.provider !== 'seedream') return;
+    if (!confirm('图层拆分将调用 Seedream，最多返回 4 张（底图 + 图层），按实际张数计费。继续？')) return;
+    try {
+      var fetched = await fetch(flow.result.url);
+      if (!fetched.ok) throw new Error('无法读取当前结果');
+      var dataUrl = await blobToDataURL(await fetched.blob());
+      var res = await apiFetch('/seedream/decompose', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl: dataUrl, maxImages: 4 }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw cloudError(data.error || '图层拆分失败', data.code);
+      flow.layerGroup = data.images || [];
+      renderFlowLayers();
+      toast('已拆出 ' + flow.layerGroup.length + ' 张');
+    } catch (error) { toast(error.message || '图层拆分失败'); }
+  }
+  async function downloadWorkflowLayers() {
+    if (!flow.layerGroup || !flow.layerGroup.length) return;
+    try {
+      var files = [];
+      for (var i = 0; i < flow.layerGroup.length; i++) {
+        var res = await fetch(flow.layerGroup[i].url);
+        if (!res.ok) throw new Error('图层下载失败');
+        files.push({ name: 'layer-' + String(i + 1).padStart(2, '0') + '.png', dataUrl: await blobToDataURL(await res.blob()) });
+      }
+      var zr = await apiFetch('/export', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: files, manifest: { kind: 'seedream-layers', count: files.length, createdAt: new Date().toISOString() } }),
+      });
+      if (!zr.ok) throw new Error('打包失败');
+      var url = URL.createObjectURL(await zr.blob());
+      var a = document.createElement('a'); a.href = url; a.download = 'seedream-layers-' + Date.now() + '.zip'; a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+      toast('图层 ZIP 已下载');
+    } catch (error) { toast(error.message); }
+  }
   async function exportPolaroid(result) {
     if (!result?.url) return;
     var response = await fetch(result.url);
@@ -4498,6 +4551,10 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         $('.wf-exit').append(photo);
         area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="polaroid">下载相纸版</button>');
         if (flow.result.layerManifest) area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="layers">下载分层 ZIP</button>');
+        if (flow.provider === 'seedream' || flow.result.provider === 'seedream') {
+          area.insertAdjacentHTML('beforeend', '<button class="wf-quiet" data-wf-action="split">拆分图层</button><div class="wf-layer-grid" id="wfLayerGrid"></div><button class="wf-quiet" id="wfLayerZip" data-wf-action="layerzip" hidden>下载全部图层 ZIP</button>');
+          renderFlowLayers();
+        }
         if (flow.revealId === flow.result.versionId) {
           flow.revealId = '';
           photo.classList.add('play'); $('.wf-hole').classList.add('play');
@@ -4562,7 +4619,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
     var result = {
       url: flowResultUrl(job.result), w: job.result.width || 0, h: job.result.height || 0,
       artworkId: job.result.artworkId, versionId: job.result.versionId, file: job.result.file, sha256: job.result.sha256,
-      layerManifest: job.result.layerManifest || null,
+      layerManifest: job.result.layerManifest || null, provider: job.snapshot?.provider || null,
     };
     if (flow.jobKind === 'edit' && flow.firstResult) flow.editResult = result;
     else { flow.firstResult = result; flow.artworkId = result.artworkId; }
@@ -4819,6 +4876,8 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
         case 'edit': flowEditSubmit(); break;
         case 'polaroid': exportPolaroid(flow.result).catch(function (error) { toast(error.message); }); break;
         case 'layers': if (flow.result) window.open(API + '/v2/artworks/' + encodeURIComponent(flow.result.artworkId) + '/versions/' + encodeURIComponent(flow.result.versionId) + '/layers.zip', '_blank', 'noopener'); break;
+        case 'split': flowSplitLayers(); break;
+        case 'layerzip': downloadWorkflowLayers(); break;
         case 'in': flow.zoom = Math.min(2, flow.zoom + .15); flowPose(); break;
         case 'out': flow.zoom = Math.max(.55, flow.zoom - .15); flowPose(); break;
         case 'fit': flow.zoom = 1; flow.x = flow.y = 0; flowPose(); break;
