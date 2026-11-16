@@ -17,7 +17,7 @@
 
 - 已提交基线 `1c2dd26`：保留工作树中已有的 0.40.0 七节点雏形、workflow service、旧队列/历史/密钥；未覆盖。
 - 已实现并单测 Task 1/2：`capabilities.js`、`output-spec.js`、`draft.js`。
-- 已实现并单测 Task 3/4 的纯逻辑：`sqlite.js`、`storage-roots.js`、`artworks.js`、`job-queue.js`；当前 `node --test plugin/tests/` 56 通过。尚未接 Host 路由/真实作品保存。
+- 已实现并单测 Task 3/4 的纯逻辑：`sqlite.js`、`storage-roots.js`、`artworks.js`、`job-queue.js`；并接入 `/v2/capabilities`、`/v2/storage`、`/v2/artworks` Host 路由。当前 `node --test plugin/tests/` 57 通过。作品写入/队列 worker 尚未接真实生成管线。
 - 尚未安装到 desktop profile；等 P0 UI + 存储/队列接线并通过浏览器验收后再升级版本。
 
 ## 0. 规格对照与关键决策

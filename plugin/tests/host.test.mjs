@@ -1801,3 +1801,18 @@ test('workflow persists both jobs and sends first output bytes to the second pro
     globalThis.fetch = realFetch
   }
 })
+
+test('V2 capability and storage routes expose conservative capabilities and a writable root', async () => {
+  const capabilities = await api('/v2/capabilities')
+  assert.equal(capabilities.status, 200)
+  assert.equal(capabilities.body.capabilities.minimax.modelId, 'MiniMax-H3-Image')
+  assert.equal(capabilities.body.capabilities.seedream.layerSplit.verified, false)
+  const storage = await api('/v2/storage')
+  assert.equal(storage.status, 200)
+  assert.ok(storage.body.active.endsWith('图像工作台'))
+  const root = mkdtempSync(join(HOME, 'custom-root-'))
+  const changed = await postJson('/v2/storage', { root })
+  assert.equal(changed.status, 200)
+  assert.equal(changed.body.active, root)
+  assert.ok(changed.body.roots.some(entry => entry.path === root && entry.active))
+})

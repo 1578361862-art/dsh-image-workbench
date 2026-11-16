@@ -8,6 +8,10 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCloud } from './lib/cloud.js'
 import { createWorkflowService } from './lib/workflow.js'
+import { CAPABILITIES } from './lib/capabilities.js'
+import { openIndex } from './lib/sqlite.js'
+import { createStorageRoots } from './lib/storage-roots.js'
+import { createArtworkRepository } from './lib/artworks.js'
 import { estimate } from './lib/budget.js'
 import { baseUrlFor, generateContextIR, modelFor, sniffMime } from './lib/minimax.js'
 import { decomposeSeedream, generateSeedream, SEEDREAM_DEFAULT_BASE, SEEDREAM_DEFAULT_MODEL, validateSeedreamSize } from './lib/seedream.js'
@@ -550,6 +554,19 @@ export default {
   inject: ['webServer', 'connection', 'tools'],
   apply(ctx) {
     const storage = createStorage(ROOT)
+    let v2ServicesPromise = null
+    async function v2Services() {
+      if (!v2ServicesPromise) {
+        v2ServicesPromise = (async () => {
+          await mkdir(ROOT, { recursive: true })
+          const index = await openIndex(join(ROOT, 'v2.sqlite'))
+          const roots = createStorageRoots({ file: join(ROOT, 'storage-roots.json') })
+          const state = await roots.list()
+          return { index, roots, state, root: state.active }
+        })()
+      }
+      return v2ServicesPromise
+    }
     storage.backfillCloudIndex().catch(() => {})
     storage.cleanupOld({ days: 90 }).catch(() => {})
     const cloud = createCloud({
@@ -870,6 +887,33 @@ export default {
         const body = await readBody(req)
         return json(res, 202, await workflows.retry(seg[1], body.size))
       }
+      if (method === 'GET' && path === 'v2/capabilities') {
+        return json(res, 200, { capabilities: CAPABILITIES })
+      }
+      if (method === 'GET' && path === 'v2/storage') {
+        const services = await v2Services()
+        const state = await services.roots.list()
+        return json(res, 200, { ...state, degraded: !services.index })
+      }
+      if (method === 'POST' && path === 'v2/storage') {
+        const services = await v2Services()
+        const body = await readBody(req, MAX_BODY)
+        const changed = await services.roots.setActive(body?.root)
+        services.root = changed.root
+        return json(res, 200, await services.roots.list())
+      }
+      if (method === 'GET' && path === 'v2/artworks') {
+        const services = await v2Services()
+        if (!services.index) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        const repo = createArtworkRepository({ root: services.root, index: services.index })
+        return json(res, 200, { artworks: await repo.list({ limit: url.searchParams.get('limit') }) })
+      }
+      if (method === 'GET' && seg.length === 3 && seg[0] === 'v2' && seg[1] === 'artworks') {
+        const services = await v2Services()
+        if (!services.index) return json(res, 503, { error: 'SQLite 不可用，作品索引降级中' })
+        const repo = createArtworkRepository({ root: services.root, index: services.index })
+        return json(res, 200, repo.get(seg[2]))
+      }
       if (method === 'GET' && path === 'settings') {
         return json(res, 200, await publicSettings(ctx))
       }
@@ -1172,6 +1216,10 @@ export default {
 
       json(res, 404, { error: '接口不存在' })
     }
+
+    ctx.effect(() => () => {
+      if (v2ServicesPromise) v2ServicesPromise.then(services => services.index?.close?.()).catch(() => {})
+    }, 'dsh-image-workbench: v2 services')
 
     ctx.effect(
       () =>
