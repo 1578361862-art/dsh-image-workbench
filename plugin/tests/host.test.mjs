@@ -1816,3 +1816,20 @@ test('V2 capability and storage routes expose conservative capabilities and a wr
   assert.equal(changed.body.active, root)
   assert.ok(changed.body.roots.some(entry => entry.path === root && entry.active))
 })
+
+test('V2 job route persists a rejected provider as a failed job', async () => {
+  const created = await postJson('/v2/jobs', {
+    snapshot: { provider: 'nope', operation: 'text_to_image', prompt: 'probe', width: 1024, height: 1024, format: 'png', size: '1024x1024' },
+    idempotencyKey: 'host-v2-probe-' + Date.now(),
+  })
+  assert.equal(created.status, 202)
+  assert.equal(created.body.status, 'queued')
+  let job = created.body
+  for (let i = 0; i < 20; i += 1) {
+    await new Promise(resolve => setTimeout(resolve, 50))
+    job = (await api('/v2/jobs/' + encodeURIComponent(created.body.id))).body
+    if (['failed', 'unknown', 'succeeded'].includes(job.status)) break
+  }
+  assert.equal(job.status, 'failed')
+  assert.equal(job.error.code, 'unknown_provider')
+})
