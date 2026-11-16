@@ -997,6 +997,13 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
   margin-bottom: 4px; font-size: 13px; font-weight: 500; color: var(--p-ink);
 }
 .iw-root .set-title .mono{ font-family: var(--p-mono); font-size: 10px; font-weight: 400; letter-spacing: var(--pk-ls-label); color: var(--p-ink-4); }
+.iw-root .storage-path{max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-family:var(--p-mono);font-size:10px}
+.iw-root .settings-note{margin:6px 0 8px;font-size:10px;line-height:1.6;color:var(--p-ink-4)}
+.iw-root .storage-roots{display:flex;flex-direction:column;gap:4px}
+.iw-root .storage-root{display:flex;align-items:center;gap:6px;padding:4px 6px;border:1px solid var(--p-hair);background:var(--p-paper-2);font-family:var(--p-mono);font-size:9px;color:var(--p-ink-3)}
+.iw-root .storage-root.active{border-color:var(--p-signal);color:var(--p-ink)}
+.iw-root .storage-root span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iw-root .storage-root button{height:20px;padding:0 5px;font-size:8px}
 .iw-root .set-row{
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 4px 0; font-size: 10px; color: var(--p-ink-3);
@@ -1596,6 +1603,14 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
           <span class="lab">默认长边</span>
           <div class="mini-seg" data-group="size"><button>640</button><button class="on">960</button><button>1200</button></div>
         </div>
+      </section>
+
+      <section class="set-sec">
+        <div class="set-title"><span>自动保存与存储位置</span></div>
+        <div class="set-row"><span>当前目录</span><b id="storagePath" class="storage-path">—</b></div>
+        <div class="key-edit" id="storageEdit"><input id="storageInput" type="text" autocomplete="off" spellcheck="false" placeholder="/Users/…/Pictures/图像工作台"><button class="set-action" id="storageApply">应用</button></div>
+        <p class="settings-note" id="storageNote">作品直接写入该目录；更换目录只影响新作品，不自动移动旧作品。</p>
+        <div class="storage-roots" id="storageRoots"></div>
       </section>
 
       <section class="set-sec last">
@@ -5229,10 +5244,48 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
       month.textContent = (m.count || 0) + ' 张 · ¥' + Number(m.costYuan || 0).toFixed(2);
     }).catch(function () { today.textContent = '—'; month.textContent = '—'; });
   }
+  async function loadStorage() {
+    var path = $('#storagePath'), input = $('#storageInput'), roots = $('#storageRoots');
+    if (!path || !roots) return;
+    try {
+      var res = await apiFetch('/v2/storage', { cache: 'no-store' });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.error || '读取存储目录失败');
+      path.textContent = data.active || '—';
+      path.title = data.active || '';
+      if (input) input.value = data.active || '';
+      roots.replaceChildren();
+      (data.roots || []).forEach(function (root) {
+        var row = document.createElement('div');
+        row.className = 'storage-root' + (root.active ? ' active' : '');
+        var name = document.createElement('span'); name.textContent = root.path; name.title = root.path;
+        row.append(name);
+        if (root.status === 'offline') { var off = document.createElement('b'); off.textContent = '离线'; row.append(off); }
+        roots.append(row);
+      });
+    } catch (error) {
+      path.textContent = '读取失败';
+      $('#storageNote').textContent = error.message;
+    }
+  }
+  async function applyStorage() {
+    var input = $('#storageInput');
+    if (!input || !input.value.trim()) return;
+    try {
+      var res = await apiFetch('/v2/storage', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: input.value.trim() }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.error || '目录不可写');
+      toast('存储目录已更新');
+      await loadStorage();
+    } catch (error) { toast(error.message); }
+  }
   function openSettings() {
     settingsReturnFocus = document.activeElement;
     renderLibraryManager();
     loadUsage();
+    loadStorage();
     setLayer.inert = false;
     setLayer.classList.add('open');
     setLayer.setAttribute('aria-hidden', 'false');
@@ -7579,6 +7632,7 @@ html[data-ds-dark-theme] .iw-root .wf,body[data-ds-dark-theme] .iw-root .wf,.iw-
 
     $('#settingsBtn').addEventListener('click', openSettings);
     $$('[data-close]').forEach(function (el) { el.addEventListener('click', closeSettings); });
+    $('#storageApply').addEventListener('click', applyStorage);
     $('#saveSettings').addEventListener('click', saveSettings);
     $('#keyChange').addEventListener('click', function () {
       var box = $('#keyEdit');
