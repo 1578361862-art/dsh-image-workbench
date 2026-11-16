@@ -11,7 +11,7 @@ function jobError(error) {
   return wrapped
 }
 
-export function createExecutionService({ queue: suppliedQueue, store, artworks, provider, clock = () => new Date(), onChange = () => {} }) {
+export function createExecutionService({ queue: suppliedQueue, store, artworks, provider, sourceLoader, clock = () => new Date(), onChange = () => {} }) {
   if (!artworks || typeof provider !== 'function') throw new Error('execution service dependencies missing')
 
   async function runner(job, checkpoint) {
@@ -30,6 +30,12 @@ export function createExecutionService({ queue: suppliedQueue, store, artworks, 
     if (!artworkId) {
       const artwork = await artworks.create({ title: job.snapshot?.title || job.snapshot?.prompt || '未命名作品' })
       artworkId = artwork.id
+    }
+    if (!job.meta?.parentVersionId && job.snapshot?.sourceAssetId && typeof sourceLoader === 'function') {
+      try {
+        const source = await sourceLoader(job.snapshot.sourceAssetId)
+        if (source?.buffer?.length) await artworks.attachSource(artworkId, source.buffer, source.mime)
+      } catch { /* source attachment is best-effort; generation result stays */ }
     }
     const format = output.format || job.snapshot.format || 'png'
     const version = await artworks.addVersion({

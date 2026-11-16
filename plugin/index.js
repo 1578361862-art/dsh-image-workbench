@@ -572,7 +572,13 @@ export default {
         readSeedreamKey: () => readSeedreamKeyValue(ctx),
         generateSeedream, pollMs: 400,
       })
-      const execution = index && artworks ? createExecutionService({ store, artworks, provider: snapshot => provider.run(snapshot) }) : null
+      const execution = index && artworks ? createExecutionService({
+        store, artworks, provider: snapshot => provider.run(snapshot),
+        sourceLoader: async id => {
+          const asset = await storage.getAsset(id)
+          return asset ? { buffer: await readFile(asset.path), mime: asset.mime, w: asset.w, h: asset.h } : null
+        },
+      }) : null
       if (execution) execution.queue.restore(store.list())
       return { index, roots, state, root, artworks, store, execution }
     }

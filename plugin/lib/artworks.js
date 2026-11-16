@@ -117,5 +117,18 @@ export function createArtworkRepository({ root, index, clock = () => new Date() 
     return get(id)
   }
 
-  return { create, addVersion, get, list, setFlag, root }
+  async function attachSource(artworkId, buffer, mime = 'image/jpeg') {
+    const artwork = artworkRow(artworkId)
+    if (!Buffer.isBuffer(buffer) || !buffer.length) fail('源图内容为空', 400)
+    const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'
+    const file = `source/original.${ext}`
+    await writeAtomic(join(root, artwork.folder, file), buffer, 0o644)
+    const metaPath = join(root, artwork.folder, 'artwork.json')
+    let meta = {}
+    try { meta = JSON.parse(await readFile(metaPath, 'utf8')) } catch {}
+    meta.source = { file, mime, bytes: buffer.length }
+    await writeAtomic(metaPath, JSON.stringify(meta, null, 2), 0o644)
+    return meta.source
+  }
+  return { create, addVersion, attachSource, get, list, setFlag, root }
 }

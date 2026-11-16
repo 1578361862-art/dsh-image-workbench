@@ -42,3 +42,13 @@ test('rejects invalid parents and keeps flags independent', async t => {
   assert.equal(liked.liked, 1)
   assert.equal(liked.favorite, 0)
 })
+
+test('attaches source bytes under the artwork folder', async t => {
+  const { root, index } = await setup(t)
+  const repo = createArtworkRepository({ root, index })
+  const artwork = await repo.create({ title: 'source' })
+  const source = await repo.attachSource(artwork.id, Buffer.from('source'), 'image/png')
+  assert.equal(source.file, 'source/original.png')
+  const meta = JSON.parse(await readFile(join(root, artwork.folder, 'artwork.json'), 'utf8'))
+  assert.equal(meta.source.file, 'source/original.png')
+})
