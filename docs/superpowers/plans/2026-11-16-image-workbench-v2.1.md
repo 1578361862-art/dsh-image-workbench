@@ -20,7 +20,8 @@
 - 已实现并单测 Task 3/4 的纯逻辑：`sqlite.js`、`storage-roots.js`、`artworks.js`、`job-queue.js`、`sqlite-job-store.js`、`execution.js`；并接入 `/v2/capabilities`、`/v2/storage`、`/v2/artworks` Host 路由。
 - `execution.js` 已把单 job → provider → artwork version 串起来；`providers.js` 已实现 MiniMax/Seedream 适配；`/v2/jobs` 已接真实执行服务。
 - Client 七节点已切到 `/v2/jobs`：首轮单任务、二次编辑独立任务、版本文件 URL；节点布局改为宽屏四列 + 侧检查器；输入支持拖拽/替换确认；风格卡两排横滚 + 3D 翻面编辑。
-- 真浏览器验证（mock `/v2/jobs`）：出片、替换确认、翻面卡无 pageerror；真实 Host 需重启后验收。`node --test plugin/tests/` 64 通过。
+- 已安装 0.41.0 并验证真实 Host `/v2/capabilities`、`/v2/jobs` 可访问；浏览器截图为 `shots/v2-flow-real.png`、`shots/v2-style-deck.png`、`shots/v2-replace.png`。
+- 真浏览器验证（mock `/v2/jobs`）：出片、替换确认、翻面卡无 pageerror。`node --test plugin/tests/` 64 通过。
 - 尚未安装到 desktop profile；等 P0 UI + 存储/队列接线并通过浏览器验收后再升级版本。
 
 ## 0. 规格对照与关键决策
